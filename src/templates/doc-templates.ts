@@ -15,14 +15,129 @@ function modeLabel(mode: OutputMode): string {
 
 function modeFocus(mode: OutputMode): string {
   if (mode === "recruiter") {
-    return "Foco em impacto, lideranca tecnica e valor de negocio.";
+    return "Foco em impacto, lideranca tecnica, clareza de execucao e valor de negocio.";
   }
 
   if (mode === "simplified") {
-    return "Foco em clareza, linguagem simples e passos curtos de execucao.";
+    return "Foco em clareza, linguagem simples, passos curtos e baixo atrito para executar.";
   }
 
-  return "Foco em arquitetura, engenharia e decisoes tecnicas.";
+  return "Foco em arquitetura, engenharia, risco tecnico e decisoes de implementacao.";
+}
+
+function modeActionTitle(mode: OutputMode): string {
+  if (mode === "recruiter") {
+    return "Prioridades de impacto";
+  }
+
+  if (mode === "simplified") {
+    return "Passos simples para comecar";
+  }
+
+  return "Prioridades tecnicas";
+}
+
+function modeActions(mode: OutputMode): string[] {
+  if (mode === "recruiter") {
+    return [
+      "1. Entregar um MVP funcional que gere demonstracao clara de valor",
+      "2. Evidenciar ganhos de produtividade e qualidade nos outputs",
+      "3. Comunicar resultado com narrativa de ownership e impacto"
+    ];
+  }
+
+  if (mode === "simplified") {
+    return [
+      "1. Escolher um input curto e objetivo",
+      "2. Rodar generate para produzir os documentos principais",
+      "3. Ajustar os arquivos gerados e publicar no GitHub"
+    ];
+  }
+
+  return [
+    "1. Validar escopo, fronteiras do dominio e contratos de entrada/saida",
+    "2. Implementar MVP com cobertura de testes para fluxos criticos",
+    "3. Medir qualidade de output e iterar em prompts/templates"
+  ];
+}
+
+function modeRoadmapEmphasis(mode: OutputMode): string[] {
+  if (mode === "recruiter") {
+    return [
+      "- Demonstrar valor de negocio em cada entrega",
+      "- Produzir evidencias para portfolio e entrevistas"
+    ];
+  }
+
+  if (mode === "simplified") {
+    return [
+      "- Dividir entregas em blocos curtos e testaveis",
+      "- Priorizar o que desbloqueia execucao rapida"
+    ];
+  }
+
+  return [
+    "- Definir SLO de qualidade para documentos gerados",
+    "- Evoluir arquitetura sem quebrar contratos publicos"
+  ];
+}
+
+function modePlanRisks(mode: OutputMode): string[] {
+  if (mode === "recruiter") {
+    return [
+      "- Narrativa fraca de impacto no portfolio",
+      "- Falta de consistencia entre entrega tecnica e comunicacao"
+    ];
+  }
+
+  if (mode === "simplified") {
+    return [
+      "- Escopo grande demais para o primeiro ciclo",
+      "- Excesso de complexidade na documentacao inicial"
+    ];
+  }
+
+  return [
+    "- Prompt malformado",
+    "- Input sem contexto suficiente",
+    "- Regressao de qualidade em templates"
+  ];
+}
+
+function modePitch(mode: OutputMode): string {
+  if (mode === "recruiter") {
+    return "Transformei aprendizado em um projeto com entrega objetiva, narrativa forte de impacto e sinais claros de senioridade tecnica.";
+  }
+
+  if (mode === "simplified") {
+    return "Transformei estudo em um projeto pratico, com passos claros e documentos prontos para publicar sem complicacao.";
+  }
+
+  return "Transformei aprendizado em um projeto real com arquitetura em camadas, CLI profissional e foco em entrega rapida.";
+}
+
+function modeHighlights(mode: OutputMode): string[] {
+  if (mode === "recruiter") {
+    return [
+      "- Comunicacao tecnica com linguagem de negocio",
+      "- Evidencias de ownership e capacidade de entrega",
+      "- Relevancia para portfolio e processo seletivo"
+    ];
+  }
+
+  if (mode === "simplified") {
+    return [
+      "- Linguagem clara e acionavel",
+      "- Sequencia simples para sair do zero",
+      "- Foco em executar e publicar rapido"
+    ];
+  }
+
+  return [
+    "- Engenharia orientada a produto",
+    "- Seguranca e padronizacao de output",
+    "- Decisoes tecnicas explicitas"
+  ];
 }
 
 function maybeAIBrief(aiBrief?: string, title = "Resumo estrategico de IA"): string[] {
@@ -61,10 +176,8 @@ export function buildReadmeTemplate(
     aiProvider ?? "mock",
     ...maybeAIBrief(aiBrief),
     "",
-    "## Proximos passos",
-    "1. Validar escopo",
-    "2. Implementar MVP",
-    "3. Publicar e coletar feedback"
+    `## ${modeActionTitle(mode)}`,
+    ...modeActions(mode)
   ].join("\n");
 }
 
@@ -105,6 +218,7 @@ export function buildRoadmapTemplate(
     "## v2",
     "- Repo analyzer",
     "- Integracao com GitHub",
+    ...modeRoadmapEmphasis(mode),
     "",
     "## Contexto de origem",
     analysis.summary,
@@ -131,8 +245,7 @@ export function buildProjectPlanTemplate(
     "- Geracao de documentacao",
     "",
     "## Riscos",
-    "- Prompt malformado",
-    "- Input sem contexto suficiente",
+    ...modePlanRisks(mode),
     "",
     "## Mitigacoes",
     "- Validacao de schema",
@@ -151,12 +264,11 @@ export function buildPortfolioPitchTemplate(
     "",
     `Modo: ${modeLabel(mode)}`,
     "",
-    "Transformei aprendizado em um projeto real com arquitetura em camadas, CLI profissional e foco em entrega rapida.",
+    modePitch(mode),
     "",
     "## Destaques",
     `- Tema: ${analysis.theme}`,
-    "- Engenharia orientada a produto",
-    "- Seguranca e padronizacao de output",
+    ...modeHighlights(mode),
     "",
     "## Narrativa curta",
     analysis.summary,
