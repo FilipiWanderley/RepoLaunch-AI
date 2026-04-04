@@ -5,11 +5,11 @@
 </p>
 
 <p align="center">
-  Construido por <strong>FilipiWanderley</strong> para transformar estudo em execucao de verdade.
+  Construído por <strong>FilipiWanderley</strong> para transformar estudo em execução de verdade.
 </p>
 
 <p align="center">
-  <img alt="Status" src="https://img.shields.io/badge/status-em%20construcao-ff6b35?style=for-the-badge" />
+  <img alt="Status" src="https://img.shields.io/badge/status-em%20constru%C3%A7%C3%A3o-ff6b35?style=for-the-badge" />
   <img alt="Node" src="https://img.shields.io/badge/node-%3E%3D20-0f766e?style=for-the-badge&logo=node.js&logoColor=white" />
   <img alt="TypeScript" src="https://img.shields.io/badge/typescript-strict-0b3b8c?style=for-the-badge&logo=typescript&logoColor=white" />
   <img alt="CLI" src="https://img.shields.io/badge/cli-repolaunch-e85d04?style=for-the-badge&logo=gnubash&logoColor=white" />
@@ -20,12 +20,12 @@
 
 ## O problema que quase todo dev enfrenta
 
-Voce estuda, aprende e pratica, mas trava em pontos criticos:
+Você estuda, aprende e pratica, mas trava em pontos críticos:
 
-- Nao sei qual projeto criar
-- Nao sei estruturar arquitetura com clareza
-- Nao sei escrever documentacao que impressiona
-- Nao consigo transformar aprendizado em ativo de carreira
+- Não sei qual projeto criar
+- Não sei estruturar arquitetura com clareza
+- Não sei escrever documentação que impressiona
+- Não consigo transformar aprendizado em ativo de carreira
 
 RepoLaunch AI foi criado para fechar esse gap.
 
@@ -35,10 +35,10 @@ RepoLaunch AI foi criado para fechar esse gap.
 
 ### Input
 
-- Anotacoes em Markdown ou TXT
-- Pasta de codigo
+- Anotações em Markdown ou TXT
+- Pasta de código
 - Ideias soltas em texto
-- Conteudo de cursos (exemplo: Anthropic Academy)
+- Conteúdo de cursos (exemplo: Anthropic Academy)
 
 ### Output
 
@@ -47,13 +47,13 @@ RepoLaunch AI foi criado para fechar esse gap.
 - ROADMAP.md
 - PROJECT_PLAN.md
 - PORTFOLIO_PITCH.md
-- Sugestoes de issues
+- Sugestões de issues
 
 ---
 
 ## Impacto em segundos
 
-### Exemplo rapido
+### Exemplo rápido
 
 Input:
 
@@ -63,7 +63,7 @@ Output:
 
 - projeto estruturado
 - arquitetura definida
-- plano de execucao
+- plano de execução
 - pitch pronto para LinkedIn
 
 ---
@@ -101,7 +101,7 @@ flowchart TD
 
 ---
 
-## Estrutura de pastas com visao de camadas
+## Estrutura de pastas com visão de camadas
 
 ```mermaid
 flowchart LR
@@ -122,14 +122,14 @@ flowchart LR
 
 ---
 
-## Seguranca em camadas
+## Segurança em camadas
 
 ```mermaid
 flowchart TD
-    U[User Input] --> V[Validacao de tipo e tamanho]
-    V --> S[Sanitizacao basica]
-    S --> P[Separacao system prompt e user input]
-    P --> R[Rate limiting por execucao]
+    U[User Input] --> V[Validação de tipo e tamanho]
+    V --> S[Sanitização básica]
+    S --> P[Separação system prompt e user input]
+    P --> R[Rate limiting por execução]
     R --> L[Logs estruturados sem segredos]
     L --> O[Output Safety Validation]
 
@@ -144,15 +144,15 @@ flowchart TD
 | Camada | Stack | Objetivo |
 |---|---|---|
 | Runtime e CLI | <img alt="Node" src="https://img.shields.io/badge/Node.js-20+-14532d?style=flat-square&logo=node.js&logoColor=white" /> <img alt="TS" src="https://img.shields.io/badge/TypeScript-Strict-1d4ed8?style=flat-square&logo=typescript&logoColor=white" /> <img alt="Commander" src="https://img.shields.io/badge/Commander-CLI-9a3412?style=flat-square" /> | Performance, tipagem forte e UX de terminal profissional |
-| IA e prompts | <img alt="Anthropic" src="https://img.shields.io/badge/Claude-Anthropic-0f766e?style=flat-square" /> <img alt="OpenAI" src="https://img.shields.io/badge/OpenAI-Fallback-166534?style=flat-square" /> | Geracao confiavel com fallback e padronizacao de saida |
-| Qualidade e seguranca | <img alt="Zod" src="https://img.shields.io/badge/Zod-Validacao-7c2d12?style=flat-square" /> <img alt="Jest" src="https://img.shields.io/badge/Jest-Testes-b91c1c?style=flat-square&logo=jest&logoColor=white" /> <img alt="dotenv" src="https://img.shields.io/badge/dotenv-Env-365314?style=flat-square" /> | Resiliencia, validacao de contrato e seguranca de configuracao |
+| IA e prompts | <img alt="Anthropic" src="https://img.shields.io/badge/Claude-Anthropic-0f766e?style=flat-square" /> <img alt="OpenAI" src="https://img.shields.io/badge/OpenAI-Fallback-166534?style=flat-square" /> | Geração confiável com fallback e padronização de saída |
+| Qualidade e segurança | <img alt="Zod" src="https://img.shields.io/badge/Zod-Validacao-7c2d12?style=flat-square" /> <img alt="Jest" src="https://img.shields.io/badge/Jest-Testes-b91c1c?style=flat-square&logo=jest&logoColor=white" /> <img alt="dotenv" src="https://img.shields.io/badge/dotenv-Env-365314?style=flat-square" /> | Resiliência, validação de contrato e segurança de configuração |
 
 ---
 
 ## Como funciona
 
-1. Usuario fornece input (texto, arquivos ou repositorio)
-2. Input Analyzer extrai intencao, contexto e tema
+1. Usuário fornece input (texto, arquivos ou repositório)
+2. Input Analyzer extrai intenção, contexto e tema
 3. AI Engine produz estrutura base com prompts controlados
 4. Template Engine organiza os documentos finais
 5. Output Generator cria os arquivos automaticamente
@@ -164,28 +164,28 @@ flowchart TD
 ### Devs
 
 - Transformar estudo em projeto concreto
-- Gerar documentacao profissional para portfolio
+- Gerar documentação profissional para portfólio
 
 ### Estudantes
 
-- Montar portfolio com mais velocidade
-- Estruturar aprendizado em entregaveis
+- Montar portfólio com mais velocidade
+- Estruturar aprendizado em entregáveis
 
 ### Criadores
 
-- Organizar ideias e publicar com narrativa tecnica
+- Organizar ideias e publicar com narrativa técnica
 
 ---
 
 ## Engenharia que recrutador enxerga
 
 - Arquitetura modular por camadas
-- Separacao clara de responsabilidades
-- Engine de templates reutilizavel
-- Abstracao para multiplos provedores de IA
-- CLI profissional com foco em ship rapido
+- Separação clara de responsabilidades
+- Engine de templates reutilizável
+- Abstração para múltiplos provedores de IA
+- CLI profissional com foco em ship rápido
 - Design orientado a produto
-- Seguranca como requisito de base
+- Segurança como requisito de base
 
 ---
 
@@ -193,42 +193,42 @@ flowchart TD
 
 ### v1 - MVP
 
-- Geracao de README
+- Geração de README
 - ROADMAP e PROJECT_PLAN
-- Fluxo base de analise de texto
+- Fluxo base de análise de texto
 
 ### v2
 
-- Analise de repositorio existente
-- Integracao com GitHub para issues e PRs
+- Análise de repositório existente
+- Integração com GitHub para issues e PRs
 
 ### v3
 
 - Interface web
-- Colaboracao
-- Exportacao avancada
+- Colaboração
+- Exportação avançada
 
 ---
 
 ## Filosofia
 
-> Aprender e otimo.
-> Construir e o que muda sua carreira.
+> Aprender é ótimo.
+> Construir é o que muda sua carreira.
 
 ---
 
-## Inspiracao
+## Inspiração
 
 Projeto desenvolvido por FilipiWanderley, inspirado por aprendizado em IA aplicada,
-incluindo conteudos da Anthropic Academy.
+incluindo conteúdos da Anthropic Academy.
 
 ---
 
-## Contribuicao
+## Contribuição
 
-Contribuicoes sao bem-vindas.
+Contribuições são bem-vindas.
 
-Se esse projeto te ajudou, deixe uma estrela e compartilhe com quem esta evoluindo na carreira.
+Se esse projeto te ajudou, deixe uma estrela e compartilhe com quem está evoluindo na carreira.
 
 ---
 
@@ -237,8 +237,8 @@ Se esse projeto te ajudou, deixe uma estrela e compartilhe com quem esta evoluin
 **FilipiWanderley**
 
 - Engenheiro focado em IA aplicada
-- Construindo ferramentas uteis para desenvolvedores
-- Transformando aprendizado em execucao real
+- Construindo ferramentas úteis para desenvolvedores
+- Transformando aprendizado em execução real
 
 ---
 
