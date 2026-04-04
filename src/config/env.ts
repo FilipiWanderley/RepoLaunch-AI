@@ -4,7 +4,10 @@ const EnvSchema = z.object({
   ANTHROPIC_API_KEY: z.string().optional(),
   OPENAI_API_KEY: z.string().optional(),
   DEFAULT_MODEL: z.string().default("claude-3-5-sonnet-latest"),
-  OPENAI_MODEL: z.string().default("gpt-4o-mini")
+  OPENAI_MODEL: z.string().default("gpt-4o-mini"),
+  AI_TIMEOUT_MS: z.coerce.number().int().positive().default(15000),
+  AI_MAX_RETRIES: z.coerce.number().int().min(0).max(3).default(1),
+  LOG_LEVEL: z.enum(["debug", "info", "warning", "error"]).default("info")
 });
 
 export type AppEnv = z.infer<typeof EnvSchema>;

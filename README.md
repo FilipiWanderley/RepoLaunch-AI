@@ -79,8 +79,31 @@ cp .env.example .env
 npm install
 npx repolaunch init
 npx repolaunch analyze ./meus-arquivos
-npx repolaunch generate
+npx repolaunch generate --mode technical
+npx repolaunch export --format json
 ```
+
+### Modos de saida
+
+- technical
+- recruiter
+- simplified
+
+### Formatos de export
+
+- json
+- markdown
+- issues (GitHub issues)
+
+---
+
+## Configuracao de resiliencia
+
+No arquivo `.env`, voce pode ajustar:
+
+- `AI_TIMEOUT_MS`: timeout por chamada ao provider
+- `AI_MAX_RETRIES`: tentativas de retry por provider
+- `LOG_LEVEL`: debug, info, warning ou error
 
 ---
 
