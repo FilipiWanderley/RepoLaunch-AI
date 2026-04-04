@@ -1,0 +1,47 @@
+{
+  "name": "repolaunch-ai",
+  "version": "1.0.0",
+  "description": "Transforme aprendizado em projetos reais prontos para lancar.",
+  "main": "dist/index.js",
+  "bin": {
+    "repolaunch": "dist/index.js"
+  },
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "build": "rimraf dist && tsc -p tsconfig.json",
+    "dev": "tsx src/index.ts",
+    "start": "node dist/index.js",
+    "test": "jest --passWithNoTests",
+    "test:watch": "jest --watch",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FilipiWanderley/RepoLaunch-AI.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/FilipiWanderley/RepoLaunch-AI/issues"
+  },
+  "homepage": "https://github.com/FilipiWanderley/RepoLaunch-AI#readme",
+  "dependencies": {
+    "commander": "^14.0.3",
+    "dotenv": "^17.4.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "^25.5.2",
+    "jest": "^30.3.0",
+    "rimraf": "^6.1.3",
+    "ts-jest": "^29.4.9",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.2"
+  }
+}
