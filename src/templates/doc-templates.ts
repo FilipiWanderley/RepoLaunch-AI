@@ -1,4 +1,29 @@
 import { AnalysisResult } from "../services/input-analyzer-service";
+import { OutputMode } from "../types/output";
+
+function modeLabel(mode: OutputMode): string {
+  if (mode === "recruiter") {
+    return "Recruiter";
+  }
+
+  if (mode === "simplified") {
+    return "Simplified";
+  }
+
+  return "Technical";
+}
+
+function modeFocus(mode: OutputMode): string {
+  if (mode === "recruiter") {
+    return "Foco em impacto, lideranca tecnica e valor de negocio.";
+  }
+
+  if (mode === "simplified") {
+    return "Foco em clareza, linguagem simples e passos curtos de execucao.";
+  }
+
+  return "Foco em arquitetura, engenharia e decisoes tecnicas.";
+}
 
 function maybeAIBrief(aiBrief?: string, title = "Resumo estrategico de IA"): string[] {
   if (!aiBrief) {
@@ -10,6 +35,7 @@ function maybeAIBrief(aiBrief?: string, title = "Resumo estrategico de IA"): str
 
 export function buildReadmeTemplate(
   analysis: AnalysisResult,
+  mode: OutputMode,
   aiBrief?: string,
   aiProvider?: string
 ): string {
@@ -21,6 +47,12 @@ export function buildReadmeTemplate(
     "",
     "## Intencao",
     analysis.intent,
+    "",
+    "## Modo",
+    modeLabel(mode),
+    "",
+    "## Foco",
+    modeFocus(mode),
     "",
     "## Contexto",
     analysis.context,
@@ -36,7 +68,11 @@ export function buildReadmeTemplate(
   ].join("\n");
 }
 
-export function buildArchitectureTemplate(analysis: AnalysisResult, aiBrief?: string): string {
+export function buildArchitectureTemplate(
+  analysis: AnalysisResult,
+  mode: OutputMode,
+  aiBrief?: string
+): string {
   return [
     "# Architecture",
     "",
@@ -46,13 +82,20 @@ export function buildArchitectureTemplate(analysis: AnalysisResult, aiBrief?: st
     "## Alignment",
     `Tema principal: ${analysis.theme}`,
     `Direcao: ${analysis.intent}`,
+    `Modo: ${modeLabel(mode)}`,
     ...maybeAIBrief(aiBrief, "Recomendacoes de arquitetura")
   ].join("\n");
 }
 
-export function buildRoadmapTemplate(analysis: AnalysisResult, aiBrief?: string): string {
+export function buildRoadmapTemplate(
+  analysis: AnalysisResult,
+  mode: OutputMode,
+  aiBrief?: string
+): string {
   return [
     "# Roadmap",
+    "",
+    `Modo de planejamento: ${modeLabel(mode)}`,
     "",
     "## v1 (MVP)",
     "- Fluxo analyze",
@@ -69,9 +112,15 @@ export function buildRoadmapTemplate(analysis: AnalysisResult, aiBrief?: string)
   ].join("\n");
 }
 
-export function buildProjectPlanTemplate(analysis: AnalysisResult, aiBrief?: string): string {
+export function buildProjectPlanTemplate(
+  analysis: AnalysisResult,
+  mode: OutputMode,
+  aiBrief?: string
+): string {
   return [
     "# Project Plan",
+    "",
+    `Modo: ${modeLabel(mode)}`,
     "",
     "## Objetivo",
     analysis.intent,
@@ -92,9 +141,15 @@ export function buildProjectPlanTemplate(analysis: AnalysisResult, aiBrief?: str
   ].join("\n");
 }
 
-export function buildPortfolioPitchTemplate(analysis: AnalysisResult, aiBrief?: string): string {
+export function buildPortfolioPitchTemplate(
+  analysis: AnalysisResult,
+  mode: OutputMode,
+  aiBrief?: string
+): string {
   return [
     "# Portfolio Pitch",
+    "",
+    `Modo: ${modeLabel(mode)}`,
     "",
     "Transformei aprendizado em um projeto real com arquitetura em camadas, CLI profissional e foco em entrega rapida.",
     "",
@@ -106,5 +161,23 @@ export function buildPortfolioPitchTemplate(analysis: AnalysisResult, aiBrief?: 
     "## Narrativa curta",
     analysis.summary,
     ...maybeAIBrief(aiBrief, "Narrativa complementar")
+  ].join("\n");
+}
+
+export function buildIssuesSuggestionsTemplate(analysis: AnalysisResult, mode: OutputMode): string {
+  return [
+    "# Issues Suggestions",
+    "",
+    `Modo: ${modeLabel(mode)}`,
+    "",
+    "## 1) feat: implementar pipeline base",
+    `Tema: ${analysis.theme}`,
+    `Objetivo: ${analysis.intent}`,
+    "",
+    "## 2) docs: elevar qualidade de templates",
+    "Padronizar estrutura dos documentos para reuso e clareza.",
+    "",
+    "## 3) test: ampliar cobertura do fluxo CLI",
+    "Cobrir analyze, generate e export com cenarios de seguranca."
   ].join("\n");
 }

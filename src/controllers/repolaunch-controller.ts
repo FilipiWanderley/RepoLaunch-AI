@@ -5,6 +5,7 @@ import { ExecutionGuardService } from "../services/execution-guard-service";
 import { InputAnalyzerService } from "../services/input-analyzer-service";
 import { ProjectGeneratorService } from "../services/project-generator-service";
 import { OutputService } from "../services/output-service";
+import { ExportFormat, OutputMode } from "../types/output";
 import { logger } from "../utils/logger";
 import { validateOutputSafety } from "../utils/output-safety";
 
@@ -28,7 +29,7 @@ export class RepoLaunchController {
     logger.info(`Intencao: ${analysis.intent}`);
   }
 
-  async generate(target?: string, text?: string): Promise<void> {
+  async generate(target?: string, text?: string, mode: OutputMode = "technical"): Promise<void> {
     this.executionGuard.assertCanExecute();
 
     const analysis = await this.inputAnalyzer.analyze({ target, text, fallbackToLatest: true });
@@ -39,7 +40,8 @@ export class RepoLaunchController {
     });
     const files = this.projectGenerator.generateFromAnalysis(analysis, {
       aiBrief: aiResponse.content,
-      aiProvider: aiResponse.provider
+      aiProvider: aiResponse.provider,
+      mode
     });
 
     await this.outputService.ensureBaseStructure();
@@ -51,12 +53,32 @@ export class RepoLaunchController {
 
     await this.outputService.writeJson("latest-analysis.json", analysis);
     logger.info(`Geracao enriquecida via provider: ${aiResponse.provider}`);
+    logger.info(`Modo de saida aplicado: ${mode}`);
     logger.info("Geracao concluida.");
   }
 
-  async exportOutputs(): Promise<void> {
+  async exportOutputs(format: ExportFormat = "json"): Promise<void> {
     const manifest = await this.outputService.buildManifest();
-    await this.outputService.writeJson("export-manifest.json", manifest);
-    logger.info("Manifesto exportado para outputs/export-manifest.json");
+    if (format === "json") {
+      await this.outputService.writeJson("export-manifest.json", manifest);
+      logger.info("Manifesto exportado para outputs/export-manifest.json");
+      return;
+    }
+
+    if (format === "markdown") {
+      const content = this.projectGenerator.buildMarkdownManifest(manifest.files);
+      await this.outputService.writeText("export-manifest.md", content);
+      logger.info("Manifesto exportado para outputs/export-manifest.md");
+      return;
+    }
+
+    const analysis = await this.outputService.readJson<{
+      theme: string;
+      intent: string;
+      summary: string;
+    }>("latest-analysis.json");
+    const issues = this.projectGenerator.buildIssuesSuggestions(analysis);
+    await this.outputService.writeJson("github-issues.json", issues);
+    logger.info("Sugestoes exportadas para outputs/github-issues.json");
   }
 }

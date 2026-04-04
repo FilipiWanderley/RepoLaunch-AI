@@ -1,5 +1,6 @@
 import { Command } from "commander";
 import { RepoLaunchController } from "../controllers/repolaunch-controller";
+import { normalizeExportFormat, normalizeMode } from "../types/output";
 
 export function createProgram(): Command {
   const controller = new RepoLaunchController();
@@ -28,15 +29,23 @@ export function createProgram(): Command {
     .command("generate")
     .description("Gera documentos principais do projeto")
     .option("-t, --text <text>", "Texto bruto de entrada")
+    .option(
+      "-m, --mode <mode>",
+      "Modo de saida: technical | recruiter | simplified",
+      "technical"
+    )
     .argument("[target]", "Caminho do arquivo ou pasta")
-    .action(async (target: string | undefined, options: { text?: string }) =>
-      controller.generate(target, options.text)
+    .action(async (target: string | undefined, options: { text?: string; mode?: string }) =>
+      controller.generate(target, options.text, normalizeMode(options.mode))
     );
 
   program
     .command("export")
     .description("Gera manifesto JSON com os outputs atuais")
-    .action(async () => controller.exportOutputs());
+    .option("-f, --format <format>", "Formato: json | markdown | issues", "json")
+    .action(async (options: { format?: string }) =>
+      controller.exportOutputs(normalizeExportFormat(options.format))
+    );
 
   return program;
 }
