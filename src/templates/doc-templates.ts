@@ -1,10 +1,22 @@
 import { AnalysisResult } from "../services/input-analyzer-service";
 
-export function buildReadmeTemplate(analysis: AnalysisResult): string {
+function maybeAIBrief(aiBrief?: string, title = "Resumo estrategico de IA"): string[] {
+  if (!aiBrief) {
+    return [];
+  }
+
+  return ["", `## ${title}`, aiBrief.trim()];
+}
+
+export function buildReadmeTemplate(
+  analysis: AnalysisResult,
+  aiBrief?: string,
+  aiProvider?: string
+): string {
   return [
     "# Projeto Gerado por RepoLaunch AI",
     "",
-    `## Tema`,
+    "## Tema",
     analysis.theme,
     "",
     "## Intencao",
@@ -13,14 +25,18 @@ export function buildReadmeTemplate(analysis: AnalysisResult): string {
     "## Contexto",
     analysis.context,
     "",
-    "## Proximos Passos",
+    `## Provider de IA`,
+    aiProvider ?? "mock",
+    ...maybeAIBrief(aiBrief),
+    "",
+    "## Proximos passos",
     "1. Validar escopo",
     "2. Implementar MVP",
     "3. Publicar e coletar feedback"
   ].join("\n");
 }
 
-export function buildArchitectureTemplate(analysis: AnalysisResult): string {
+export function buildArchitectureTemplate(analysis: AnalysisResult, aiBrief?: string): string {
   return [
     "# Architecture",
     "",
@@ -29,11 +45,12 @@ export function buildArchitectureTemplate(analysis: AnalysisResult): string {
     "",
     "## Alignment",
     `Tema principal: ${analysis.theme}`,
-    `Direcao: ${analysis.intent}`
+    `Direcao: ${analysis.intent}`,
+    ...maybeAIBrief(aiBrief, "Recomendacoes de arquitetura")
   ].join("\n");
 }
 
-export function buildRoadmapTemplate(analysis: AnalysisResult): string {
+export function buildRoadmapTemplate(analysis: AnalysisResult, aiBrief?: string): string {
   return [
     "# Roadmap",
     "",
@@ -47,11 +64,12 @@ export function buildRoadmapTemplate(analysis: AnalysisResult): string {
     "- Integracao com GitHub",
     "",
     "## Contexto de origem",
-    analysis.summary
+    analysis.summary,
+    ...maybeAIBrief(aiBrief, "Notas de aceleracao")
   ].join("\n");
 }
 
-export function buildProjectPlanTemplate(analysis: AnalysisResult): string {
+export function buildProjectPlanTemplate(analysis: AnalysisResult, aiBrief?: string): string {
   return [
     "# Project Plan",
     "",
@@ -69,11 +87,12 @@ export function buildProjectPlanTemplate(analysis: AnalysisResult): string {
     "",
     "## Mitigacoes",
     "- Validacao de schema",
-    "- Defaults seguros"
+    "- Defaults seguros",
+    ...maybeAIBrief(aiBrief, "Direcionamento tatico")
   ].join("\n");
 }
 
-export function buildPortfolioPitchTemplate(analysis: AnalysisResult): string {
+export function buildPortfolioPitchTemplate(analysis: AnalysisResult, aiBrief?: string): string {
   return [
     "# Portfolio Pitch",
     "",
@@ -85,6 +104,7 @@ export function buildPortfolioPitchTemplate(analysis: AnalysisResult): string {
     "- Seguranca e padronizacao de output",
     "",
     "## Narrativa curta",
-    analysis.summary
+    analysis.summary,
+    ...maybeAIBrief(aiBrief, "Narrativa complementar")
   ].join("\n");
 }

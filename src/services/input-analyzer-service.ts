@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { z } from "zod";
 import { OutputService } from "./output-service";
+import { detectPromptInjection, enforceInputSize, sanitizeInput } from "../utils/input-security";
 
 const AnalyzeInputSchema = z
   .object({
@@ -30,6 +31,7 @@ export class InputAnalyzerService {
     const parsed = AnalyzeInputSchema.parse(input);
 
     if (parsed.text) {
+      enforceInputSize(parsed.text);
       return this.extractFromText(parsed.text, "text");
     }
 
@@ -41,6 +43,7 @@ export class InputAnalyzerService {
       }
 
       const fileContent = await fs.readFile(parsed.target, "utf8");
+      enforceInputSize(fileContent);
       return this.extractFromText(fileContent, "file");
     }
 
@@ -78,7 +81,8 @@ export class InputAnalyzerService {
   }
 
   private extractFromText(text: string, source: AnalysisResult["source"]): AnalysisResult {
-    const sanitized = text.trim().replace(/\s+/g, " ");
+    const sanitized = sanitizeInput(text);
+    const hasPromptRisk = detectPromptInjection(text);
     const lowered = sanitized.toLowerCase();
 
     const intent =
@@ -101,7 +105,7 @@ export class InputAnalyzerService {
       intent,
       theme,
       context,
-      summary
+      summary: hasPromptRisk ? `${summary} [alerta: possivel prompt injection detectado]` : summary
     };
   }
 }
