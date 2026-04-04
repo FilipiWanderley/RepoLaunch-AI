@@ -9,6 +9,7 @@
 </p>
 
 <p align="center">
+  <img alt="CI" src="https://github.com/FilipiWanderley/RepoLaunch-AI/actions/workflows/ci.yml/badge.svg" />
   <img alt="Status" src="https://img.shields.io/badge/status-em%20constru%C3%A7%C3%A3o-ff6b35?style=for-the-badge" />
   <img alt="Node" src="https://img.shields.io/badge/node-%3E%3D20-0f766e?style=for-the-badge&logo=node.js&logoColor=white" />
   <img alt="TypeScript" src="https://img.shields.io/badge/typescript-strict-0b3b8c?style=for-the-badge&logo=typescript&logoColor=white" />
@@ -77,6 +78,7 @@ cp .env.example .env
 # adicione sua API key
 
 npm install
+npm run ci
 npx repolaunch init
 npx repolaunch analyze ./meus-arquivos
 npx repolaunch generate --mode technical
@@ -94,6 +96,13 @@ npx repolaunch export --format json
 - json
 - markdown
 - issues (GitHub issues)
+
+### Exemplos de saida por modo
+
+- [technical](docs/examples/technical.md)
+- [recruiter](docs/examples/recruiter.md)
+- [simplified](docs/examples/simplified.md)
+- guia de uso: [docs/USAGE.md](docs/USAGE.md)
 
 ---
 
