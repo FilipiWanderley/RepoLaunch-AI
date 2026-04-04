@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { createProgram } from "../src/cli/program";
+import { CliError } from "../src/errors/cli-error";
 
 async function runCli(args: string[]): Promise<void> {
   const program = createProgram();
@@ -56,5 +57,18 @@ describe("CLI integration", () => {
     expect(issues.length).toBeGreaterThanOrEqual(3);
     expect(issues[0]?.title).toContain("feat:");
     expect(issues[0]?.labels).toContain("mvp");
+  });
+
+  it("deve retornar erro orientado a acao ao gerar sem analise previa", async () => {
+    await expect(runCli(["generate"])).rejects.toMatchObject<CliError>({
+      message: "Nenhuma analise previa encontrada.",
+      code: "ANALYSIS_NOT_FOUND"
+    });
+  });
+
+  it("deve retornar erro claro para caminho inexistente no analyze", async () => {
+    await expect(runCli(["analyze", "./arquivo-inexistente.md"])).rejects.toMatchObject<CliError>({
+      code: "TARGET_NOT_FOUND"
+    });
   });
 });

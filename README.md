@@ -107,6 +107,14 @@ No arquivo `.env`, voce pode ajustar:
 
 ---
 
+## Erros comuns (CLI)
+
+- `ANALYSIS_NOT_FOUND`: rode `repolaunch analyze --text "..."` antes de `generate` sem input.
+- `TARGET_NOT_FOUND`: revise o caminho informado em `analyze`.
+- `INVALID_ANALYZE_INPUT`: informe `--text` ou um caminho valido.
+
+---
+
 ## Arquitetura profissional
 
 ```mermaid

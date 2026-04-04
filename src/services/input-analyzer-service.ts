@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { z } from "zod";
+import { CliError } from "../errors/cli-error";
 import { OutputService } from "./output-service";
 import { detectPromptInjection, enforceInputSize, sanitizeInput } from "../utils/input-security";
 
@@ -28,7 +29,15 @@ export class InputAnalyzerService {
   private readonly outputService = new OutputService();
 
   async analyze(input: AnalyzeInput): Promise<AnalysisResult> {
-    const parsed = AnalyzeInputSchema.parse(input);
+    const result = AnalyzeInputSchema.safeParse(input);
+    if (!result.success) {
+      throw new CliError("Entrada invalida para analise.", {
+        code: "INVALID_ANALYZE_INPUT",
+        hint: "Use repolaunch analyze --text \"seu conteudo\" ou informe um caminho valido."
+      });
+    }
+
+    const parsed = result.data;
 
     if (parsed.text) {
       enforceInputSize(parsed.text);
@@ -36,18 +45,18 @@ export class InputAnalyzerService {
     }
 
     if (parsed.target) {
-      const stat = await fs.stat(parsed.target);
+      const stat = await this.safeStat(parsed.target);
       if (stat.isDirectory()) {
         const merged = await this.readFolderText(parsed.target);
         return this.extractFromText(merged, "folder");
       }
 
-      const fileContent = await fs.readFile(parsed.target, "utf8");
+      const fileContent = await this.safeReadFile(parsed.target);
       enforceInputSize(fileContent);
       return this.extractFromText(fileContent, "file");
     }
 
-    const latest = await this.outputService.readJson<AnalysisResult>("latest-analysis.json");
+    const latest = await this.safeReadLatestAnalysis();
     return {
       ...latest,
       source: "latest"
@@ -69,7 +78,7 @@ export class InputAnalyzerService {
       }
 
       const fullPath = path.join(folderPath, entry.name);
-      const content = await fs.readFile(fullPath, "utf8");
+      const content = await this.safeReadFile(fullPath);
       chunks.push(content);
     }
 
@@ -78,6 +87,59 @@ export class InputAnalyzerService {
     }
 
     return chunks.join("\n\n");
+  }
+
+  private async safeStat(targetPath: string): Promise<Awaited<ReturnType<typeof fs.stat>>> {
+    try {
+      return await fs.stat(targetPath);
+    } catch (error) {
+      if (this.isNotFoundError(error)) {
+        throw new CliError(`Caminho nao encontrado: ${targetPath}`, {
+          code: "TARGET_NOT_FOUND",
+          hint: "Revise o caminho informado ou use --text para entrada direta."
+        });
+      }
+
+      throw error;
+    }
+  }
+
+  private async safeReadFile(filePath: string): Promise<string> {
+    try {
+      return await fs.readFile(filePath, "utf8");
+    } catch (error) {
+      if (this.isNotFoundError(error)) {
+        throw new CliError(`Arquivo nao encontrado: ${filePath}`, {
+          code: "FILE_NOT_FOUND",
+          hint: "Verifique o caminho do arquivo e tente novamente."
+        });
+      }
+
+      throw error;
+    }
+  }
+
+  private async safeReadLatestAnalysis(): Promise<AnalysisResult> {
+    try {
+      return await this.outputService.readJson<AnalysisResult>("latest-analysis.json");
+    } catch (error) {
+      if (this.isNotFoundError(error)) {
+        throw new CliError("Nenhuma analise previa encontrada.", {
+          code: "ANALYSIS_NOT_FOUND",
+          hint: "Execute repolaunch analyze --text \"seu conteudo\" antes de generate sem input."
+        });
+      }
+
+      throw error;
+    }
+  }
+
+  private isNotFoundError(error: unknown): boolean {
+    if (!error || typeof error !== "object") {
+      return false;
+    }
+
+    return "code" in error && (error as { code?: string }).code === "ENOENT";
   }
 
   private extractFromText(text: string, source: AnalysisResult["source"]): AnalysisResult {

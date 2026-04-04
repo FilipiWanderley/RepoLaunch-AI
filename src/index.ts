@@ -2,6 +2,7 @@
 
 import { config } from "dotenv";
 import { createProgram } from "./cli/program";
+import { normalizeCliError } from "./errors/cli-error";
 
 config();
 
@@ -11,7 +12,11 @@ async function bootstrap(): Promise<void> {
 }
 
 bootstrap().catch((error: unknown) => {
-  const message = error instanceof Error ? error.message : "Erro inesperado";
-  process.stderr.write(`[repolaunch] ${message}\n`);
-  process.exit(1);
+  const cliError = normalizeCliError(error);
+  process.stderr.write(`[repolaunch] ${cliError.message}\n`);
+  process.stderr.write(`[repolaunch] codigo: ${cliError.code}\n`);
+  if (cliError.hint) {
+    process.stderr.write(`[repolaunch] dica: ${cliError.hint}\n`);
+  }
+  process.exit(cliError.exitCode);
 });
