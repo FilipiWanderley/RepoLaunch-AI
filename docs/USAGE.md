@@ -7,6 +7,7 @@ npx repolaunch init
 npx repolaunch analyze --text "Fiz um curso de IA e quero um projeto para portfolio"
 npx repolaunch generate --mode technical --template portfolio-project
 npx repolaunch generate --prompt-version v2 --mode technical --template portfolio-project
+npx repolaunch prompts list
 npx repolaunch repo-analyze .
 npx repolaunch github-sync --repo FilipiWanderley/RepoLaunch-AI
 npx repolaunch export --format json
@@ -35,6 +36,8 @@ npx repolaunch export --format json
 
 - `--prompt-version`: seleciona a versao de prompt para o comando `generate`
 - fallback automatico: se a versao nao existir, o sistema usa `DEFAULT_PROMPT_VERSION` do `.env`
+- registry externo: `config/prompt-registry.json` (opcional)
+- listar versoes: `repolaunch prompts list`
 
 ## Exemplos
 

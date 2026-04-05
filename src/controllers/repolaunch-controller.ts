@@ -1,6 +1,11 @@
 import path from "node:path";
 import { AIEngine } from "../ai/ai-engine";
-import { buildSystemPrompt, buildUserPrompt, resolvePromptPack } from "../prompts/system-prompts";
+import {
+  buildSystemPrompt,
+  buildUserPrompt,
+  listPromptVersions,
+  resolvePromptPack
+} from "../prompts/system-prompts";
 import { readEnv } from "../config/env";
 import { ExecutionGuardService } from "../services/execution-guard-service";
 import { GithubIntegrationService } from "../services/github-integration-service";
@@ -69,6 +74,10 @@ export class RepoLaunchController {
     await this.outputService.writeJson("latest-analysis.json", analysis);
     logger.info(`Geracao enriquecida via provider: ${aiResponse.provider}`);
     logger.info(`Versao de prompt aplicada: ${promptResolution.selected.version}`);
+    logger.info(`Origem do registry de prompt: ${promptResolution.source}`);
+    if (promptResolution.source === "file") {
+      logger.info(`Arquivo de registry: ${promptResolution.filePath}`);
+    }
     if (promptResolution.fallbackApplied) {
       logger.warning(
         `Prompt version '${promptResolution.requestedVersion}' nao encontrado. Fallback aplicado para '${promptResolution.selected.version}'.`
@@ -77,6 +86,21 @@ export class RepoLaunchController {
     logger.info(`Modo de saida aplicado: ${mode}`);
     logger.info(`Template aplicado: ${template}`);
     logger.info("Geracao concluida.");
+  }
+
+  async listPrompts(): Promise<void> {
+    const registry = listPromptVersions();
+
+    logger.info(`Origem do registry: ${registry.source}`);
+    if (registry.source === "file") {
+      logger.info(`Arquivo carregado: ${registry.filePath}`);
+    } else {
+      logger.warning(
+        `Arquivo de registry nao encontrado/valido em '${registry.filePath}'. Usando versoes embutidas.`
+      );
+    }
+
+    logger.info(`Versoes disponiveis: ${registry.versions.join(", ")}`);
   }
 
   async exportOutputs(format: ExportFormat = "json"): Promise<void> {

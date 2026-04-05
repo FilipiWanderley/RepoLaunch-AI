@@ -78,5 +78,14 @@ export function createProgram(): Command {
       controller.githubSync(options.repo, Boolean(options.publish))
     );
 
+  const promptsCommand = program
+    .command("prompts")
+    .description("Consulta versoes de prompt disponiveis");
+
+  promptsCommand
+    .command("list")
+    .description("Lista versoes de prompt e origem do registry")
+    .action(async () => controller.listPrompts());
+
   return program;
 }

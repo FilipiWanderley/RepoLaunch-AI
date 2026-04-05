@@ -83,6 +83,7 @@ npx repolaunch init
 npx repolaunch analyze ./meus-arquivos
 npx repolaunch generate --mode technical --template portfolio-project
 npx repolaunch generate --prompt-version v2 --mode technical --template portfolio-project
+npx repolaunch prompts list
 npx repolaunch repo-analyze .
 npx repolaunch github-sync --repo FilipiWanderley/RepoLaunch-AI
 npx repolaunch export --format json
@@ -126,6 +127,12 @@ No arquivo `.env`, voce pode ajustar:
 - `LOG_LEVEL`: debug, info, warning ou error
 - `GITHUB_TOKEN`: token para publicar issues (opcional)
 - `GITHUB_REPO`: repositorio padrao no formato owner/repo
+
+### Registry de prompt
+
+- arquivo: `config/prompt-registry.json`
+- comando: `repolaunch prompts list`
+- se o arquivo estiver ausente ou invalido, o sistema usa prompts embutidos como fallback
 
 ---
 

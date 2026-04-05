@@ -41,15 +41,15 @@ export class ProjectGeneratorService {
       },
       {
         fileName: "ARCHITECTURE.md",
-        content: buildArchitectureTemplate(analysis, mode, template, options.aiBrief)
+        content: buildArchitectureTemplate(analysis, mode, template, options.aiBrief, options.promptVersion)
       },
       {
         fileName: "ROADMAP.md",
-        content: buildRoadmapTemplate(analysis, mode, template, options.aiBrief)
+        content: buildRoadmapTemplate(analysis, mode, template, options.aiBrief, options.promptVersion)
       },
       {
         fileName: "PROJECT_PLAN.md",
-        content: buildProjectPlanTemplate(analysis, mode, template, options.aiBrief)
+        content: buildProjectPlanTemplate(analysis, mode, template, options.aiBrief, options.promptVersion)
       },
       {
         fileName: "PORTFOLIO_PITCH.md",

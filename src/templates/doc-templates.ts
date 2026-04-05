@@ -263,7 +263,8 @@ export function buildArchitectureTemplate(
   analysis: AnalysisResult,
   mode: OutputMode,
   template: TemplateType,
-  aiBrief?: string
+  aiBrief?: string,
+  promptVersion?: string
 ): string {
   return [
     "# Architecture",
@@ -276,6 +277,7 @@ export function buildArchitectureTemplate(
     `Direcao: ${analysis.intent}`,
     `Modo: ${modeLabel(mode)}`,
     `Template: ${templateLabel(template)}`,
+    `Prompt version: ${promptVersion ?? "v1"}`,
     ...maybeAIBrief(aiBrief, "Recomendacoes de arquitetura")
   ].join("\n");
 }
@@ -284,13 +286,15 @@ export function buildRoadmapTemplate(
   analysis: AnalysisResult,
   mode: OutputMode,
   template: TemplateType,
-  aiBrief?: string
+  aiBrief?: string,
+  promptVersion?: string
 ): string {
   return [
     "# Roadmap",
     "",
     `Modo de planejamento: ${modeLabel(mode)}`,
     `Template selecionado: ${templateLabel(template)}`,
+    `Prompt version: ${promptVersion ?? "v1"}`,
     "",
     "## v1 (MVP)",
     "- Fluxo analyze",
@@ -313,13 +317,15 @@ export function buildProjectPlanTemplate(
   analysis: AnalysisResult,
   mode: OutputMode,
   template: TemplateType,
-  aiBrief?: string
+  aiBrief?: string,
+  promptVersion?: string
 ): string {
   return [
     "# Project Plan",
     "",
     `Modo: ${modeLabel(mode)}`,
     `Template: ${templateLabel(template)}`,
+    `Prompt version: ${promptVersion ?? "v1"}`,
     "",
     "## Objetivo",
     analysis.intent,

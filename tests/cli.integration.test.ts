@@ -90,6 +90,44 @@ describe("CLI integration", () => {
     expect(readme).toContain("v1");
   });
 
+  it("deve carregar versao customizada de prompt via config/prompt-registry.json", async () => {
+    await fs.mkdir(path.join(workspaceDir, "config"), { recursive: true });
+    await fs.writeFile(
+      path.join(workspaceDir, "config", "prompt-registry.json"),
+      JSON.stringify(
+        [
+          {
+            version: "v3",
+            systemPrompt: "Custom system prompt v3",
+            userPromptInstructions: ["Return sections:", "- Objectives", "- Risks"]
+          }
+        ],
+        null,
+        2
+      ),
+      "utf8"
+    );
+
+    await runCli([
+      "generate",
+      "--prompt-version",
+      "v3",
+      "--text",
+      "Quero criar um projeto com entrega em 30 dias"
+    ]);
+
+    const readme = await fs.readFile(path.join(workspaceDir, "outputs", "README.md"), "utf8");
+    const architecture = await fs.readFile(path.join(workspaceDir, "outputs", "ARCHITECTURE.md"), "utf8");
+
+    expect(readme).toContain("## Prompt version");
+    expect(readme).toContain("v3");
+    expect(architecture).toContain("Prompt version: v3");
+  });
+
+  it("deve executar prompts list sem erro", async () => {
+    await expect(runCli(["prompts", "list"])).resolves.toBeUndefined();
+  });
+
   it("deve retornar erro orientado a acao ao gerar sem analise previa", async () => {
     await expect(runCli(["generate"])).rejects.toMatchObject<CliError>({
       message: "Nenhuma analise previa encontrada.",

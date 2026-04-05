@@ -1,3 +1,6 @@
+import fs from "node:fs";
+import path from "node:path";
+import { z } from "zod";
 import { AnalysisResult } from "../services/input-analyzer-service";
 
 export type PromptPack = {
@@ -6,7 +9,17 @@ export type PromptPack = {
   userPromptInstructions: string[];
 };
 
-const PROMPT_REGISTRY: PromptPack[] = [
+type PromptRegistrySource = "file" | "embedded";
+
+const PromptPackSchema = z.object({
+  version: z.string().min(1),
+  systemPrompt: z.string().min(1),
+  userPromptInstructions: z.array(z.string().min(1)).min(1)
+});
+
+const PromptRegistrySchema = z.array(PromptPackSchema).min(1);
+
+const EMBEDDED_PROMPT_REGISTRY: PromptPack[] = [
   {
     version: "v1",
     systemPrompt: [
@@ -41,31 +54,87 @@ const PROMPT_REGISTRY: PromptPack[] = [
   }
 ];
 
-function latestPrompt(): PromptPack {
-  return PROMPT_REGISTRY[PROMPT_REGISTRY.length - 1] as PromptPack;
+function latestPrompt(prompts: PromptPack[]): PromptPack {
+  return prompts[prompts.length - 1] as PromptPack;
+}
+
+function readPromptRegistryFromFile(filePath: string): PromptPack[] | null {
+  if (!fs.existsSync(filePath)) {
+    return null;
+  }
+
+  try {
+    const raw = fs.readFileSync(filePath, "utf8");
+    const parsed = JSON.parse(raw);
+    return PromptRegistrySchema.parse(parsed);
+  } catch {
+    return null;
+  }
+}
+
+export function resolvePromptRegistry(filePath = path.resolve(process.cwd(), "config", "prompt-registry.json")): {
+  prompts: PromptPack[];
+  source: PromptRegistrySource;
+  filePath: string;
+} {
+  const fromFile = readPromptRegistryFromFile(filePath);
+  if (fromFile) {
+    return {
+      prompts: fromFile,
+      source: "file",
+      filePath
+    };
+  }
+
+  return {
+    prompts: EMBEDDED_PROMPT_REGISTRY,
+    source: "embedded",
+    filePath
+  };
+}
+
+export function listPromptVersions(filePath?: string): {
+  versions: string[];
+  source: PromptRegistrySource;
+  filePath: string;
+} {
+  const registry = resolvePromptRegistry(filePath);
+  return {
+    versions: registry.prompts.map((prompt) => prompt.version),
+    source: registry.source,
+    filePath: registry.filePath
+  };
 }
 
 export function resolvePromptPack(requestedVersion?: string, defaultVersion = "v1"): {
   selected: PromptPack;
   requestedVersion: string;
   fallbackApplied: boolean;
+  source: PromptRegistrySource;
+  filePath: string;
 } {
+  const registry = resolvePromptRegistry();
   const requested = requestedVersion?.trim() || defaultVersion;
 
-  const directMatch = PROMPT_REGISTRY.find((prompt) => prompt.version === requested);
+  const directMatch = registry.prompts.find((prompt) => prompt.version === requested);
   if (directMatch) {
     return {
       selected: directMatch,
       requestedVersion: requested,
-      fallbackApplied: false
+      fallbackApplied: false,
+      source: registry.source,
+      filePath: registry.filePath
     };
   }
 
-  const defaultMatch = PROMPT_REGISTRY.find((prompt) => prompt.version === defaultVersion) ?? latestPrompt();
+  const defaultMatch =
+    registry.prompts.find((prompt) => prompt.version === defaultVersion) ?? latestPrompt(registry.prompts);
   return {
     selected: defaultMatch,
     requestedVersion: requested,
-    fallbackApplied: true
+    fallbackApplied: true,
+    source: registry.source,
+    filePath: registry.filePath
   };
 }
 
