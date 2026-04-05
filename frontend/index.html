@@ -451,6 +451,7 @@ color:var(--c-muted);white-space:pre-wrap;max-height:380px;overflow-y:auto;
         <div class="key-note" id="projectInfo">colaboracao: sem projeto selecionado</div>
         <div class="key-note" id="memberInfo">membros: sem dados</div>
         <div class="key-note" id="shareInfo">share: ainda nao gerado</div>
+        <div class="key-note" id="auditInfo">auditoria: sem eventos</div>
         <button class="file-btn" style="width:100%;margin-top:8px" onclick="refreshMetrics()" data-i18n="metrics_btn">atualizar metricas</button>
         <div class="key-note" id="metricsInfo">metricas: aguardando API</div>
         <div class="key-note" id="metricsStatusInfo">status: -</div>
@@ -835,6 +836,8 @@ function renderProjects() {
     var memberInfoEmpty = document.getElementById('memberInfo');
     if (memberInfoEmpty) memberInfoEmpty.textContent = 'membros: sem dados';
     if (shareInfo) shareInfo.textContent = 'share: ainda nao gerado';
+    var auditInfoEmpty = document.getElementById('auditInfo');
+    if (auditInfoEmpty) auditInfoEmpty.textContent = 'auditoria: sem eventos';
     return;
   }
 
@@ -844,6 +847,8 @@ function renderProjects() {
     var memberInfoMissing = document.getElementById('memberInfo');
     if (memberInfoMissing) memberInfoMissing.textContent = 'membros: indisponivel';
     if (shareInfo) shareInfo.textContent = 'share: indisponivel';
+    var auditInfoMissing = document.getElementById('auditInfo');
+    if (auditInfoMissing) auditInfoMissing.textContent = 'auditoria: indisponivel';
     return;
   }
 
@@ -895,6 +900,54 @@ function onProjectSelect(projectId) {
     localStorage.removeItem('repolaunch_project_id');
   }
   renderProjects();
+  loadAuditEvents();
+}
+
+function formatAuditType(type) {
+  var labels = {
+    'project.created': 'projeto criado',
+    'member.added': 'membro adicionado',
+    'member.role_updated': 'papel atualizado',
+    'generation.attached': 'geracao vinculada',
+    'share.created': 'link publico criado'
+  };
+  return labels[type] || type;
+}
+
+async function loadAuditEvents() {
+  var auditInfo = document.getElementById('auditInfo');
+  if (!auditInfo) return;
+
+  if (!currentProjectId) {
+    auditInfo.textContent = 'auditoria: sem eventos';
+    return;
+  }
+
+  try {
+    var response = await fetch(API_BASE + '/api/collab/projects/' + encodeURIComponent(currentProjectId) + '/audit?limit=3', {
+      method: 'GET',
+      headers: apiHeaders()
+    });
+
+    if (!response.ok) {
+      auditInfo.textContent = response.status === 403 ? 'auditoria: sem permissao' : 'auditoria: indisponivel';
+      return;
+    }
+
+    var data = await response.json();
+    var events = Array.isArray(data.events) ? data.events : [];
+    if (!events.length) {
+      auditInfo.textContent = 'auditoria: sem eventos';
+      return;
+    }
+
+    var summary = events.map(function(event) {
+      return formatAuditType(event.type);
+    }).join(' • ');
+    auditInfo.textContent = 'auditoria: ' + summary;
+  } catch (e) {
+    auditInfo.textContent = 'auditoria: falha ao carregar';
+  }
 }
 
 async function createProject() {
@@ -918,6 +971,7 @@ async function createProject() {
     }
     if (input) input.value = '';
     await loadProjects();
+    await loadAuditEvents();
   } catch (e) {
     // fallback silencioso para manter UX fluida
   }
@@ -949,6 +1003,7 @@ async function addMemberToProject() {
     if (memberUserInput) memberUserInput.value = '';
     if (memberInfo) memberInfo.textContent = 'membros: atualizado';
     await loadProjects();
+    await loadAuditEvents();
   } catch (e) {
     var errorInfo = document.getElementById('memberInfo');
     if (errorInfo) errorInfo.textContent = 'membros: falha ao adicionar';
@@ -975,6 +1030,7 @@ async function createShareLink() {
     if (shareInfo) shareInfo.textContent = 'share: link copiado';
     await navigator.clipboard.writeText(shareUrl);
     await loadProjects();
+    await loadAuditEvents();
   } catch (e) {
     var fallbackInfo = document.getElementById('shareInfo');
     if (fallbackInfo) fallbackInfo.textContent = 'share: falha ao gerar link';
@@ -1030,6 +1086,7 @@ async function attachLatestGenerationToProject() {
     });
     if (!response.ok) return;
     await loadProjects();
+    await loadAuditEvents();
   } catch (e) {
     // fallback silencioso para manter UX fluida
   }
@@ -1233,6 +1290,7 @@ if (collabUserInput) collabUserInput.value = COLLAB_USER;
 document.getElementById('mainInp').placeholder = i18n[lang].inp_placeholder;
 refreshMetrics();
 loadProjects();
+loadAuditEvents();
 loadSharedProjectFromQuery();
 </script>
 </body>

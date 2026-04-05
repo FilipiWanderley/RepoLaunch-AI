@@ -37,6 +37,10 @@ const AttachGenerationSchema = z.object({
   generationId: z.string().min(1)
 });
 
+const AuditQuerySchema = z.object({
+  limit: z.coerce.number().int().positive().max(200).optional()
+});
+
 const ManageMemberSchema = z.object({
   userId: z.string().min(1).max(80),
   name: z.string().max(80).optional(),
@@ -293,7 +297,14 @@ export function createServerApp(): express.Express {
         });
       }
 
-      const project = await collaborationStore.attachGeneration(projectId, payload.generationId);
+      const project = await collaborationStore.attachGeneration(projectId, payload.generationId, user.userId);
+      if (!project) {
+        throw new CliError("Projeto de colaboracao nao encontrado.", {
+          code: "COLLAB_PROJECT_NOT_FOUND",
+          hint: "Revise o projectId e tente novamente.",
+          exitCode: 404
+        });
+      }
 
       res.json({
         project,
@@ -318,7 +329,7 @@ export function createServerApp(): express.Express {
       }
       requireProjectRole(existingProject, user.userId, ["owner", "editor"]);
 
-      const shared = await collaborationStore.createOrGetShareId(projectId);
+      const shared = await collaborationStore.createOrGetShareId(projectId, user.userId);
       if (!shared) {
         throw new CliError("Projeto de colaboracao nao encontrado.", {
           code: "COLLAB_PROJECT_NOT_FOUND",
@@ -378,7 +389,14 @@ export function createServerApp(): express.Express {
         userId: normalizeCollabUserId(payload.userId),
         name: payload.name?.trim() || undefined,
         role: payload.role
-      });
+      }, user.userId);
+      if (!updated) {
+        throw new CliError("Projeto de colaboracao nao encontrado.", {
+          code: "COLLAB_PROJECT_NOT_FOUND",
+          hint: "Revise o projectId e tente novamente.",
+          exitCode: 404
+        });
+      }
       res.status(201).json({ project: updated });
     } catch (error) {
       next(error);
@@ -405,7 +423,8 @@ export function createServerApp(): express.Express {
         projectId,
         targetUserId,
         payload.role,
-        payload.name?.trim() || undefined
+        payload.name?.trim() || undefined,
+        user.userId
       );
 
       if (!updated) {
@@ -428,6 +447,28 @@ export function createServerApp(): express.Express {
         );
         return;
       }
+      next(error);
+    }
+  });
+
+  app.get("/api/collab/projects/:projectId/audit", async (req, res, next) => {
+    try {
+      const projectId = String(req.params.projectId ?? "").trim();
+      const user = getCollabUser(req);
+      const query = AuditQuerySchema.parse(req.query);
+      const project = await collaborationStore.getProject(projectId);
+      if (!project) {
+        throw new CliError("Projeto de colaboracao nao encontrado.", {
+          code: "COLLAB_PROJECT_NOT_FOUND",
+          hint: "Revise o projectId e tente novamente.",
+          exitCode: 404
+        });
+      }
+
+      requireProjectRole(project, user.userId, ["owner", "editor", "viewer"]);
+      const events = await collaborationStore.listAuditEvents(projectId, query.limit ?? 30);
+      res.json({ projectId, events: events ?? [] });
+    } catch (error) {
       next(error);
     }
   });

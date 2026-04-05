@@ -12,6 +12,7 @@ export type CollaborationProject = {
   updatedAt: string;
   generationIds: string[];
   members: CollaborationMember[];
+  auditEvents: CollaborationAuditEvent[];
   shareId?: string;
   sharedAt?: string;
 };
@@ -23,6 +24,21 @@ export type CollaborationMember = {
   name?: string;
   role: CollaborationRole;
   addedAt: string;
+};
+
+export type CollaborationAuditEventType =
+  | "project.created"
+  | "member.added"
+  | "member.role_updated"
+  | "generation.attached"
+  | "share.created";
+
+export type CollaborationAuditEvent = {
+  eventId: string;
+  type: CollaborationAuditEventType;
+  actorUserId: string;
+  createdAt: string;
+  metadata?: Record<string, string | number | boolean | null | undefined>;
 };
 
 type CollaborationStoreData = {
@@ -61,6 +77,7 @@ export class CollaborationStore {
       createdAt,
       updatedAt: createdAt,
       generationIds: [],
+      auditEvents: [],
       members: [
         {
           userId: owner?.userId ?? "local-user",
@@ -70,6 +87,15 @@ export class CollaborationStore {
         }
       ]
     };
+
+    this.appendAuditEvent(project, {
+      type: "project.created",
+      actorUserId: owner?.userId ?? "local-user",
+      metadata: {
+        name,
+        hasDescription: Boolean(description)
+      }
+    });
 
     data.projects.unshift(project);
     await this.write(data);
@@ -91,7 +117,8 @@ export class CollaborationStore {
 
   async upsertMember(
     projectId: string,
-    member: { userId: string; name?: string; role: CollaborationRole }
+    member: { userId: string; name?: string; role: CollaborationRole },
+    actorUserId = "local-user"
   ): Promise<CollaborationProject | null> {
     const data = await this.read();
     const project = data.projects.find((entry) => entry.projectId === projectId);
@@ -101,14 +128,32 @@ export class CollaborationStore {
 
     const existing = project.members.find((entry) => entry.userId === member.userId);
     if (existing) {
+      const previousRole = existing.role;
       existing.role = member.role;
       existing.name = member.name;
+      this.appendAuditEvent(project, {
+        type: "member.role_updated",
+        actorUserId,
+        metadata: {
+          userId: member.userId,
+          fromRole: previousRole,
+          toRole: member.role
+        }
+      });
     } else {
       project.members.push({
         userId: member.userId,
         name: member.name,
         role: member.role,
         addedAt: nowIso()
+      });
+      this.appendAuditEvent(project, {
+        type: "member.added",
+        actorUserId,
+        metadata: {
+          userId: member.userId,
+          role: member.role
+        }
       });
     }
 
@@ -121,7 +166,8 @@ export class CollaborationStore {
     projectId: string,
     userId: string,
     role: CollaborationRole,
-    name?: string
+    name?: string,
+    actorUserId = "local-user"
   ): Promise<CollaborationProject | null> {
     const data = await this.read();
     const project = data.projects.find((entry) => entry.projectId === projectId);
@@ -141,16 +187,30 @@ export class CollaborationStore {
       }
     }
 
+    const previousRole = target.role;
     target.role = role;
     if (name !== undefined) {
       target.name = name;
     }
+    this.appendAuditEvent(project, {
+      type: "member.role_updated",
+      actorUserId,
+      metadata: {
+        userId,
+        fromRole: previousRole,
+        toRole: role
+      }
+    });
     project.updatedAt = nowIso();
     await this.write(data);
     return project;
   }
 
-  async attachGeneration(projectId: string, generationId: string): Promise<CollaborationProject | null> {
+  async attachGeneration(
+    projectId: string,
+    generationId: string,
+    actorUserId = "local-user"
+  ): Promise<CollaborationProject | null> {
     const data = await this.read();
     const project = data.projects.find((entry) => entry.projectId === projectId);
     if (!project) {
@@ -159,6 +219,13 @@ export class CollaborationStore {
 
     if (!project.generationIds.includes(generationId)) {
       project.generationIds.unshift(generationId);
+      this.appendAuditEvent(project, {
+        type: "generation.attached",
+        actorUserId,
+        metadata: {
+          generationId
+        }
+      });
     }
     project.updatedAt = nowIso();
 
@@ -166,7 +233,10 @@ export class CollaborationStore {
     return project;
   }
 
-  async createOrGetShareId(projectId: string): Promise<{ project: CollaborationProject; shareId: string } | null> {
+  async createOrGetShareId(
+    projectId: string,
+    actorUserId = "local-user"
+  ): Promise<{ project: CollaborationProject; shareId: string } | null> {
     const data = await this.read();
     const project = data.projects.find((entry) => entry.projectId === projectId);
     if (!project) {
@@ -176,6 +246,13 @@ export class CollaborationStore {
     if (!project.shareId) {
       project.shareId = randomUUID();
       project.sharedAt = nowIso();
+      this.appendAuditEvent(project, {
+        type: "share.created",
+        actorUserId,
+        metadata: {
+          shareId: project.shareId
+        }
+      });
       project.updatedAt = nowIso();
       await this.write(data);
     }
@@ -191,6 +268,39 @@ export class CollaborationStore {
     return data.projects.find((project) => project.shareId === shareId) ?? null;
   }
 
+  async listAuditEvents(projectId: string, limit = 50): Promise<CollaborationAuditEvent[] | null> {
+    const project = await this.getProject(projectId);
+    if (!project) {
+      return null;
+    }
+
+    const safeLimit = Number.isFinite(limit) ? Math.max(1, Math.min(200, Math.floor(limit))) : 50;
+    return [...project.auditEvents]
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .slice(0, safeLimit);
+  }
+
+  private appendAuditEvent(
+    project: CollaborationProject,
+    event: {
+      type: CollaborationAuditEventType;
+      actorUserId: string;
+      metadata?: Record<string, string | number | boolean | null | undefined>;
+    }
+  ): void {
+    project.auditEvents.unshift({
+      eventId: randomUUID(),
+      type: event.type,
+      actorUserId: event.actorUserId,
+      createdAt: nowIso(),
+      metadata: event.metadata
+    });
+
+    if (project.auditEvents.length > 300) {
+      project.auditEvents = project.auditEvents.slice(0, 300);
+    }
+  }
+
   private async read(): Promise<CollaborationStoreData> {
     try {
       const raw = await fs.readFile(this.filePath, "utf8");
@@ -201,6 +311,9 @@ export class CollaborationStore {
       for (const project of parsed.projects) {
         if (!Array.isArray(project.generationIds)) {
           project.generationIds = [];
+        }
+        if (!Array.isArray(project.auditEvents)) {
+          project.auditEvents = [];
         }
         if (!Array.isArray(project.members) || project.members.length === 0) {
           project.members = [

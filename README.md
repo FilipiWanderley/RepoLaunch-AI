@@ -123,6 +123,7 @@ npx repolaunch export --format json
 - listar membros do projeto: `GET http://localhost:8787/api/collab/projects/:projectId/members`
 - adicionar/atualizar membro (owner): `POST http://localhost:8787/api/collab/projects/:projectId/members`
 - atualizar papel de membro (owner): `PATCH http://localhost:8787/api/collab/projects/:projectId/members/:userId`
+- trilha de auditoria do workspace: `GET http://localhost:8787/api/collab/projects/:projectId/audit?limit=30`
 - vincular geracao ao projeto: `POST http://localhost:8787/api/collab/projects/:projectId/generations`
 - gerar link publico: `POST http://localhost:8787/api/collab/projects/:projectId/share`
 - leitura publica compartilhada: `GET http://localhost:8787/api/share/:shareId`

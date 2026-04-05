@@ -27,6 +27,7 @@ npx repolaunch export --format json
 - `GET /api/collab/projects/:projectId/members`: lista membros do workspace
 - `POST /api/collab/projects/:projectId/members`: adiciona/atualiza membro (apenas owner)
 - `PATCH /api/collab/projects/:projectId/members/:userId`: altera papel do membro (apenas owner)
+- `GET /api/collab/projects/:projectId/audit?limit=30`: lista eventos recentes de auditoria do workspace
 - `POST /api/collab/projects/:projectId/generations`: vincula uma geracao ao workspace
 - `POST /api/collab/projects/:projectId/share`: gera link publico do workspace
 - `GET /api/share/:shareId`: leitura publica do workspace compartilhado

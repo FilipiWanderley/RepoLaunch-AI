@@ -203,6 +203,22 @@ describe("HTTP API", () => {
       "editor"
     );
 
+    const audit = await request(app)
+      .get(`/api/collab/projects/${projectId}/audit?limit=20`)
+      .set(ownerHeaders);
+    expect(audit.status).toBe(200);
+    expect(Array.isArray(audit.body.events)).toBe(true);
+    const eventTypes = audit.body.events.map((event: { type: string }) => event.type);
+    expect(eventTypes).toContain("project.created");
+    expect(eventTypes).toContain("member.added");
+    expect(eventTypes).toContain("generation.attached");
+
+    const outsiderAudit = await request(app)
+      .get(`/api/collab/projects/${projectId}/audit`)
+      .set({ "x-collab-user": "outsider" });
+    expect(outsiderAudit.status).toBe(403);
+    expect(outsiderAudit.body.error.code).toBe("COLLAB_FORBIDDEN");
+
     const projectDetails = await request(app)
       .get(`/api/collab/projects/${projectId}`)
       .set(ownerHeaders);
