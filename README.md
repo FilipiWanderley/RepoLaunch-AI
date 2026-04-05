@@ -116,6 +116,12 @@ npx repolaunch export --format json
 - prompts: `GET http://localhost:8787/api/prompts`
 - gerar docs: `POST http://localhost:8787/api/generate`
 
+### Seguranca da API local
+
+- `API_AUTH_TOKEN`: quando definido, exige header `x-api-token` em `/api/prompts` e `/api/generate`
+- `API_RATE_LIMIT_WINDOW_MS`: janela do rate limit em ms
+- `API_RATE_LIMIT_MAX`: maximo de requisicoes por IP por janela
+
 ### Exemplos de saida por modo
 
 - [technical](docs/examples/technical.md)

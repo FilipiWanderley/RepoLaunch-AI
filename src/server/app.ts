@@ -5,6 +5,8 @@ import { RepoLaunchController } from "../controllers/repolaunch-controller";
 import { normalizeMode, normalizeTemplateType } from "../types/output";
 import { CliError, normalizeCliError } from "../errors/cli-error";
 import { listPromptVersions } from "../prompts/system-prompts";
+import { readEnv } from "../config/env";
+import { createApiSecurity } from "./security";
 
 const GenerateRequestSchema = z.object({
   text: z.string().min(1, "Texto de entrada e obrigatorio."),
@@ -17,9 +19,17 @@ const GenerateRequestSchema = z.object({
 export function createServerApp(): express.Express {
   const app = express();
   const controller = new RepoLaunchController();
+  const env = readEnv();
+  const security = createApiSecurity({
+    authToken: env.API_AUTH_TOKEN,
+    rateLimitWindowMs: env.API_RATE_LIMIT_WINDOW_MS,
+    rateLimitMax: env.API_RATE_LIMIT_MAX
+  });
 
-  app.use(cors());
+  app.use(cors({ allowedHeaders: ["Content-Type", "x-api-token"] }));
   app.use(express.json({ limit: "1mb" }));
+  app.use("/api", security.rateLimitMiddleware);
+  app.use("/api", security.authMiddleware);
 
   app.get("/api/health", (_req, res) => {
     res.json({ ok: true, service: "repolaunch-api" });

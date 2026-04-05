@@ -19,6 +19,10 @@ npx repolaunch export --format json
 - `GET /api/prompts`: versoes disponiveis de prompt
 - `POST /api/generate`: gera arquivos por payload
 
+Headers opcionais:
+
+- `x-api-token`: obrigatorio quando `API_AUTH_TOKEN` estiver definido no backend
+
 Exemplo de payload para `POST /api/generate`:
 
 ```json
@@ -57,6 +61,12 @@ Exemplo de payload para `POST /api/generate`:
 - fallback automatico: se a versao nao existir, o sistema usa `DEFAULT_PROMPT_VERSION` do `.env`
 - registry externo: `config/prompt-registry.json` (opcional)
 - listar versoes: `repolaunch prompts list`
+
+## Seguranca da API
+
+- `API_AUTH_TOKEN`: protege endpoints da API local com token
+- `API_RATE_LIMIT_WINDOW_MS`: janela de rate limit por IP
+- `API_RATE_LIMIT_MAX`: limite de requisicoes por IP dentro da janela
 
 ## Exemplos
 
