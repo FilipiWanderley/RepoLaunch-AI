@@ -113,6 +113,7 @@ npx repolaunch export --format json
 
 - iniciar API: `npm run dev:api`
 - healthcheck: `GET http://localhost:8787/api/health`
+- health detalhado: `GET http://localhost:8787/api/health/details`
 - prompts: `GET http://localhost:8787/api/prompts`
 - gerar docs: `POST http://localhost:8787/api/generate`
 - historico de geracoes: `GET http://localhost:8787/api/history?limit=10`
@@ -124,6 +125,12 @@ O endpoint de metricas inclui:
 - total de requests e erros
 - breakdown por status code (`2xx`, `3xx`, `4xx`, `5xx`)
 - serie temporal da janela recente (requests, erros e rate-limit por minuto)
+
+O health detalhado inclui:
+
+- status geral (`ok` ou `degraded`)
+- uptime e memoria do processo
+- checks de env, prompt registry, provider de IA e escrita em `outputs`/`config`
 
 ### Seguranca da API local
 

@@ -18,6 +18,16 @@ describe("HTTP API", () => {
     expect(response.body.ok).toBe(true);
   });
 
+  it("deve responder health detalhado", async () => {
+    const app = createServerApp();
+    const response = await request(app).get("/api/health/details");
+
+    expect([200, 503]).toContain(response.status);
+    expect(response.body.service).toBe("repolaunch-api");
+    expect(Array.isArray(response.body.checks)).toBe(true);
+    expect(response.body.checks.length).toBeGreaterThan(0);
+  });
+
   it("deve listar versoes de prompt", async () => {
     const app = createServerApp();
     const response = await request(app).get("/api/prompts");

@@ -439,6 +439,7 @@ color:var(--c-muted);white-space:pre-wrap;max-height:380px;overflow-y:auto;
         <div class="key-note" id="metricsInfo">metricas: aguardando API</div>
         <div class="key-note" id="metricsStatusInfo">status: -</div>
         <div class="key-note" id="metricsGraph">janela 15m: -</div>
+        <div class="key-note" id="metricsAlert">alerta: aguardando dados</div>
         <button class="run-btn" id="runBtn" onclick="runGenerate()">
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
             <path d="M2 2l8 4-8 4V2z" fill="#fff"/>
@@ -777,6 +778,7 @@ async function refreshMetrics() {
   var info = document.getElementById('metricsInfo');
   var statusInfo = document.getElementById('metricsStatusInfo');
   var graphInfo = document.getElementById('metricsGraph');
+  var alertInfo = document.getElementById('metricsAlert');
   if (!info) return;
 
   try {
@@ -792,6 +794,10 @@ async function refreshMetrics() {
       info.textContent = 'metricas: indisponivel';
       if (statusInfo) statusInfo.textContent = 'status: -';
       if (graphInfo) graphInfo.textContent = 'janela 15m: -';
+      if (alertInfo) {
+        alertInfo.textContent = 'alerta: sem acesso a metricas';
+        alertInfo.style.color = 'var(--c-hint)';
+      }
       return;
     }
 
@@ -816,10 +822,36 @@ async function refreshMetrics() {
       var windowMinutes = data.recent && data.recent.windowMinutes ? data.recent.windowMinutes : 15;
       graphInfo.textContent = 'janela ' + windowMinutes + 'm: ' + (bars || '-');
     }
+
+    if (alertInfo) {
+      var recentPoints = data.recent && Array.isArray(data.recent.points) ? data.recent.points : [];
+      var recentRequests = recentPoints.reduce(function(acc, p) { return acc + (p.requests || 0); }, 0);
+      var recentErrors = recentPoints.reduce(function(acc, p) { return acc + (p.errors || 0); }, 0);
+      var recentRateLimit = recentPoints.reduce(function(acc, p) { return acc + (p.rateLimited || 0); }, 0);
+      var errorRate = recentRequests > 0 ? (recentErrors / recentRequests) : 0;
+
+      if (recentRateLimit >= 3) {
+        alertInfo.textContent = 'alerta: rate-limit alto na janela recente';
+        alertInfo.style.color = 'var(--c-orange)';
+      } else if (recentRequests >= 5 && errorRate >= 0.2) {
+        alertInfo.textContent = 'alerta: taxa de erro elevada na janela recente';
+        alertInfo.style.color = 'var(--c-orange)';
+      } else if (recentErrors > 0) {
+        alertInfo.textContent = 'alerta: existem erros recentes na API';
+        alertInfo.style.color = 'var(--c-muted)';
+      } else {
+        alertInfo.textContent = 'alerta: operacao estavel';
+        alertInfo.style.color = 'var(--c-green)';
+      }
+    }
   } catch (e) {
     info.textContent = 'metricas: offline';
     if (statusInfo) statusInfo.textContent = 'status: -';
     if (graphInfo) graphInfo.textContent = 'janela 15m: -';
+    if (alertInfo) {
+      alertInfo.textContent = 'alerta: API offline';
+      alertInfo.style.color = 'var(--c-hint)';
+    }
   }
 }
 

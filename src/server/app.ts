@@ -9,6 +9,7 @@ import { listPromptVersions } from "../prompts/system-prompts";
 import { readEnv } from "../config/env";
 import { createApiSecurity } from "./security";
 import { getApiMetrics, recordApiError, recordApiRequest } from "./metrics";
+import { buildDetailedHealthReport } from "./health";
 
 const GenerateRequestSchema = z.object({
   text: z.string().min(1, "Texto de entrada e obrigatorio."),
@@ -56,6 +57,15 @@ export function createServerApp(): express.Express {
 
   app.get("/api/health", (_req, res) => {
     res.json({ ok: true, service: "repolaunch-api" });
+  });
+
+  app.get("/api/health/details", async (_req, res, next) => {
+    try {
+      const report = await buildDetailedHealthReport();
+      res.status(report.status === "ok" ? 200 : 503).json(report);
+    } catch (error) {
+      next(error);
+    }
   });
 
   app.get("/api/prompts", (_req, res) => {

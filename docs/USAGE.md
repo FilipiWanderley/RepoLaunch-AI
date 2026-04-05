@@ -16,6 +16,7 @@ npx repolaunch export --format json
 
 - subir API: `npm run dev:api`
 - `GET /api/health`: status da API
+- `GET /api/health/details`: health detalhado com checks operacionais
 - `GET /api/prompts`: versoes disponiveis de prompt
 - `POST /api/generate`: gera arquivos por payload
 - `GET /api/history?limit=10`: lista geracoes recentes

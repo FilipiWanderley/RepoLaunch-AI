@@ -19,7 +19,7 @@ export function createApiSecurity(config: ApiSecurityConfig): {
   const buckets = new Map<string, RateBucket>();
 
   const authMiddleware = (req: Request, _res: Response, next: NextFunction): void => {
-    if (req.path === "/health") {
+    if (req.path.startsWith("/health")) {
       next();
       return;
     }
@@ -45,7 +45,7 @@ export function createApiSecurity(config: ApiSecurityConfig): {
   };
 
   const rateLimitMiddleware = (req: Request, res: Response, next: NextFunction): void => {
-    if (req.path === "/health") {
+    if (req.path.startsWith("/health")) {
       next();
       return;
     }
