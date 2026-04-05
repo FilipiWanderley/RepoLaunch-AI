@@ -88,4 +88,18 @@ describe("CLI integration", () => {
       code: "TARGET_NOT_FOUND"
     });
   });
+
+  it("deve gerar relatorio de repo-analyze em json e markdown", async () => {
+    await runCli(["init"]);
+    await runCli(["repo-analyze"]);
+
+    const reportJsonRaw = await fs.readFile(path.join(workspaceDir, "outputs", "repo-analysis.json"), "utf8");
+    const reportMd = await fs.readFile(path.join(workspaceDir, "outputs", "REPO_ANALYSIS.md"), "utf8");
+
+    const reportJson = JSON.parse(reportJsonRaw) as { score: number; summary: { hasReadme: boolean } };
+    expect(reportJson.score).toBeGreaterThanOrEqual(0);
+    expect(reportJson.score).toBeLessThanOrEqual(100);
+    expect(reportMd).toContain("# Repo Analysis");
+    expect(reportMd).toContain("## Findings");
+  });
 });

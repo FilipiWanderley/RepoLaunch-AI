@@ -61,5 +61,11 @@ export function createProgram(): Command {
       controller.exportOutputs(normalizeExportFormat(options.format))
     );
 
+  program
+    .command("repo-analyze")
+    .description("Analisa um repositorio existente e gera diagnostico")
+    .argument("[target]", "Caminho da raiz do repositorio")
+    .action(async (target: string | undefined) => controller.analyzeRepo(target));
+
   return program;
 }

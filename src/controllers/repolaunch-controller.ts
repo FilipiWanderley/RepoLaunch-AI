@@ -4,6 +4,7 @@ import { buildSystemPrompt, buildUserPrompt } from "../prompts/system-prompts";
 import { ExecutionGuardService } from "../services/execution-guard-service";
 import { InputAnalyzerService } from "../services/input-analyzer-service";
 import { ProjectGeneratorService } from "../services/project-generator-service";
+import { RepoAnalyzerService } from "../services/repo-analyzer-service";
 import { OutputService } from "../services/output-service";
 import { ExportFormat, OutputMode, TemplateType } from "../types/output";
 import { logger } from "../utils/logger";
@@ -14,6 +15,7 @@ export class RepoLaunchController {
   private readonly executionGuard = new ExecutionGuardService();
   private readonly inputAnalyzer = new InputAnalyzerService();
   private readonly projectGenerator = new ProjectGeneratorService();
+  private readonly repoAnalyzer = new RepoAnalyzerService();
   private readonly outputService = new OutputService();
 
   async init(): Promise<void> {
@@ -87,5 +89,18 @@ export class RepoLaunchController {
     const issues = this.projectGenerator.buildIssuesSuggestions(analysis);
     await this.outputService.writeJson("github-issues.json", issues);
     logger.info("Sugestoes exportadas para outputs/github-issues.json");
+  }
+
+  async analyzeRepo(target?: string): Promise<void> {
+    const result = await this.repoAnalyzer.analyze(target);
+    const markdown = this.repoAnalyzer.buildMarkdownReport(result);
+
+    await this.outputService.ensureBaseStructure();
+    await this.outputService.writeJson("repo-analysis.json", result);
+    await this.outputService.writeText("REPO_ANALYSIS.md", markdown);
+
+    logger.info("Analise de repositorio concluida.");
+    logger.info(`Score: ${result.score}/100`);
+    logger.info("Arquivos gerados: outputs/repo-analysis.json e outputs/REPO_ANALYSIS.md");
   }
 }

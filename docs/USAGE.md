@@ -6,6 +6,7 @@
 npx repolaunch init
 npx repolaunch analyze --text "Fiz um curso de IA e quero um projeto para portfolio"
 npx repolaunch generate --mode technical --template portfolio-project
+npx repolaunch repo-analyze .
 npx repolaunch export --format json
 ```
 
