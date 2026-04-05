@@ -19,6 +19,7 @@ type GenerateOptions = {
   aiProvider?: string;
   mode?: OutputMode;
   template?: TemplateType;
+  promptVersion?: string;
 };
 
 export class ProjectGeneratorService {
@@ -29,7 +30,14 @@ export class ProjectGeneratorService {
     return [
       {
         fileName: "README.md",
-        content: buildReadmeTemplate(analysis, mode, template, options.aiBrief, options.aiProvider)
+        content: buildReadmeTemplate(
+          analysis,
+          mode,
+          template,
+          options.aiBrief,
+          options.aiProvider,
+          options.promptVersion
+        )
       },
       {
         fileName: "ARCHITECTURE.md",

@@ -76,6 +76,20 @@ describe("CLI integration", () => {
     expect(readme).toContain("onboarding");
   });
 
+  it("deve aplicar fallback para versao de prompt inexistente", async () => {
+    await runCli([
+      "generate",
+      "--prompt-version",
+      "v9",
+      "--text",
+      "Quero criar um projeto escalavel com IA para portfolio"
+    ]);
+
+    const readme = await fs.readFile(path.join(workspaceDir, "outputs", "README.md"), "utf8");
+    expect(readme).toContain("## Prompt version");
+    expect(readme).toContain("v1");
+  });
+
   it("deve retornar erro orientado a acao ao gerar sem analise previa", async () => {
     await expect(runCli(["generate"])).rejects.toMatchObject<CliError>({
       message: "Nenhuma analise previa encontrada.",

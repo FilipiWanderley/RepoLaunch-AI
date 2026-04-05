@@ -217,7 +217,8 @@ export function buildReadmeTemplate(
   mode: OutputMode,
   template: TemplateType,
   aiBrief?: string,
-  aiProvider?: string
+  aiProvider?: string,
+  promptVersion?: string
 ): string {
   return [
     "# Projeto Gerado por RepoLaunch AI",
@@ -233,6 +234,9 @@ export function buildReadmeTemplate(
     "",
     "## Template",
     templateLabel(template),
+    "",
+    "## Prompt version",
+    promptVersion ?? "v1",
     "",
     "## Foco",
     modeFocus(mode),

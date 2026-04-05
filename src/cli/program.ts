@@ -39,17 +39,19 @@ export function createProgram(): Command {
       "Template: portfolio-project | saas | cli-tool | ai-workflow",
       "portfolio-project"
     )
+    .option("--prompt-version <version>", "Versao do prompt (ex.: v1, v2)")
     .argument("[target]", "Caminho do arquivo ou pasta")
     .action(
       async (
         target: string | undefined,
-        options: { text?: string; mode?: string; template?: string }
+        options: { text?: string; mode?: string; template?: string; promptVersion?: string }
       ) =>
         controller.generate(
           target,
           options.text,
           normalizeMode(options.mode),
-          normalizeTemplateType(options.template)
+          normalizeTemplateType(options.template),
+          options.promptVersion
         )
     );
 

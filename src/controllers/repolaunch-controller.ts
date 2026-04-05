@@ -1,6 +1,7 @@
 import path from "node:path";
 import { AIEngine } from "../ai/ai-engine";
-import { buildSystemPrompt, buildUserPrompt } from "../prompts/system-prompts";
+import { buildSystemPrompt, buildUserPrompt, resolvePromptPack } from "../prompts/system-prompts";
+import { readEnv } from "../config/env";
 import { ExecutionGuardService } from "../services/execution-guard-service";
 import { GithubIntegrationService } from "../services/github-integration-service";
 import { InputAnalyzerService } from "../services/input-analyzer-service";
@@ -37,21 +38,25 @@ export class RepoLaunchController {
     target?: string,
     text?: string,
     mode: OutputMode = "technical",
-    template: TemplateType = "portfolio-project"
+    template: TemplateType = "portfolio-project",
+    promptVersion?: string
   ): Promise<void> {
     this.executionGuard.assertCanExecute();
+    const env = readEnv();
+    const promptResolution = resolvePromptPack(promptVersion, env.DEFAULT_PROMPT_VERSION);
 
     const analysis = await this.inputAnalyzer.analyze({ target, text, fallbackToLatest: true });
     const aiResponse = await this.aiEngine.generate({
-      systemPrompt: buildSystemPrompt(),
-      userInput: buildUserPrompt(analysis),
+      systemPrompt: buildSystemPrompt(promptResolution.selected),
+      userInput: buildUserPrompt(analysis, promptResolution.selected),
       maxTokens: 650
     });
     const files = this.projectGenerator.generateFromAnalysis(analysis, {
       aiBrief: aiResponse.content,
       aiProvider: aiResponse.provider,
       mode,
-      template
+      template,
+      promptVersion: promptResolution.selected.version
     });
 
     await this.outputService.ensureBaseStructure();
@@ -63,6 +68,12 @@ export class RepoLaunchController {
 
     await this.outputService.writeJson("latest-analysis.json", analysis);
     logger.info(`Geracao enriquecida via provider: ${aiResponse.provider}`);
+    logger.info(`Versao de prompt aplicada: ${promptResolution.selected.version}`);
+    if (promptResolution.fallbackApplied) {
+      logger.warning(
+        `Prompt version '${promptResolution.requestedVersion}' nao encontrado. Fallback aplicado para '${promptResolution.selected.version}'.`
+      );
+    }
     logger.info(`Modo de saida aplicado: ${mode}`);
     logger.info(`Template aplicado: ${template}`);
     logger.info("Geracao concluida.");
