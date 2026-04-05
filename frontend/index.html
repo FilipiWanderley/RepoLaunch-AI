@@ -446,6 +446,9 @@ color:var(--c-muted);white-space:pre-wrap;max-height:380px;overflow-y:auto;
         <div class="key-note" data-i18n="api_note">Frontend usa a API local; chaves ficam somente no backend.</div>
         <div class="key-label" data-i18n="collab_ws" style="margin-top:10px">Workspace colaborativo</div>
         <input class="key-input" id="collabUser" type="text" placeholder="local-user" autocomplete="off"/>
+        <input class="key-input" id="collabPassword" type="password" placeholder="senha colaborativa" style="margin-top:6px" autocomplete="off"/>
+        <button class="file-btn" style="width:100%;margin-top:6px" onclick="collabLogin()">login colaborativo</button>
+        <div class="key-note" id="collabAuthInfo">auth: modo local (header)</div>
         <select class="key-input" id="projectSelect" onchange="onProjectSelect(this.value)"></select>
         <input class="key-input" id="projectName" type="text" placeholder="novo projeto" style="margin-top:6px" />
         <button class="file-btn" style="width:100%;margin-top:6px" onclick="createProject()" data-i18n="collab_create">criar projeto</button>
@@ -577,6 +580,7 @@ var lang = 'pt';
 var API_BASE = localStorage.getItem('repolaunch_api_base') || 'http://localhost:8787';
 var API_TOKEN = localStorage.getItem('repolaunch_api_token') || '';
 var COLLAB_USER = localStorage.getItem('repolaunch_collab_user') || 'local-user';
+var COLLAB_SESSION_TOKEN = localStorage.getItem('repolaunch_collab_token') || '';
 var currentProjectId = localStorage.getItem('repolaunch_project_id') || '';
 var currentShareId = '';
 var projectsCache = [];
@@ -826,6 +830,7 @@ function apiHeaders(contentType) {
   var headers = {};
   if (contentType) headers['Content-Type'] = contentType;
   if (API_TOKEN) headers['x-api-token'] = API_TOKEN;
+  if (COLLAB_SESSION_TOKEN) headers['x-collab-token'] = COLLAB_SESSION_TOKEN;
   if (COLLAB_USER) headers['x-collab-user'] = COLLAB_USER;
   return headers;
 }
@@ -834,6 +839,47 @@ function updateCollabUserFromInput() {
   var userInput = document.getElementById('collabUser');
   COLLAB_USER = (userInput && userInput.value ? userInput.value.trim().toLowerCase() : '') || 'local-user';
   localStorage.setItem('repolaunch_collab_user', COLLAB_USER);
+}
+
+async function collabLogin() {
+  updateCollabUserFromInput();
+  var passwordInput = document.getElementById('collabPassword');
+  var password = passwordInput && passwordInput.value ? passwordInput.value.trim() : '';
+  var authInfo = document.getElementById('collabAuthInfo');
+  if (!password) {
+    if (authInfo) authInfo.textContent = 'auth: informe a senha colaborativa';
+    return;
+  }
+
+  try {
+    var response = await fetch(API_BASE + '/api/collab/auth/login', {
+      method: 'POST',
+      headers: apiHeaders('application/json'),
+      body: JSON.stringify({ userId: COLLAB_USER, password: password })
+    });
+
+    if (!response.ok) {
+      COLLAB_SESSION_TOKEN = '';
+      localStorage.removeItem('repolaunch_collab_token');
+      if (authInfo) authInfo.textContent = response.status === 400
+        ? 'auth: login nao habilitado no backend'
+        : 'auth: falha no login';
+      return;
+    }
+
+    var data = await response.json();
+    COLLAB_SESSION_TOKEN = (data && data.session && data.session.token) ? data.session.token : '';
+    if (COLLAB_SESSION_TOKEN) {
+      localStorage.setItem('repolaunch_collab_token', COLLAB_SESSION_TOKEN);
+      if (authInfo) authInfo.textContent = 'auth: sessao ativa para ' + COLLAB_USER;
+      if (passwordInput) passwordInput.value = '';
+      await loadProjects();
+    }
+  } catch (e) {
+    COLLAB_SESSION_TOKEN = '';
+    localStorage.removeItem('repolaunch_collab_token');
+    if (authInfo) authInfo.textContent = 'auth: API offline para login';
+  }
 }
 
 function renderProjects() {
@@ -892,9 +938,20 @@ async function loadProjects() {
       headers: apiHeaders()
     });
     if (!response.ok) {
+      var authInfo = document.getElementById('collabAuthInfo');
+      if (authInfo && response.status === 401) {
+        authInfo.textContent = 'auth: login colaborativo requerido';
+      }
       projectsCache = [];
       renderProjects();
       return;
+    }
+
+    var authInfoOk = document.getElementById('collabAuthInfo');
+    if (authInfoOk) {
+      authInfoOk.textContent = COLLAB_SESSION_TOKEN
+        ? 'auth: sessao ativa para ' + COLLAB_USER
+        : 'auth: modo local (header)';
     }
 
     var data = await response.json();
@@ -1547,6 +1604,12 @@ var apiTokenInput = document.getElementById('apiToken');
 if (apiTokenInput) apiTokenInput.value = API_TOKEN;
 var collabUserInput = document.getElementById('collabUser');
 if (collabUserInput) collabUserInput.value = COLLAB_USER;
+var collabAuthInfoInit = document.getElementById('collabAuthInfo');
+if (collabAuthInfoInit) {
+  collabAuthInfoInit.textContent = COLLAB_SESSION_TOKEN
+    ? 'auth: sessao ativa para ' + COLLAB_USER
+    : 'auth: modo local (header)';
+}
 document.getElementById('mainInp').placeholder = i18n[lang].inp_placeholder;
 refreshMetrics();
 loadProjects();

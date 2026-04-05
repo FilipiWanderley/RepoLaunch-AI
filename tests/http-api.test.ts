@@ -8,6 +8,8 @@ describe("HTTP API", () => {
     delete process.env.API_AUTH_TOKEN;
     delete process.env.API_RATE_LIMIT_WINDOW_MS;
     delete process.env.API_RATE_LIMIT_MAX;
+    delete process.env.COLLAB_AUTH_USERS;
+    delete process.env.COLLAB_AUTH_SESSION_TTL_MINUTES;
   });
 
   it("deve responder healthcheck", async () => {
@@ -264,5 +266,34 @@ describe("HTTP API", () => {
     expect(sharedReadOnly.body.generations[0].metadata.mode).toBeTruthy();
     expect(sharedReadOnly.body.generations[0].metadata.template).toBeTruthy();
     expect(sharedReadOnly.body.generations[0].metadata.promptVersion).toBeTruthy();
+  });
+
+  it("deve exigir sessao colaborativa quando auth colaborativa estiver habilitada", async () => {
+    process.env.COLLAB_AUTH_USERS = "alice:senha123:Alice,bob:senha123:Bob";
+    process.env.COLLAB_AUTH_SESSION_TTL_MINUTES = "60";
+    const app = createServerApp();
+
+    const noSession = await request(app).get("/api/collab/projects");
+    expect(noSession.status).toBe(401);
+    expect(noSession.body.error.code).toBe("COLLAB_AUTH_REQUIRED");
+
+    const login = await request(app).post("/api/collab/auth/login").send({
+      userId: "alice",
+      password: "senha123"
+    });
+    expect(login.status).toBe(200);
+    expect(login.body.session.token).toBeTruthy();
+
+    const listed = await request(app)
+      .get("/api/collab/projects")
+      .set("x-collab-token", login.body.session.token);
+    expect(listed.status).toBe(200);
+
+    const wrongLogin = await request(app).post("/api/collab/auth/login").send({
+      userId: "alice",
+      password: "senha-invalida"
+    });
+    expect(wrongLogin.status).toBe(401);
+    expect(wrongLogin.body.error.code).toBe("COLLAB_AUTH_INVALID_CREDENTIALS");
   });
 });

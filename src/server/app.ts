@@ -11,6 +11,7 @@ import { createApiSecurity } from "./security";
 import { getApiMetrics, recordApiError, recordApiRequest } from "./metrics";
 import { buildDetailedHealthReport } from "./health";
 import { CollaborationRole, CollaborationStore } from "./collaboration-store";
+import { createCollabAuth } from "./collab-auth";
 
 const GenerateRequestSchema = z.object({
   text: z.string().min(1, "Texto de entrada e obrigatorio."),
@@ -47,6 +48,11 @@ const ManageMemberSchema = z.object({
   role: z.enum(["owner", "editor", "viewer"])
 });
 
+const CollabLoginSchema = z.object({
+  userId: z.string().min(1).max(80),
+  password: z.string().min(1).max(120)
+});
+
 function normalizeCollabUserId(value: string | undefined): string {
   const normalized = String(value ?? "")
     .trim()
@@ -81,13 +87,38 @@ export function createServerApp(): express.Express {
   const controller = new RepoLaunchController();
   const collaborationStore = new CollaborationStore();
   const env = readEnv();
+  const collabAuth = createCollabAuth({
+    usersRaw: env.COLLAB_AUTH_USERS,
+    ttlMinutes: env.COLLAB_AUTH_SESSION_TTL_MINUTES
+  });
   const security = createApiSecurity({
     authToken: env.API_AUTH_TOKEN,
     rateLimitWindowMs: env.API_RATE_LIMIT_WINDOW_MS,
     rateLimitMax: env.API_RATE_LIMIT_MAX
   });
 
-  app.use(cors({ allowedHeaders: ["Content-Type", "x-api-token", "x-collab-user", "x-collab-user-name"] }));
+  function resolveCollabUser(req: express.Request): { userId: string; name?: string } {
+    if (!collabAuth.isEnabled) {
+      return getCollabUser(req);
+    }
+
+    const token = String(req.get("x-collab-token") ?? "").trim();
+    if (!token) {
+      throw new CliError("Sessao colaborativa ausente.", {
+        code: "COLLAB_AUTH_REQUIRED",
+        hint: "Realize login em /api/collab/auth/login e envie x-collab-token.",
+        exitCode: 401
+      });
+    }
+
+    const resolved = collabAuth.verify(token);
+    return {
+      userId: normalizeCollabUserId(resolved.userId),
+      name: resolved.name
+    };
+  }
+
+  app.use(cors({ allowedHeaders: ["Content-Type", "x-api-token", "x-collab-user", "x-collab-user-name", "x-collab-token"] }));
   app.use(express.json({ limit: "1mb" }));
   app.use("/api", (req, res, next) => {
     const startedAt = process.hrtime.bigint();
@@ -131,6 +162,19 @@ export function createServerApp(): express.Express {
     try {
       const query = MetricsQuerySchema.parse(req.query);
       res.json(getApiMetrics(query.windowMinutes ?? 15));
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.post("/api/collab/auth/login", (req, res, next) => {
+    try {
+      const payload = CollabLoginSchema.parse(req.body);
+      const session = collabAuth.login(payload.userId, payload.password);
+      res.json({
+        authEnabled: collabAuth.isEnabled,
+        session
+      });
     } catch (error) {
       next(error);
     }
@@ -213,7 +257,7 @@ export function createServerApp(): express.Express {
 
   app.get("/api/collab/projects", async (_req, res, next) => {
     try {
-      const user = getCollabUser(_req);
+      const user = resolveCollabUser(_req);
       const projects = await collaborationStore.listProjects();
       res.json({
         projects: projects.map((project) => ({
@@ -236,7 +280,7 @@ export function createServerApp(): express.Express {
   app.post("/api/collab/projects", async (req, res, next) => {
     try {
       const payload = CreateProjectSchema.parse(req.body);
-      const user = getCollabUser(req);
+      const user = resolveCollabUser(req);
       const project = await collaborationStore.createProject(payload.name.trim(), payload.description?.trim(), user);
       res.status(201).json({ project });
     } catch (error) {
@@ -247,7 +291,7 @@ export function createServerApp(): express.Express {
   app.get("/api/collab/projects/:projectId", async (req, res, next) => {
     try {
       const projectId = String(req.params.projectId ?? "").trim();
-      const user = getCollabUser(req);
+      const user = resolveCollabUser(req);
       const project = await collaborationStore.getProject(projectId);
       if (!project) {
         throw new CliError("Projeto de colaboracao nao encontrado.", {
@@ -275,7 +319,7 @@ export function createServerApp(): express.Express {
   app.post("/api/collab/projects/:projectId/generations", async (req, res, next) => {
     try {
       const projectId = String(req.params.projectId ?? "").trim();
-      const user = getCollabUser(req);
+      const user = resolveCollabUser(req);
       const payload = AttachGenerationSchema.parse(req.body);
 
       const existingProject = await collaborationStore.getProject(projectId);
@@ -318,7 +362,7 @@ export function createServerApp(): express.Express {
   app.post("/api/collab/projects/:projectId/share", async (req, res, next) => {
     try {
       const projectId = String(req.params.projectId ?? "").trim();
-      const user = getCollabUser(req);
+      const user = resolveCollabUser(req);
       const existingProject = await collaborationStore.getProject(projectId);
       if (!existingProject) {
         throw new CliError("Projeto de colaboracao nao encontrado.", {
@@ -352,7 +396,7 @@ export function createServerApp(): express.Express {
   app.get("/api/collab/projects/:projectId/members", async (req, res, next) => {
     try {
       const projectId = String(req.params.projectId ?? "").trim();
-      const user = getCollabUser(req);
+      const user = resolveCollabUser(req);
       const project = await collaborationStore.getProject(projectId);
       if (!project) {
         throw new CliError("Projeto de colaboracao nao encontrado.", {
@@ -374,7 +418,7 @@ export function createServerApp(): express.Express {
     try {
       const projectId = String(req.params.projectId ?? "").trim();
       const payload = ManageMemberSchema.parse(req.body);
-      const user = getCollabUser(req);
+      const user = resolveCollabUser(req);
       const project = await collaborationStore.getProject(projectId);
       if (!project) {
         throw new CliError("Projeto de colaboracao nao encontrado.", {
@@ -408,7 +452,7 @@ export function createServerApp(): express.Express {
       const projectId = String(req.params.projectId ?? "").trim();
       const targetUserId = normalizeCollabUserId(String(req.params.userId ?? "").trim());
       const payload = ManageMemberSchema.omit({ userId: true }).parse(req.body);
-      const user = getCollabUser(req);
+      const user = resolveCollabUser(req);
       const project = await collaborationStore.getProject(projectId);
       if (!project) {
         throw new CliError("Projeto de colaboracao nao encontrado.", {
@@ -454,7 +498,7 @@ export function createServerApp(): express.Express {
   app.get("/api/collab/projects/:projectId/audit", async (req, res, next) => {
     try {
       const projectId = String(req.params.projectId ?? "").trim();
-      const user = getCollabUser(req);
+      const user = resolveCollabUser(req);
       const query = AuditQuerySchema.parse(req.query);
       const project = await collaborationStore.getProject(projectId);
       if (!project) {

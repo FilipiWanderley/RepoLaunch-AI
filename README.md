@@ -121,6 +121,7 @@ npx repolaunch export --format json
 - metricas de API: `GET http://localhost:8787/api/metrics?windowMinutes=15`
 - colaboracao: `GET/POST http://localhost:8787/api/collab/projects`
 - listar membros do projeto: `GET http://localhost:8787/api/collab/projects/:projectId/members`
+- login colaborativo (opcional): `POST http://localhost:8787/api/collab/auth/login`
 - adicionar/atualizar membro (owner): `POST http://localhost:8787/api/collab/projects/:projectId/members`
 - atualizar papel de membro (owner): `PATCH http://localhost:8787/api/collab/projects/:projectId/members/:userId`
 - trilha de auditoria do workspace: `GET http://localhost:8787/api/collab/projects/:projectId/audit?limit=30`
@@ -151,6 +152,9 @@ O health detalhado inclui:
 - `API_RATE_LIMIT_WINDOW_MS`: janela do rate limit em ms
 - `API_RATE_LIMIT_MAX`: maximo de requisicoes por IP por janela
 - `x-collab-user`: identifica o membro atual para controle de permissoes em colaboracao (owner/editor/viewer)
+- `COLLAB_AUTH_USERS`: habilita login colaborativo real no formato `user:senha:nome,user2:senha2:nome2`
+- `COLLAB_AUTH_SESSION_TTL_MINUTES`: expiracao do token colaborativo em minutos
+- `x-collab-token`: token de sessao colaborativa (quando login estiver habilitado)
 
 ### Exemplos de saida por modo
 

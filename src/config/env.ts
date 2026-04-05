@@ -9,6 +9,8 @@ const EnvSchema = z.object({
   API_AUTH_TOKEN: z.string().optional(),
   API_RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60000),
   API_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(60),
+  COLLAB_AUTH_USERS: z.string().optional(),
+  COLLAB_AUTH_SESSION_TTL_MINUTES: z.coerce.number().int().positive().max(43200).default(720),
   AI_TIMEOUT_MS: z.coerce.number().int().positive().default(15000),
   AI_MAX_RETRIES: z.coerce.number().int().min(0).max(3).default(1),
   LOG_LEVEL: z.enum(["debug", "info", "warning", "error"]).default("info"),
