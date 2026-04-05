@@ -67,5 +67,14 @@ export function createProgram(): Command {
     .argument("[target]", "Caminho da raiz do repositorio")
     .action(async (target: string | undefined) => controller.analyzeRepo(target));
 
+  program
+    .command("github-sync")
+    .description("Gera artefatos para GitHub (issues, PR description, changelog)")
+    .option("--repo <owner/repo>", "Repositorio no formato owner/repo")
+    .option("--publish", "Publica issues no GitHub via API")
+    .action(async (options: { repo?: string; publish?: boolean }) =>
+      controller.githubSync(options.repo, Boolean(options.publish))
+    );
+
   return program;
 }

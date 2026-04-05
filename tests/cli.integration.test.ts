@@ -102,4 +102,17 @@ describe("CLI integration", () => {
     expect(reportMd).toContain("# Repo Analysis");
     expect(reportMd).toContain("## Findings");
   });
+
+  it("deve gerar artefatos de github-sync em modo dry-run", async () => {
+    await runCli(["analyze", "--text", "Quero evoluir backlog com foco em entrega e qualidade"]);
+    await runCli(["github-sync", "--repo", "FilipiWanderley/RepoLaunch-AI"]);
+
+    await expect(
+      fs.stat(path.join(workspaceDir, "outputs", "github-sync-payload.json"))
+    ).resolves.toBeTruthy();
+    await expect(fs.stat(path.join(workspaceDir, "outputs", "PR_DESCRIPTION.md"))).resolves.toBeTruthy();
+    await expect(
+      fs.stat(path.join(workspaceDir, "outputs", "CHANGELOG_SUGGESTED.md"))
+    ).resolves.toBeTruthy();
+  });
 });

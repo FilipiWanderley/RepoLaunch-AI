@@ -2,6 +2,7 @@ import path from "node:path";
 import { AIEngine } from "../ai/ai-engine";
 import { buildSystemPrompt, buildUserPrompt } from "../prompts/system-prompts";
 import { ExecutionGuardService } from "../services/execution-guard-service";
+import { GithubIntegrationService } from "../services/github-integration-service";
 import { InputAnalyzerService } from "../services/input-analyzer-service";
 import { ProjectGeneratorService } from "../services/project-generator-service";
 import { RepoAnalyzerService } from "../services/repo-analyzer-service";
@@ -13,6 +14,7 @@ import { validateOutputSafety } from "../utils/output-safety";
 export class RepoLaunchController {
   private readonly aiEngine = new AIEngine();
   private readonly executionGuard = new ExecutionGuardService();
+  private readonly githubIntegration = new GithubIntegrationService();
   private readonly inputAnalyzer = new InputAnalyzerService();
   private readonly projectGenerator = new ProjectGeneratorService();
   private readonly repoAnalyzer = new RepoAnalyzerService();
@@ -102,5 +104,44 @@ export class RepoLaunchController {
     logger.info("Analise de repositorio concluida.");
     logger.info(`Score: ${result.score}/100`);
     logger.info("Arquivos gerados: outputs/repo-analysis.json e outputs/REPO_ANALYSIS.md");
+  }
+
+  async githubSync(repo?: string, publish = false): Promise<void> {
+    let summary = "Sem analise recente.";
+    try {
+      const latest = await this.outputService.readJson<{ summary?: string }>("latest-analysis.json");
+      summary = latest.summary ?? summary;
+    } catch {
+      // fallback silencioso para permitir sync mesmo sem latest-analysis
+    }
+
+    const issues = this.projectGenerator.buildIssuesSuggestions({
+      theme: "Projeto de software",
+      intent: "Evoluir backlog com foco em entrega",
+      summary
+    });
+
+    const payload = this.githubIntegration.buildPayload({
+      repository: repo,
+      issues,
+      latestSummary: summary
+    });
+
+    await this.outputService.ensureBaseStructure();
+    await this.outputService.writeJson("github-sync-payload.json", payload);
+    await this.outputService.writeText("PR_DESCRIPTION.md", payload.prDescription);
+    await this.outputService.writeText("CHANGELOG_SUGGESTED.md", payload.changelog);
+
+    if (!publish) {
+      logger.info("GitHub sync em modo dry-run concluido.");
+      logger.info("Arquivos gerados: github-sync-payload.json, PR_DESCRIPTION.md, CHANGELOG_SUGGESTED.md");
+      return;
+    }
+
+    const publishResult = await this.githubIntegration.publishIssues(payload);
+    await this.outputService.writeJson("github-sync-result.json", publishResult);
+
+    logger.info("Issues publicadas no GitHub com sucesso.");
+    logger.info(`Total de issues criadas: ${publishResult.createdIssues.length}`);
   }
 }

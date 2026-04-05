@@ -83,6 +83,7 @@ npx repolaunch init
 npx repolaunch analyze ./meus-arquivos
 npx repolaunch generate --mode technical --template portfolio-project
 npx repolaunch repo-analyze .
+npx repolaunch github-sync --repo FilipiWanderley/RepoLaunch-AI
 npx repolaunch export --format json
 ```
 
@@ -121,6 +122,8 @@ No arquivo `.env`, voce pode ajustar:
 - `AI_TIMEOUT_MS`: timeout por chamada ao provider
 - `AI_MAX_RETRIES`: tentativas de retry por provider
 - `LOG_LEVEL`: debug, info, warning ou error
+- `GITHUB_TOKEN`: token para publicar issues (opcional)
+- `GITHUB_REPO`: repositorio padrao no formato owner/repo
 
 ---
 
