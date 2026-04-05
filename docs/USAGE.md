@@ -11,6 +11,25 @@ npx repolaunch prompts list
 npx repolaunch repo-analyze .
 npx repolaunch github-sync --repo FilipiWanderley/RepoLaunch-AI
 npx repolaunch export --format json
+
+## API HTTP
+
+- subir API: `npm run dev:api`
+- `GET /api/health`: status da API
+- `GET /api/prompts`: versoes disponiveis de prompt
+- `POST /api/generate`: gera arquivos por payload
+
+Exemplo de payload para `POST /api/generate`:
+
+```json
+{
+	"text": "Quero criar um projeto com foco em portfolio e execucao",
+	"mode": "technical",
+	"template": "portfolio-project",
+	"promptVersion": "v2",
+	"outputFiles": ["README.md", "ARCHITECTURE.md"]
+}
+```
 ```
 
 ## Modos de output

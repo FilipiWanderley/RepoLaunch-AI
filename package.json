@@ -14,7 +14,9 @@
     "build": "rimraf dist && tsc -p tsconfig.json",
     "ci": "npm run typecheck && npm test && npm run build",
     "dev": "tsx src/index.ts",
+    "dev:api": "tsx src/server/index.ts",
     "start": "node dist/index.js",
+    "start:api": "node dist/server/index.js",
     "test": "jest --passWithNoTests",
     "test:watch": "jest --watch",
     "typecheck": "tsc --noEmit -p tsconfig.json"
@@ -33,14 +35,20 @@
   "homepage": "https://github.com/FilipiWanderley/RepoLaunch-AI#readme",
   "dependencies": {
     "commander": "^14.0.3",
+    "cors": "^2.8.6",
     "dotenv": "^17.4.0",
+    "express": "^5.2.1",
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
     "@types/node": "^25.5.2",
+    "@types/supertest": "^7.2.0",
     "jest": "^30.3.0",
     "rimraf": "^6.1.3",
+    "supertest": "^7.2.2",
     "ts-jest": "^29.4.9",
     "tsx": "^4.21.0",
     "typescript": "^6.0.2"

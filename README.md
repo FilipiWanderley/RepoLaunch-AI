@@ -84,6 +84,7 @@ npx repolaunch analyze ./meus-arquivos
 npx repolaunch generate --mode technical --template portfolio-project
 npx repolaunch generate --prompt-version v2 --mode technical --template portfolio-project
 npx repolaunch prompts list
+npm run dev:api
 npx repolaunch repo-analyze .
 npx repolaunch github-sync --repo FilipiWanderley/RepoLaunch-AI
 npx repolaunch export --format json
@@ -107,6 +108,13 @@ npx repolaunch export --format json
 - json
 - markdown
 - issues (GitHub issues)
+
+### API local para frontend
+
+- iniciar API: `npm run dev:api`
+- healthcheck: `GET http://localhost:8787/api/health`
+- prompts: `GET http://localhost:8787/api/prompts`
+- gerar docs: `POST http://localhost:8787/api/generate`
 
 ### Exemplos de saida por modo
 

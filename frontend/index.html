@@ -430,9 +430,9 @@ color:var(--c-muted);white-space:pre-wrap;max-height:380px;overflow-y:auto;
       </div>
 
       <div class="key-wrap">
-        <div class="key-label" data-i18n="api_key">API Key</div>
-        <input class="key-input" id="apiKey" type="password" placeholder="sk-ant-api03-..." autocomplete="off"/>
-        <div class="key-note" data-i18n="api_note">Armazenada localmente. Nunca enviada a terceiros.</div>
+        <div class="key-label" data-i18n="api_base">API Base</div>
+        <input class="key-input" id="apiBase" type="text" placeholder="http://localhost:8787" autocomplete="off"/>
+        <div class="key-note" data-i18n="api_note">Frontend usa a API local; chaves ficam somente no backend.</div>
         <button class="run-btn" id="runBtn" onclick="runGenerate()">
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
             <path d="M2 2l8 4-8 4V2z" fill="#fff"/>
@@ -538,10 +538,12 @@ color:var(--c-muted);white-space:pre-wrap;max-height:380px;overflow-y:auto;
 <script>
 // ─── i18n ────────────────────────────────────────────────────────────────────
 var lang = 'pt';
+var API_BASE = localStorage.getItem('repolaunch_api_base') || 'http://localhost:8787';
+var promptVersion = 'v2';
 var i18n = {
   pt: {
-    template: 'Template', output_files: 'Output files', api_key: 'API Key',
-    api_note: 'Armazenada localmente. Nunca enviada a terceiros.',
+    template: 'Template', output_files: 'Output files', api_base: 'API Base',
+    api_note: 'Frontend usa a API local; chaves ficam somente no backend.',
     run_btn: 'repolaunch generate',
     tmpl_portfolio: 'Showcase para recrutadores',
     tmpl_saas: 'Produto com monetização',
@@ -554,8 +556,8 @@ var i18n = {
     inp_placeholder: 'Cole aqui suas anotações, ideias de projeto, conteúdo de curso ou aprendizados...\n\nExemplo: aprendi sobre RAG com LangChain e quero criar uma CLI que indexa repositórios GitHub e gera documentação usando Claude API...',
   },
   en: {
-    template: 'Template', output_files: 'Output files', api_key: 'API Key',
-    api_note: 'Stored locally. Never sent to third parties.',
+    template: 'Template', output_files: 'Output files', api_base: 'API Base',
+    api_note: 'Frontend uses local API; keys stay only in backend.',
     run_btn: 'repolaunch generate',
     tmpl_portfolio: 'Showcase for recruiters',
     tmpl_saas: 'Product with monetization',
@@ -650,7 +652,7 @@ function buildStaticViews() {
 
   // quick start
   var qs = document.getElementById('quickStart');
-  if (qs) qs.innerHTML = '<span style="color:var(--c-hint)"># clone e instale</span><br>git clone github.com/you/repolaunch-ai<br>npm install<br><br><span style="color:var(--c-hint)"># configure a API key</span><br>cp .env.example .env<br><span style="color:var(--c-hint)"># edite .env: ANTHROPIC_API_KEY=sk-ant-...</span><br><br><span style="color:var(--c-hint)"># use</span><br>repolaunch init<br>repolaunch analyze ./notes.md<br>repolaunch generate --template portfolio-project<br>repolaunch export';
+  if (qs) qs.innerHTML = '<span style="color:var(--c-hint)"># clone e instale</span><br>git clone github.com/you/repolaunch-ai<br>npm install<br><br><span style="color:var(--c-hint)"># backend api</span><br>npm run dev:api<br><br><span style="color:var(--c-hint)"># frontend estatico (outro terminal)</span><br>cd frontend && python3 -m http.server 8080<br><br><span style="color:var(--c-hint)"># use</span><br>abra http://localhost:8080 e gere arquivos';
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -673,7 +675,9 @@ async function runGenerate() {
   if (generating) return;
   var input = document.getElementById('mainInp').value.trim();
   if (!input) { document.getElementById('mainInp').focus(); return; }
-  var apiKey = document.getElementById('apiKey').value.trim();
+  var apiBaseInput = document.getElementById('apiBase');
+  API_BASE = (apiBaseInput && apiBaseInput.value.trim()) || API_BASE;
+  localStorage.setItem('repolaunch_api_base', API_BASE);
   var outputs = [].slice.call(document.querySelectorAll('.out-row.on')).map(function(r){return r.querySelector('.out-fname').textContent});
   if (!outputs.length) return;
 
@@ -686,7 +690,7 @@ async function runGenerate() {
   var steps = [
     {k:'parse', l:'parsing input...'},
     {k:'extract', l:'extracting context + intent...'},
-    {k:'llm', l:'calling claude api...'},
+    {k:'llm', l:'calling repolaunch api...'},
     {k:'tmpl', l:'applying template: ' + tmpl + '...'},
     {k:'write', l:'writing output files...'},
   ];
@@ -719,16 +723,15 @@ async function runGenerate() {
 
   var usedMock = false;
   try {
-    var headers = {'Content-Type':'application/json'};
-    if (apiKey) headers['x-api-key'] = apiKey;
-    var sys = 'You are RepoLaunch AI — an expert system that transforms raw ideas and notes into professional engineering project documentation.\n\nGiven the user\'s input, generate structured professional markdown files.\nTemplate type: ' + tmpl + '\nFiles to generate: ' + outputs.join(', ') + '\n\nBe specific and concrete using actual details from the input.\nReturn ONLY a valid JSON object with no preamble or markdown fences.\nFormat: {"files":{"README.md":"content...","ARCHITECTURE.md":"content..."}}\nInclude only the requested files.';
-
-    var res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST', headers: headers,
+    var res = await fetch(API_BASE + '/api/generate', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514', max_tokens: 4000,
-        system: sys,
-        messages: [{role:'user', content:'Generate project documentation for:\n\n'+input}]
+        text: input,
+        template: tmpl,
+        mode: 'technical',
+        promptVersion: promptVersion,
+        outputFiles: outputs
       })
     });
 
@@ -736,12 +739,7 @@ async function runGenerate() {
 
     if (res.ok) {
       var data = await res.json();
-      var raw = data.content.map(function(c){return c.text||''}).join('');
-      try {
-        var clean = raw.replace(/```json|```/g,'').trim();
-        var parsed = JSON.parse(clean);
-        files = parsed.files || {};
-      } catch(e) { usedMock = true; files = mockFiles(input, outputs, tmpl); }
+      files = data.files || {};
     } else { usedMock = true; files = mockFiles(input, outputs, tmpl); }
   } catch(e) { usedMock = true; files = mockFiles(input, outputs, tmpl); }
 
@@ -779,7 +777,7 @@ function renderFiles(mock) {
   if (!fnames.length) return;
   activeFile = fnames[0];
   var lines = Object.values(files).join('\n').split('\n').length;
-  var mockNote = mock ? '<span style="font-family:var(--mono);font-size:10px;color:var(--c-hint);padding:0 8px">preview (sem api key)</span>' : '';
+  var mockNote = mock ? '<span style="font-family:var(--mono);font-size:10px;color:var(--c-hint);padding:0 8px">preview (api offline)</span>' : '';
 
   zone.innerHTML = '<div class="file-card">'
     + '<div class="file-card-head">'
@@ -835,6 +833,8 @@ function copyFile() {
 // ─── Init ─────────────────────────────────────────────────────────────────────
 buildStaticViews();
 applyLang();
+var apiBaseInput = document.getElementById('apiBase');
+if (apiBaseInput) apiBaseInput.value = API_BASE;
 document.getElementById('mainInp').placeholder = i18n[lang].inp_placeholder;
 </script>
 </body>
