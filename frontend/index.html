@@ -452,6 +452,8 @@ color:var(--c-muted);white-space:pre-wrap;max-height:380px;overflow-y:auto;
         <div class="key-note" id="memberInfo">membros: sem dados</div>
         <div class="key-note" id="shareInfo">share: ainda nao gerado</div>
         <div class="key-note" id="auditInfo">auditoria: sem eventos</div>
+        <input class="key-input" id="sharedFilter" type="text" placeholder="filtro share: modo/template/prompt" style="margin-top:6px" oninput="applySharedFilter(this.value)" />
+        <div class="key-note" id="sharedMetaInfo">share meta: -</div>
         <button class="file-btn" style="width:100%;margin-top:8px" onclick="refreshMetrics()" data-i18n="metrics_btn">atualizar metricas</button>
         <div class="key-note" id="metricsInfo">metricas: aguardando API</div>
         <div class="key-note" id="metricsStatusInfo">status: -</div>
@@ -636,6 +638,8 @@ var lastGenerationId = null;
 var sharedMode = false;
 var sharedProjectName = '';
 var sharedGenerations = [];
+var sharedVisibleGenerations = [];
+var sharedFilterText = '';
 
 // ─── Examples ────────────────────────────────────────────────────────────────
 var examples = {
@@ -1066,25 +1070,70 @@ async function loadSharedProjectFromQuery() {
     var data = await response.json();
     sharedProjectName = (data.project && data.project.name) ? data.project.name : 'workspace';
     sharedGenerations = Array.isArray(data.generations) ? data.generations : [];
+    sharedFilterText = '';
+    var sharedFilterInput = document.getElementById('sharedFilter');
+    if (sharedFilterInput) sharedFilterInput.value = '';
     var info = document.getElementById('projectInfo');
     if (info) info.textContent = 'colaboracao: modo compartilhado (' + sharedProjectName + ')';
     var shareInfo = document.getElementById('shareInfo');
     if (shareInfo) shareInfo.textContent = 'share: leitura publica';
 
     if (sharedGenerations.length > 0) {
-      switchSharedGeneration(sharedGenerations[0].generationId);
+      applySharedFilter('');
     } else {
       var auditInfo = document.getElementById('auditInfo');
       if (auditInfo) auditInfo.textContent = 'auditoria: sem geracoes compartilhadas';
+      var sharedMetaInfo = document.getElementById('sharedMetaInfo');
+      if (sharedMetaInfo) sharedMetaInfo.textContent = 'share meta: -';
     }
   } catch (e) {
     // fallback silencioso
   }
 }
 
+function getSharedGenerationSummary(item) {
+  var metadata = (item && item.metadata) ? item.metadata : {};
+  var parts = [
+    metadata.mode || 'na',
+    metadata.template || 'na',
+    metadata.promptVersion || 'na',
+    metadata.provider || 'na'
+  ];
+  return parts.join(' · ').toLowerCase();
+}
+
+function applySharedFilter(value) {
+  if (!sharedMode) return;
+
+  sharedFilterText = String(value || '').trim().toLowerCase();
+  if (!sharedFilterText) {
+    sharedVisibleGenerations = sharedGenerations.slice();
+  } else {
+    sharedVisibleGenerations = sharedGenerations.filter(function(item) {
+      return getSharedGenerationSummary(item).indexOf(sharedFilterText) >= 0;
+    });
+  }
+
+  if (!sharedVisibleGenerations.length) {
+    var sharedMetaInfo = document.getElementById('sharedMetaInfo');
+    if (sharedMetaInfo) sharedMetaInfo.textContent = 'share meta: nenhum resultado para o filtro';
+    return;
+  }
+
+  var targetGenerationId = lastGenerationId;
+  var stillVisible = sharedVisibleGenerations.find(function(item) {
+    return item && item.generationId === targetGenerationId;
+  });
+  if (!stillVisible) {
+    targetGenerationId = sharedVisibleGenerations[0].generationId;
+  }
+  switchSharedGeneration(targetGenerationId);
+}
+
 function switchSharedGeneration(generationId) {
   if (!sharedMode) return;
-  var selected = sharedGenerations.find(function(item) {
+  var source = sharedVisibleGenerations.length ? sharedVisibleGenerations : sharedGenerations;
+  var selected = source.find(function(item) {
     return item && item.generationId === generationId;
   });
   if (!selected) return;
@@ -1096,6 +1145,17 @@ function switchSharedGeneration(generationId) {
   var shareInfo = document.getElementById('shareInfo');
   if (shareInfo && lastGenerationId) {
     shareInfo.textContent = 'share: leitura publica · geracao ' + lastGenerationId.slice(0, 8) + '...';
+  }
+
+  var metadata = selected.metadata || {};
+  var createdLabel = selected.createdAt ? new Date(selected.createdAt).toLocaleString() : 'n/a';
+  var metaInfo = document.getElementById('sharedMetaInfo');
+  if (metaInfo) {
+    metaInfo.textContent = 'share meta: ' + (metadata.mode || 'na')
+      + ' | ' + (metadata.template || 'na')
+      + ' | ' + (metadata.promptVersion || 'na')
+      + ' | ' + (metadata.provider || 'na')
+      + ' | ' + createdLabel;
   }
 }
 
@@ -1229,11 +1289,16 @@ function renderFiles(mock) {
     : '';
   var generationSelector = '';
 
-  if (sharedMode && sharedGenerations.length > 0) {
-    generationSelector = '<select class="file-btn" style="max-width:230px" onchange="switchSharedGeneration(this.value)">' + sharedGenerations.map(function(item, index) {
+  var sourceGenerations = sharedVisibleGenerations.length ? sharedVisibleGenerations : sharedGenerations;
+  if (sharedMode && sourceGenerations.length > 0) {
+    generationSelector = '<select class="file-btn" style="max-width:300px" onchange="switchSharedGeneration(this.value)">' + sourceGenerations.map(function(item, index) {
       var generationId = (item && item.generationId) ? item.generationId : ('g' + index);
       var selected = generationId === lastGenerationId ? ' selected' : '';
-      return '<option value="' + generationId + '"' + selected + '>gen ' + (index + 1) + ' · ' + generationId.slice(0, 8) + '</option>';
+      var metadata = (item && item.metadata) ? item.metadata : {};
+      var label = 'gen ' + (index + 1) + ' · ' + generationId.slice(0, 8)
+        + ' · ' + (metadata.mode || 'na')
+        + ' · ' + (metadata.template || 'na');
+      return '<option value="' + generationId + '"' + selected + '>' + label + '</option>';
     }).join('') + '</select>';
   }
 

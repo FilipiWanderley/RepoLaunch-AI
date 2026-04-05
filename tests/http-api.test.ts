@@ -260,5 +260,9 @@ describe("HTTP API", () => {
     expect(Array.isArray(sharedReadOnly.body.generations)).toBe(true);
     expect(sharedReadOnly.body.generations.length).toBeGreaterThanOrEqual(2);
     expect(sharedReadOnly.body.generations[0].generationId).toBe(secondGenerationId);
+    expect(sharedReadOnly.body.generations[0].metadata).toBeTruthy();
+    expect(sharedReadOnly.body.generations[0].metadata.mode).toBeTruthy();
+    expect(sharedReadOnly.body.generations[0].metadata.template).toBeTruthy();
+    expect(sharedReadOnly.body.generations[0].metadata.promptVersion).toBeTruthy();
   });
 });

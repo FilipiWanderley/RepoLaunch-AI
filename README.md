@@ -128,6 +128,7 @@ npx repolaunch export --format json
 - gerar link publico: `POST http://localhost:8787/api/collab/projects/:projectId/share`
 - leitura publica compartilhada: `GET http://localhost:8787/api/share/:shareId`
 - frontend compartilhado: `?share=<shareId>` agora permite navegar entre multiplas geracoes anexadas ao workspace
+- no modo compartilhado, e possivel filtrar geracoes por metadados (`mode`, `template`, `promptVersion`, `provider`)
 
 O endpoint de metricas inclui:
 
