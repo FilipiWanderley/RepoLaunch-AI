@@ -1,3 +1,4 @@
+import path from "node:path";
 import express from "express";
 import cors from "cors";
 import JSZip from "jszip";
@@ -120,6 +121,14 @@ export function createServerApp(): express.Express {
 
   app.use(cors({ allowedHeaders: ["Content-Type", "x-api-token", "x-collab-user", "x-collab-user-name", "x-collab-token"] }));
   app.use(express.json({ limit: "1mb" }));
+
+  const outputsDir = process.env.VERCEL ? "/tmp/outputs" : path.resolve(process.cwd(), "outputs");
+  app.use("/outputs", express.static(outputsDir));
+  if (process.env.VERCEL) {
+    app.use("/outputs", express.static(path.resolve(process.cwd(), "outputs")));
+  }
+  app.use(express.static(path.resolve(__dirname, "../../frontend")));
+
   app.use("/api", (req, res, next) => {
     const startedAt = process.hrtime.bigint();
     res.on("finish", () => {

@@ -3,6 +3,9 @@ import path from "node:path";
 
 export class OutputService {
   private get outputDir(): string {
+    if (process.env.VERCEL) {
+      return "/tmp/outputs";
+    }
     return path.resolve(process.cwd(), "outputs");
   }
 
