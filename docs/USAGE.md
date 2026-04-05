@@ -22,6 +22,9 @@ npx repolaunch export --format json
 - `GET /api/history?limit=10`: lista geracoes recentes
 - `GET /api/history/:generationId/export.zip`: baixa zip da geracao
 - `GET /api/metrics?windowMinutes=15`: metricas de requests, erros, status code e janela temporal
+- `GET /api/collab/projects`: lista workspaces colaborativos
+- `POST /api/collab/projects`: cria workspace colaborativo
+- `POST /api/collab/projects/:projectId/generations`: vincula uma geracao ao workspace
 
 Headers opcionais:
 

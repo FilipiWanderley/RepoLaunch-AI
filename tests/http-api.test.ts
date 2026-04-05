@@ -144,4 +144,38 @@ describe("HTTP API", () => {
     expect(Array.isArray(metrics.body.recent.points)).toBe(true);
     expect(metrics.body.recent.points.length).toBeGreaterThanOrEqual(1);
   });
+
+  it("deve criar projeto colaborativo e vincular geracao", async () => {
+    const app = createServerApp();
+
+    const createdProject = await request(app).post("/api/collab/projects").send({
+      name: "Workspace Squad Alpha",
+      description: "Projeto para compartilhamento interno"
+    });
+    expect(createdProject.status).toBe(201);
+    const projectId = createdProject.body.project.projectId as string;
+
+    const generation = await request(app).post("/api/generate").send({
+      text: "Quero gerar documentos para um workspace colaborativo",
+      outputFiles: ["README.md"]
+    });
+    expect(generation.status).toBe(200);
+    const generationId = generation.body.metadata.generationId as string;
+
+    const attached = await request(app)
+      .post(`/api/collab/projects/${projectId}/generations`)
+      .send({ generationId });
+    expect(attached.status).toBe(200);
+    expect(attached.body.attachedGenerationId).toBe(generationId);
+
+    const projectDetails = await request(app).get(`/api/collab/projects/${projectId}`);
+    expect(projectDetails.status).toBe(200);
+    expect(projectDetails.body.project.generationIds).toContain(generationId);
+    expect(Array.isArray(projectDetails.body.generations)).toBe(true);
+
+    const projectsList = await request(app).get("/api/collab/projects");
+    expect(projectsList.status).toBe(200);
+    expect(Array.isArray(projectsList.body.projects)).toBe(true);
+    expect(projectsList.body.projects.find((project: { projectId: string }) => project.projectId === projectId)).toBeTruthy();
+  });
 });

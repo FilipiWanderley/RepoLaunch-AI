@@ -435,6 +435,11 @@ color:var(--c-muted);white-space:pre-wrap;max-height:380px;overflow-y:auto;
         <div class="key-label" data-i18n="api_token" style="margin-top:10px">API Token</div>
         <input class="key-input" id="apiToken" type="password" placeholder="opcional" autocomplete="off"/>
         <div class="key-note" data-i18n="api_note">Frontend usa a API local; chaves ficam somente no backend.</div>
+        <div class="key-label" data-i18n="collab_ws" style="margin-top:10px">Workspace colaborativo</div>
+        <select class="key-input" id="projectSelect" onchange="onProjectSelect(this.value)"></select>
+        <input class="key-input" id="projectName" type="text" placeholder="novo projeto" style="margin-top:6px" />
+        <button class="file-btn" style="width:100%;margin-top:6px" onclick="createProject()" data-i18n="collab_create">criar projeto</button>
+        <div class="key-note" id="projectInfo">colaboracao: sem projeto selecionado</div>
         <button class="file-btn" style="width:100%;margin-top:8px" onclick="refreshMetrics()" data-i18n="metrics_btn">atualizar metricas</button>
         <div class="key-note" id="metricsInfo">metricas: aguardando API</div>
         <div class="key-note" id="metricsStatusInfo">status: -</div>
@@ -547,12 +552,16 @@ color:var(--c-muted);white-space:pre-wrap;max-height:380px;overflow-y:auto;
 var lang = 'pt';
 var API_BASE = localStorage.getItem('repolaunch_api_base') || 'http://localhost:8787';
 var API_TOKEN = localStorage.getItem('repolaunch_api_token') || '';
+var currentProjectId = localStorage.getItem('repolaunch_project_id') || '';
+var projectsCache = [];
 var promptVersion = 'v2';
 var i18n = {
   pt: {
     template: 'Template', output_files: 'Output files', api_base: 'API Base',
     api_token: 'API Token',
     api_note: 'Frontend usa a API local; chaves ficam somente no backend.',
+    collab_ws: 'Workspace colaborativo',
+    collab_create: 'criar projeto',
     metrics_btn: 'atualizar metricas',
     run_btn: 'repolaunch generate',
     tmpl_portfolio: 'Showcase para recrutadores',
@@ -569,6 +578,8 @@ var i18n = {
     template: 'Template', output_files: 'Output files', api_base: 'API Base',
     api_token: 'API Token',
     api_note: 'Frontend uses local API; keys stay only in backend.',
+    collab_ws: 'Collaborative workspace',
+    collab_create: 'create project',
     metrics_btn: 'refresh metrics',
     run_btn: 'repolaunch generate',
     tmpl_portfolio: 'Showcase for recruiters',
@@ -761,6 +772,7 @@ async function runGenerate() {
       var data = await res.json();
       files = data.files || {};
       lastGenerationId = data.metadata && data.metadata.generationId ? data.metadata.generationId : null;
+      await attachLatestGenerationToProject();
     } else { usedMock = true; files = mockFiles(input, outputs, tmpl); }
   } catch(e) { usedMock = true; files = mockFiles(input, outputs, tmpl); lastGenerationId = null; }
 
@@ -772,6 +784,115 @@ async function runGenerate() {
 
   generating = false; btn.disabled = false;
   btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 2l8 4-8 4V2z" fill="#fff"/></svg><span data-i18n="run_btn">repolaunch generate</span>';
+}
+
+function apiHeaders(contentType) {
+  var headers = {};
+  if (contentType) headers['Content-Type'] = contentType;
+  if (API_TOKEN) headers['x-api-token'] = API_TOKEN;
+  return headers;
+}
+
+function renderProjects() {
+  var select = document.getElementById('projectSelect');
+  if (!select) return;
+
+  var options = ['<option value="">sem projeto</option>'].concat(projectsCache.map(function(project) {
+    var selected = project.projectId === currentProjectId ? ' selected' : '';
+    return '<option value="' + project.projectId + '"' + selected + '>' + project.name + '</option>';
+  }));
+  select.innerHTML = options.join('');
+
+  var info = document.getElementById('projectInfo');
+  if (!info) return;
+  if (!currentProjectId) {
+    info.textContent = 'colaboracao: sem projeto selecionado';
+    return;
+  }
+
+  var selectedProject = projectsCache.find(function(project) { return project.projectId === currentProjectId; });
+  if (!selectedProject) {
+    info.textContent = 'colaboracao: projeto nao encontrado';
+    return;
+  }
+
+  info.textContent = 'colaboracao: ' + selectedProject.name + ' (' + (selectedProject.generationCount || 0) + ' geracoes)';
+}
+
+async function loadProjects() {
+  try {
+    var response = await fetch(API_BASE + '/api/collab/projects', {
+      method: 'GET',
+      headers: apiHeaders()
+    });
+    if (!response.ok) {
+      projectsCache = [];
+      renderProjects();
+      return;
+    }
+
+    var data = await response.json();
+    projectsCache = Array.isArray(data.projects) ? data.projects : [];
+    if (currentProjectId && !projectsCache.find(function(project) { return project.projectId === currentProjectId; })) {
+      currentProjectId = '';
+      localStorage.removeItem('repolaunch_project_id');
+    }
+    renderProjects();
+  } catch (e) {
+    projectsCache = [];
+    renderProjects();
+  }
+}
+
+function onProjectSelect(projectId) {
+  currentProjectId = projectId || '';
+  if (currentProjectId) {
+    localStorage.setItem('repolaunch_project_id', currentProjectId);
+  } else {
+    localStorage.removeItem('repolaunch_project_id');
+  }
+  renderProjects();
+}
+
+async function createProject() {
+  var input = document.getElementById('projectName');
+  var name = input && input.value ? input.value.trim() : '';
+  if (!name) return;
+
+  try {
+    var response = await fetch(API_BASE + '/api/collab/projects', {
+      method: 'POST',
+      headers: apiHeaders('application/json'),
+      body: JSON.stringify({ name: name })
+    });
+    if (!response.ok) return;
+
+    var data = await response.json();
+    if (data && data.project && data.project.projectId) {
+      currentProjectId = data.project.projectId;
+      localStorage.setItem('repolaunch_project_id', currentProjectId);
+    }
+    if (input) input.value = '';
+    await loadProjects();
+  } catch (e) {
+    // fallback silencioso para manter UX fluida
+  }
+}
+
+async function attachLatestGenerationToProject() {
+  if (!currentProjectId || !lastGenerationId) return;
+
+  try {
+    var response = await fetch(API_BASE + '/api/collab/projects/' + encodeURIComponent(currentProjectId) + '/generations', {
+      method: 'POST',
+      headers: apiHeaders('application/json'),
+      body: JSON.stringify({ generationId: lastGenerationId })
+    });
+    if (!response.ok) return;
+    await loadProjects();
+  } catch (e) {
+    // fallback silencioso para manter UX fluida
+  }
 }
 
 async function refreshMetrics() {
@@ -969,6 +1090,7 @@ var apiTokenInput = document.getElementById('apiToken');
 if (apiTokenInput) apiTokenInput.value = API_TOKEN;
 document.getElementById('mainInp').placeholder = i18n[lang].inp_placeholder;
 refreshMetrics();
+loadProjects();
 </script>
 </body>
 </html>

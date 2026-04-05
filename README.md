@@ -119,6 +119,8 @@ npx repolaunch export --format json
 - historico de geracoes: `GET http://localhost:8787/api/history?limit=10`
 - export zip por geracao: `GET http://localhost:8787/api/history/:generationId/export.zip`
 - metricas de API: `GET http://localhost:8787/api/metrics?windowMinutes=15`
+- colaboracao: `GET/POST http://localhost:8787/api/collab/projects`
+- vincular geracao ao projeto: `POST http://localhost:8787/api/collab/projects/:projectId/generations`
 
 O endpoint de metricas inclui:
 
