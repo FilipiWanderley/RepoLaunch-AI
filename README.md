@@ -127,6 +127,7 @@ npx repolaunch export --format json
 - vincular geracao ao projeto: `POST http://localhost:8787/api/collab/projects/:projectId/generations`
 - gerar link publico: `POST http://localhost:8787/api/collab/projects/:projectId/share`
 - leitura publica compartilhada: `GET http://localhost:8787/api/share/:shareId`
+- frontend compartilhado: `?share=<shareId>` agora permite navegar entre multiplas geracoes anexadas ao workspace
 
 O endpoint de metricas inclui:
 

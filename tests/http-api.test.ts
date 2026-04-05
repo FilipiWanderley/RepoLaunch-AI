@@ -180,6 +180,13 @@ describe("HTTP API", () => {
     expect(generation.status).toBe(200);
     const generationId = generation.body.metadata.generationId as string;
 
+    const historyForShare = await request(app).get("/api/history?limit=20");
+    expect(historyForShare.status).toBe(200);
+    const secondGenerationId = (historyForShare.body.items || [])
+      .map((item: { generationId?: string }) => item.generationId)
+      .find((id: string | undefined) => id && id !== generationId) as string | undefined;
+    expect(secondGenerationId).toBeTruthy();
+
     const attached = await request(app)
       .post(`/api/collab/projects/${projectId}/generations`)
       .set(editorHeaders)
@@ -193,6 +200,12 @@ describe("HTTP API", () => {
       .send({ generationId });
     expect(viewerAttachAttempt.status).toBe(403);
     expect(viewerAttachAttempt.body.error.code).toBe("COLLAB_FORBIDDEN");
+
+    const attachedSecond = await request(app)
+      .post(`/api/collab/projects/${projectId}/generations`)
+      .set(ownerHeaders)
+      .send({ generationId: secondGenerationId as string });
+    expect(attachedSecond.status).toBe(200);
 
     const members = await request(app)
       .get(`/api/collab/projects/${projectId}/members`)
@@ -245,5 +258,7 @@ describe("HTTP API", () => {
     expect(sharedReadOnly.status).toBe(200);
     expect(sharedReadOnly.body.project.projectId).toBe(projectId);
     expect(Array.isArray(sharedReadOnly.body.generations)).toBe(true);
+    expect(sharedReadOnly.body.generations.length).toBeGreaterThanOrEqual(2);
+    expect(sharedReadOnly.body.generations[0].generationId).toBe(secondGenerationId);
   });
 });

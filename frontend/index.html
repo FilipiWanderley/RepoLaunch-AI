@@ -633,6 +633,9 @@ var generating = false;
 var files = {};
 var activeFile = null;
 var lastGenerationId = null;
+var sharedMode = false;
+var sharedProjectName = '';
+var sharedGenerations = [];
 
 // ─── Examples ────────────────────────────────────────────────────────────────
 var examples = {
@@ -1050,6 +1053,9 @@ async function loadSharedProjectFromQuery() {
   var shareId = readShareIdFromQuery();
   if (!shareId) return;
 
+  sharedMode = true;
+  currentProjectId = '';
+
   try {
     var response = await fetch(API_BASE + '/api/share/' + encodeURIComponent(shareId), {
       method: 'GET',
@@ -1058,19 +1064,38 @@ async function loadSharedProjectFromQuery() {
     if (!response.ok) return;
 
     var data = await response.json();
+    sharedProjectName = (data.project && data.project.name) ? data.project.name : 'workspace';
+    sharedGenerations = Array.isArray(data.generations) ? data.generations : [];
     var info = document.getElementById('projectInfo');
-    if (info) info.textContent = 'colaboracao: modo compartilhado (' + (data.project.name || 'workspace') + ')';
+    if (info) info.textContent = 'colaboracao: modo compartilhado (' + sharedProjectName + ')';
     var shareInfo = document.getElementById('shareInfo');
     if (shareInfo) shareInfo.textContent = 'share: leitura publica';
 
-    if (Array.isArray(data.generations) && data.generations.length > 0) {
-      var latest = data.generations[0];
-      files = latest.files || {};
-      lastGenerationId = latest.generationId || null;
-      renderFiles(false);
+    if (sharedGenerations.length > 0) {
+      switchSharedGeneration(sharedGenerations[0].generationId);
+    } else {
+      var auditInfo = document.getElementById('auditInfo');
+      if (auditInfo) auditInfo.textContent = 'auditoria: sem geracoes compartilhadas';
     }
   } catch (e) {
     // fallback silencioso
+  }
+}
+
+function switchSharedGeneration(generationId) {
+  if (!sharedMode) return;
+  var selected = sharedGenerations.find(function(item) {
+    return item && item.generationId === generationId;
+  });
+  if (!selected) return;
+
+  files = selected.files || {};
+  lastGenerationId = selected.generationId || null;
+  renderFiles(false);
+
+  var shareInfo = document.getElementById('shareInfo');
+  if (shareInfo && lastGenerationId) {
+    shareInfo.textContent = 'share: leitura publica · geracao ' + lastGenerationId.slice(0, 8) + '...';
   }
 }
 
@@ -1202,13 +1227,22 @@ function renderFiles(mock) {
   var zipButton = lastGenerationId
     ? '<button class="file-btn" onclick="exportGenerationZip()">zip</button>'
     : '';
+  var generationSelector = '';
+
+  if (sharedMode && sharedGenerations.length > 0) {
+    generationSelector = '<select class="file-btn" style="max-width:230px" onchange="switchSharedGeneration(this.value)">' + sharedGenerations.map(function(item, index) {
+      var generationId = (item && item.generationId) ? item.generationId : ('g' + index);
+      var selected = generationId === lastGenerationId ? ' selected' : '';
+      return '<option value="' + generationId + '"' + selected + '>gen ' + (index + 1) + ' · ' + generationId.slice(0, 8) + '</option>';
+    }).join('') + '</select>';
+  }
 
   zone.innerHTML = '<div class="file-card">'
     + '<div class="file-card-head">'
     + '<div class="file-tabs" id="fileTabs">'
     + fnames.map(function(f){return '<button class="file-tab'+(f===activeFile?' on':'')+'" onclick="switchFile(\''+f+'\')">'+f+'</button>'}).join('')
     + '</div>'
-    + '<div class="file-actions">'+mockNote+zipButton+'<button class="file-btn" onclick="copyFile()">copy</button><button class="file-btn" onclick="exportFile()">export</button></div>'
+    + '<div class="file-actions">'+mockNote+generationSelector+zipButton+'<button class="file-btn" onclick="copyFile()">copy</button><button class="file-btn" onclick="exportFile()">export</button></div>'
     + '</div>'
     + '<div class="file-body" id="fileBody">'+renderMd(files[activeFile]||'')+'</div>'
     + '</div>'
