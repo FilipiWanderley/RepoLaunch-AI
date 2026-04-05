@@ -8,6 +8,7 @@ import { CliError, normalizeCliError } from "../errors/cli-error";
 import { listPromptVersions } from "../prompts/system-prompts";
 import { readEnv } from "../config/env";
 import { createApiSecurity } from "./security";
+import { getApiMetrics, recordApiError, recordApiRequest } from "./metrics";
 
 const GenerateRequestSchema = z.object({
   text: z.string().min(1, "Texto de entrada e obrigatorio."),
@@ -33,6 +34,19 @@ export function createServerApp(): express.Express {
 
   app.use(cors({ allowedHeaders: ["Content-Type", "x-api-token"] }));
   app.use(express.json({ limit: "1mb" }));
+  app.use("/api", (req, res, next) => {
+    const startedAt = process.hrtime.bigint();
+    res.on("finish", () => {
+      const durationMs = Number(process.hrtime.bigint() - startedAt) / 1_000_000;
+      recordApiRequest({
+        method: req.method,
+        path: req.path,
+        statusCode: res.statusCode,
+        latencyMs: durationMs
+      });
+    });
+    next();
+  });
   app.use("/api", security.rateLimitMiddleware);
   app.use("/api", security.authMiddleware);
 
@@ -47,6 +61,10 @@ export function createServerApp(): express.Express {
       source: registry.source,
       filePath: registry.filePath
     });
+  });
+
+  app.get("/api/metrics", (_req, res) => {
+    res.json(getApiMetrics());
   });
 
   app.post("/api/generate", async (req, res, next) => {
@@ -126,6 +144,7 @@ export function createServerApp(): express.Express {
 
   app.use((error: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     const normalized = normalizeCliError(error);
+    recordApiError(normalized.code);
     const status = normalized.exitCode >= 400 && normalized.exitCode < 600 ? normalized.exitCode : 500;
 
     res.status(status).json({

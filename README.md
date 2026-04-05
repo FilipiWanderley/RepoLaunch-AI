@@ -117,6 +117,7 @@ npx repolaunch export --format json
 - gerar docs: `POST http://localhost:8787/api/generate`
 - historico de geracoes: `GET http://localhost:8787/api/history?limit=10`
 - export zip por geracao: `GET http://localhost:8787/api/history/:generationId/export.zip`
+- metricas de API: `GET http://localhost:8787/api/metrics`
 
 ### Seguranca da API local
 

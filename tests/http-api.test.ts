@@ -1,8 +1,10 @@
 import request from "supertest";
 import { createServerApp } from "../src/server/app";
+import { resetApiMetricsForTests } from "../src/server/metrics";
 
 describe("HTTP API", () => {
   beforeEach(() => {
+    resetApiMetricsForTests();
     delete process.env.API_AUTH_TOKEN;
     delete process.env.API_RATE_LIMIT_WINDOW_MS;
     delete process.env.API_RATE_LIMIT_MAX;
@@ -102,5 +104,29 @@ describe("HTTP API", () => {
     expect(second.status).toBe(200);
     expect(third.status).toBe(429);
     expect(third.body.error.code).toBe("API_RATE_LIMIT_EXCEEDED");
+  });
+
+  it("deve expor metricas com latencia, erros e rotas", async () => {
+    const app = createServerApp();
+
+    await request(app).get("/api/prompts");
+    await request(app).post("/api/generate").send({
+      text: "Quero uma geracao para validar metricas"
+    });
+    await request(app).post("/api/generate").send({
+      text: ""
+    });
+
+    const metrics = await request(app).get("/api/metrics");
+    expect(metrics.status).toBe(200);
+    expect(metrics.body.totalRequests).toBeGreaterThanOrEqual(3);
+    expect(metrics.body.totalErrors).toBeGreaterThanOrEqual(1);
+    const routeKeys = Object.keys(metrics.body.routes || {});
+    const promptsKey = routeKeys.find((key) => key.includes("GET") && key.includes("prompts"));
+    const generateKey = routeKeys.find((key) => key.includes("POST") && key.includes("generate"));
+
+    expect(promptsKey).toBeTruthy();
+    expect(generateKey).toBeTruthy();
+    expect(metrics.body.routes[generateKey as string].avgLatencyMs).toBeGreaterThanOrEqual(0);
   });
 });

@@ -20,6 +20,7 @@ npx repolaunch export --format json
 - `POST /api/generate`: gera arquivos por payload
 - `GET /api/history?limit=10`: lista geracoes recentes
 - `GET /api/history/:generationId/export.zip`: baixa zip da geracao
+- `GET /api/metrics`: metricas de requests, erros e latencia por rota
 
 Headers opcionais:
 

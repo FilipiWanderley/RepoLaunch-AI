@@ -435,6 +435,8 @@ color:var(--c-muted);white-space:pre-wrap;max-height:380px;overflow-y:auto;
         <div class="key-label" data-i18n="api_token" style="margin-top:10px">API Token</div>
         <input class="key-input" id="apiToken" type="password" placeholder="opcional" autocomplete="off"/>
         <div class="key-note" data-i18n="api_note">Frontend usa a API local; chaves ficam somente no backend.</div>
+        <button class="file-btn" style="width:100%;margin-top:8px" onclick="refreshMetrics()" data-i18n="metrics_btn">atualizar metricas</button>
+        <div class="key-note" id="metricsInfo">metricas: aguardando API</div>
         <button class="run-btn" id="runBtn" onclick="runGenerate()">
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
             <path d="M2 2l8 4-8 4V2z" fill="#fff"/>
@@ -548,6 +550,7 @@ var i18n = {
     template: 'Template', output_files: 'Output files', api_base: 'API Base',
     api_token: 'API Token',
     api_note: 'Frontend usa a API local; chaves ficam somente no backend.',
+    metrics_btn: 'atualizar metricas',
     run_btn: 'repolaunch generate',
     tmpl_portfolio: 'Showcase para recrutadores',
     tmpl_saas: 'Produto com monetização',
@@ -563,6 +566,7 @@ var i18n = {
     template: 'Template', output_files: 'Output files', api_base: 'API Base',
     api_token: 'API Token',
     api_note: 'Frontend uses local API; keys stay only in backend.',
+    metrics_btn: 'refresh metrics',
     run_btn: 'repolaunch generate',
     tmpl_portfolio: 'Showcase for recruiters',
     tmpl_saas: 'Product with monetization',
@@ -761,9 +765,38 @@ async function runGenerate() {
   setActive('write'); await delay(250); setDone('write',4); pct(100);
   await delay(400);
   renderFiles(usedMock);
+  refreshMetrics();
 
   generating = false; btn.disabled = false;
   btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 2l8 4-8 4V2z" fill="#fff"/></svg><span data-i18n="run_btn">repolaunch generate</span>';
+}
+
+async function refreshMetrics() {
+  var info = document.getElementById('metricsInfo');
+  if (!info) return;
+
+  try {
+    var headers = {};
+    if (API_TOKEN) headers['x-api-token'] = API_TOKEN;
+
+    var response = await fetch(API_BASE + '/api/metrics', {
+      method: 'GET',
+      headers: headers
+    });
+
+    if (!response.ok) {
+      info.textContent = 'metricas: indisponivel';
+      return;
+    }
+
+    var data = await response.json();
+    var requests = data.totalRequests || 0;
+    var errors = data.totalErrors || 0;
+    var limited = data.totalRateLimitExceeded || 0;
+    info.textContent = 'metricas: req ' + requests + ' | erros ' + errors + ' | rate-limit ' + limited;
+  } catch (e) {
+    info.textContent = 'metricas: offline';
+  }
 }
 
 // ─── Mock files ───────────────────────────────────────────────────────────────
@@ -879,6 +912,7 @@ if (apiBaseInput) apiBaseInput.value = API_BASE;
 var apiTokenInput = document.getElementById('apiToken');
 if (apiTokenInput) apiTokenInput.value = API_TOKEN;
 document.getElementById('mainInp').placeholder = i18n[lang].inp_placeholder;
+refreshMetrics();
 </script>
 </body>
 </html>
