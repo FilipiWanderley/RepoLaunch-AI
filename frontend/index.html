@@ -1,139 +1,841 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>RepoLaunch AI MVP UI</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="./styles.css" />
-  </head>
-  <body>
-    <div class="bg-noise"></div>
-    <header class="hero">
-      <div class="lang-switch" role="group" aria-label="Language switch">
-        <button class="lang-btn active" data-lang="pt">PT</button>
-        <button class="lang-btn" data-lang="en">EN</button>
-      </div>
-      <p class="tag" data-i18n="hero.tag">MVP PREVIEW</p>
-      <h1 data-i18n="hero.title">RepoLaunch AI</h1>
-      <p class="subtitle" data-i18n="hero.subtitle">
-        Transforme aprendizado em projetos reais prontos para GitHub
-      </p>
-      <div class="hero-stats">
-        <article class="stat-card">
-          <span data-i18n="stats.mode">Modo ativo</span>
-          <strong id="active-mode">recruiter</strong>
-        </article>
-        <article class="stat-card">
-          <span data-i18n="stats.files">Arquivos gerados</span>
-          <strong id="files-count">--</strong>
-        </article>
-        <article class="stat-card">
-          <span data-i18n="stats.status">Status</span>
-          <strong class="ok" data-i18n="stats.running">running</strong>
-        </article>
-      </div>
-    </header>
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>RepoLaunch AI</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+--c-bg:#fafaf9;
+--c-surface:#ffffff;
+--c-border:#e8e6e0;
+--c-border-strong:#c8c5bc;
+--c-text:#1a1916;
+--c-muted:#6b6860;
+--c-hint:#9e9b94;
+--c-orange:#d4590a;
+--c-orange-bg:#fdf3ee;
+--c-orange-border:#f4c4a0;
+--c-green:#1d6b3a;
+--c-green-bg:#eef6f1;
+--c-blue:#1a4fa0;
+--c-blue-bg:#edf2fb;
+--c-code-bg:#f4f2ed;
+--c-selection:#f5ddd0;
+--mono:'JetBrains Mono',ui-monospace,'SF Mono',Consolas,monospace;
+--sans:-apple-system,'Inter','Helvetica Neue',Arial,sans-serif;
+}
+@media(prefers-color-scheme:dark){
+:root{
+--c-bg:#111110;
+--c-surface:#1a1916;
+--c-border:#2e2c28;
+--c-border-strong:#3d3a34;
+--c-text:#e8e5de;
+--c-muted:#9e9b94;
+--c-hint:#5a5853;
+--c-orange:#f07030;
+--c-orange-bg:#1f1309;
+--c-orange-border:#4a2810;
+--c-green:#3aad68;
+--c-green-bg:#0a1810;
+--c-blue:#6b9de8;
+--c-blue-bg:#0a1020;
+--c-code-bg:#1e1c18;
+--c-selection:#2a1a0e;
+}
+}
+html,body{height:100%}
+body{background:var(--c-bg);color:var(--c-text);font-family:var(--sans);font-size:14px;line-height:1.5}
 
-    <main>
-      <section class="panel">
-        <h2 data-i18n="panel.title">Telas do MVP</h2>
-        <div class="tabs" role="tablist" aria-label="MVP screens">
-          <button class="tab active" data-screen="overview" data-i18n="tabs.overview">Overview</button>
-          <button class="tab" data-screen="analyze" data-i18n="tabs.analyze">Analyze</button>
-          <button class="tab" data-screen="generate" data-i18n="tabs.generate">Generate</button>
-          <button class="tab" data-screen="outputs" data-i18n="tabs.outputs">Outputs</button>
-          <button class="tab" data-screen="security" data-i18n="tabs.security">Security</button>
+.app{display:flex;flex-direction:column;height:100vh}
+
+.topbar{
+display:flex;align-items:center;gap:0;
+border-bottom:1px solid var(--c-border);
+background:var(--c-surface);
+height:48px;padding:0;flex-shrink:0;
+}
+.topbar-brand{
+display:flex;align-items:center;gap:10px;
+padding:0 20px;height:100%;
+border-right:1px solid var(--c-border);
+text-decoration:none;color:inherit;
+}
+.brand-wordmark{
+font-family:var(--mono);font-size:13px;font-weight:700;
+letter-spacing:-0.3px;color:var(--c-text);
+}
+.brand-wordmark em{font-style:normal;color:var(--c-orange)}
+.brand-sep{color:var(--c-border-strong);font-size:18px;line-height:1;padding:0 4px;font-weight:300}
+.brand-sub{font-size:12px;color:var(--c-muted);font-family:var(--mono)}
+
+.topbar-tabs{display:flex;height:100%;margin-left:4px}
+.tab{
+display:flex;align-items:center;gap:6px;padding:0 16px;
+border:none;background:none;cursor:pointer;
+font-family:var(--sans);font-size:13px;color:var(--c-muted);
+border-bottom:2px solid transparent;margin-bottom:-1px;
+transition:color 0.15s,border-color 0.15s;
+}
+.tab:hover{color:var(--c-text)}
+.tab.on{color:var(--c-text);border-bottom-color:var(--c-orange)}
+.tab-dot{width:5px;height:5px;border-radius:50%;background:var(--c-border-strong)}
+.tab.on .tab-dot{background:var(--c-orange)}
+
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px;padding-right:16px}
+.chip{
+font-family:var(--mono);font-size:10px;font-weight:600;
+padding:3px 8px;border-radius:3px;letter-spacing:0.3px;
+background:var(--c-orange-bg);color:var(--c-orange);
+border:1px solid var(--c-orange-border);
+}
+.lang-btn{
+font-family:var(--mono);font-size:10px;font-weight:600;
+padding:3px 8px;border-radius:3px;letter-spacing:0.3px;
+background:none;color:var(--c-muted);
+border:1px solid var(--c-border);cursor:pointer;
+transition:all 0.15s;
+}
+.lang-btn:hover{border-color:var(--c-orange);color:var(--c-orange)}
+
+.layout{display:flex;flex:1;min-height:0}
+
+.sidebar{
+width:260px;flex-shrink:0;
+border-right:1px solid var(--c-border);
+background:var(--c-surface);
+display:flex;flex-direction:column;
+overflow-y:auto;
+}
+
+.sidebar-sect{padding:16px;border-bottom:1px solid var(--c-border)}
+.sect-label{
+font-family:var(--mono);font-size:10px;font-weight:700;
+text-transform:uppercase;letter-spacing:1.2px;
+color:var(--c-hint);margin-bottom:10px;
+}
+
+.tmpl-list{display:flex;flex-direction:column;gap:2px}
+.tmpl{
+display:flex;align-items:center;gap:10px;padding:7px 10px;
+border-radius:5px;cursor:pointer;transition:background 0.12s;
+border:1px solid transparent;background:none;text-align:left;width:100%;
+}
+.tmpl:hover{background:var(--c-code-bg)}
+.tmpl.sel{background:var(--c-orange-bg);border-color:var(--c-orange-border)}
+.tmpl-icon{
+width:26px;height:26px;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+background:var(--c-code-bg);border:1px solid var(--c-border);
+}
+.tmpl.sel .tmpl-icon{background:var(--c-orange-bg);border-color:var(--c-orange-border)}
+.tmpl-name{font-size:13px;font-weight:500;color:var(--c-text);line-height:1.2}
+.tmpl-desc{font-size:11px;color:var(--c-muted);line-height:1.3;margin-top:1px}
+
+.output-list{display:flex;flex-direction:column;gap:2px}
+.out-row{
+display:flex;align-items:center;justify-content:space-between;
+padding:6px 10px;border-radius:5px;cursor:pointer;
+border:1px solid transparent;transition:background 0.12s;
+}
+.out-row:hover{background:var(--c-code-bg)}
+.out-row.on{background:var(--c-code-bg);border-color:var(--c-border)}
+.out-fname{font-family:var(--mono);font-size:11px;color:var(--c-text)}
+.out-chk{
+width:14px;height:14px;border-radius:3px;
+border:1.5px solid var(--c-border-strong);
+display:flex;align-items:center;justify-content:center;flex-shrink:0;
+transition:all 0.12s;
+}
+.out-row.on .out-chk{background:var(--c-orange);border-color:var(--c-orange)}
+.out-chk-mark{width:8px;height:5px;border-left:1.5px solid #fff;border-bottom:1.5px solid #fff;transform:rotate(-45deg) translate(1px,-1px);display:none}
+.out-row.on .out-chk-mark{display:block}
+
+.key-wrap{padding:16px;margin-top:auto;border-top:1px solid var(--c-border)}
+.key-label{
+font-family:var(--mono);font-size:10px;font-weight:700;
+text-transform:uppercase;letter-spacing:1.2px;color:var(--c-hint);margin-bottom:8px;
+}
+.key-input{
+width:100%;padding:7px 10px;
+font-family:var(--mono);font-size:11px;color:var(--c-text);
+background:var(--c-code-bg);border:1px solid var(--c-border);
+border-radius:5px;outline:none;transition:border-color 0.15s;
+}
+.key-input:focus{border-color:var(--c-orange)}
+.key-note{font-size:10px;color:var(--c-hint);margin-top:6px;line-height:1.5}
+
+.run-btn{
+width:100%;padding:10px 16px;
+font-family:var(--mono);font-size:12px;font-weight:700;
+letter-spacing:0.2px;
+background:var(--c-orange);color:#fff;border:none;border-radius:5px;cursor:pointer;
+display:flex;align-items:center;justify-content:center;gap:8px;
+transition:opacity 0.15s,transform 0.1s;margin-top:12px;
+}
+.run-btn:hover{opacity:0.9}
+.run-btn:active{transform:scale(0.99)}
+.run-btn:disabled{opacity:0.4;cursor:not-allowed;transform:none}
+
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+
+.input-zone{
+padding:16px 20px;border-bottom:1px solid var(--c-border);
+background:var(--c-surface);flex-shrink:0;
+}
+.input-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.input-label{font-family:var(--mono);font-size:11px;color:var(--c-muted)}
+.char-ct{font-family:var(--mono);font-size:10px;color:var(--c-hint)}
+.inp{
+width:100%;min-height:120px;resize:vertical;padding:10px 12px;
+font-family:var(--sans);font-size:13px;line-height:1.6;color:var(--c-text);
+background:var(--c-bg);border:1px solid var(--c-border);border-radius:6px;
+outline:none;transition:border-color 0.15s;
+}
+.inp:focus{border-color:var(--c-orange)}
+.inp::placeholder{color:var(--c-hint)}
+.examples{display:flex;align-items:center;gap:6px;margin-top:10px;flex-wrap:wrap}
+.ex-label{font-size:11px;color:var(--c-hint)}
+.ex{
+font-family:var(--mono);font-size:10px;color:var(--c-muted);
+background:var(--c-code-bg);border:1px solid var(--c-border);
+padding:3px 8px;border-radius:4px;cursor:pointer;white-space:nowrap;
+transition:all 0.12s;
+}
+.ex:hover{border-color:var(--c-orange);color:var(--c-orange)}
+
+.output-zone{flex:1;padding:20px;overflow-y:auto;background:var(--c-bg);display:flex;flex-direction:column;gap:14px}
+
+.empty{
+flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+gap:12px;text-align:center;padding:40px;color:var(--c-muted);
+}
+.empty-icon{
+width:48px;height:48px;border:1px solid var(--c-border);
+border-radius:8px;display:flex;align-items:center;justify-content:center;
+background:var(--c-surface);margin-bottom:4px;
+}
+.empty-h{font-size:15px;font-weight:500;color:var(--c-text)}
+.empty-p{font-size:12px;line-height:1.6;max-width:300px}
+.meta-row{display:flex;gap:20px;justify-content:center}
+.meta-item{text-align:center}
+.meta-val{font-family:var(--mono);font-size:20px;font-weight:700;color:var(--c-text)}
+.meta-label{font-size:10px;color:var(--c-hint);margin-top:2px;text-transform:uppercase;letter-spacing:0.8px}
+
+.progress-wrap{background:var(--c-surface);border:1px solid var(--c-border);border-radius:8px;overflow:hidden}
+.progress-head{padding:12px 16px;border-bottom:1px solid var(--c-border);display:flex;align-items:center;justify-content:space-between}
+.progress-title{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--c-text)}
+.progress-sub{font-size:11px;color:var(--c-muted)}
+.prog-bar{height:2px;background:var(--c-border)}
+.prog-fill{height:100%;background:var(--c-orange);transition:width 0.3s ease;width:0%}
+.progress-body{padding:12px 16px;display:flex;flex-direction:column;gap:8px}
+.step-row{display:flex;align-items:center;gap:10px}
+.step-ic{
+width:20px;height:20px;border-radius:50%;flex-shrink:0;
+display:flex;align-items:center;justify-content:center;
+background:var(--c-code-bg);border:1px solid var(--c-border);
+}
+.step-ic.done{background:var(--c-green-bg);border-color:var(--c-green)}
+.step-ic.active{background:var(--c-orange-bg);border-color:var(--c-orange-border)}
+.step-text{font-size:12px;color:var(--c-hint)}
+.step-text.active{color:var(--c-text)}
+.step-text.done{color:var(--c-muted)}
+.spin{
+width:10px;height:10px;border:1.5px solid var(--c-orange-border);
+border-top-color:var(--c-orange);border-radius:50%;
+animation:sp 0.7s linear infinite;
+}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+.file-card{background:var(--c-surface);border:1px solid var(--c-border);border-radius:8px;overflow:hidden}
+.file-card-head{
+display:flex;align-items:center;justify-content:space-between;
+padding:10px 14px;border-bottom:1px solid var(--c-border);background:var(--c-code-bg);
+}
+.file-tabs{display:flex;gap:0;overflow-x:auto}
+.file-tab{
+font-family:var(--mono);font-size:11px;color:var(--c-muted);
+background:none;border:none;padding:6px 14px;cursor:pointer;
+border-bottom:2px solid transparent;transition:all 0.12s;white-space:nowrap;
+}
+.file-tab:hover{color:var(--c-text)}
+.file-tab.on{color:var(--c-orange);border-bottom-color:var(--c-orange)}
+.file-actions{display:flex;gap:6px;flex-shrink:0;align-items:center}
+.file-btn{
+font-family:var(--mono);font-size:10px;font-weight:600;color:var(--c-muted);
+background:var(--c-surface);border:1px solid var(--c-border);
+padding:4px 10px;border-radius:4px;cursor:pointer;transition:all 0.12s;
+}
+.file-btn:hover{border-color:var(--c-orange);color:var(--c-orange)}
+.file-body{
+padding:16px;font-family:var(--mono);font-size:11.5px;line-height:1.75;
+color:var(--c-muted);white-space:pre-wrap;max-height:380px;overflow-y:auto;
+}
+.md-h1{font-family:var(--sans);font-size:16px;font-weight:600;color:var(--c-text);margin:0 0 8px;display:block}
+.md-h2{font-family:var(--sans);font-size:13px;font-weight:600;color:var(--c-text);margin:14px 0 4px;display:block}
+.md-h3{font-family:var(--sans);font-size:12px;font-weight:600;color:var(--c-muted);margin:10px 0 3px;display:block}
+.md-code{font-family:var(--mono);font-size:10.5px;background:var(--c-code-bg);border:1px solid var(--c-border);padding:1px 5px;border-radius:3px;color:var(--c-text)}
+.md-pre{background:var(--c-code-bg);border:1px solid var(--c-border);border-radius:5px;padding:10px 12px;margin:6px 0;overflow-x:auto;font-size:10.5px;color:var(--c-text);line-height:1.6}
+.md-bullet{padding-left:14px;position:relative}
+.md-bullet::before{content:'·';position:absolute;left:4px;color:var(--c-orange)}
+.md-todo{padding-left:14px;position:relative}
+.md-todo::before{content:'□';position:absolute;left:2px;font-size:10px;color:var(--c-hint)}
+.md-done::before{content:'✓';color:var(--c-green)!important}
+.md-bold{font-weight:600;color:var(--c-text)}
+.md-line{border:none;border-top:1px solid var(--c-border);margin:10px 0;display:block}
+
+.stats-row{display:flex;gap:10px}
+.stat-card{flex:1;background:var(--c-surface);border:1px solid var(--c-border);border-radius:6px;padding:12px 14px;}
+.stat-v{font-family:var(--mono);font-size:18px;font-weight:700;color:var(--c-text)}
+.stat-l{font-size:10px;color:var(--c-hint);margin-top:2px;text-transform:uppercase;letter-spacing:0.8px}
+
+.about-wrap{padding:4px 0;display:flex;flex-direction:column;gap:14px}
+.about-head{display:flex;align-items:flex-start;gap:14px}
+.about-icon{width:44px;height:44px;flex-shrink:0;background:var(--c-orange);border-radius:8px;display:flex;align-items:center;justify-content:center;}
+.about-title{font-size:18px;font-weight:600;color:var(--c-text);line-height:1.2}
+.about-tagline{font-size:12px;color:var(--c-muted);margin-top:3px;font-family:var(--mono)}
+.about-section{background:var(--c-surface);border:1px solid var(--c-border);border-radius:8px;overflow:hidden}
+.about-section-head{padding:10px 14px;border-bottom:1px solid var(--c-border);background:var(--c-code-bg)}
+.about-section-title{font-family:var(--mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--c-hint)}
+.about-section-body{padding:12px 14px}
+.layer-row{display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid var(--c-border)}
+.layer-row:last-child{border-bottom:none}
+.layer-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+.layer-name{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--c-text);min-width:140px}
+.layer-desc{font-size:11px;color:var(--c-muted)}
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.mini-sect{background:var(--c-surface);border:1px solid var(--c-border);border-radius:8px;overflow:hidden}
+.mini-head{padding:8px 12px;border-bottom:1px solid var(--c-border);background:var(--c-code-bg)}
+.mini-title{font-family:var(--mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--c-hint)}
+.mini-body{padding:10px 12px;display:flex;flex-direction:column;gap:4px}
+.mini-row{font-family:var(--mono);font-size:11px;color:var(--c-muted);padding:3px 0;border-bottom:1px solid var(--c-border);display:flex;align-items:center;gap:8px}
+.mini-row:last-child{border-bottom:none}
+.mini-dot{width:6px;height:6px;border-radius:50%;background:var(--c-orange);flex-shrink:0}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="topbar-brand">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+        <path d="M4 14L9 4L14 14" stroke="var(--c-orange)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M6 10.5H12" stroke="var(--c-orange)" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+      <span class="brand-wordmark">repo<em>launch</em></span>
+      <span class="brand-sep">/</span>
+      <span class="brand-sub">ai-mvp</span>
+    </div>
+    <div class="topbar-tabs">
+      <button class="tab on" onclick="switchView(this,'gen')">
+        <div class="tab-dot"></div>generator
+      </button>
+      <button class="tab" onclick="switchView(this,'arch')">
+        <div class="tab-dot"></div>architecture
+      </button>
+      <button class="tab" onclick="switchView(this,'docs')">
+        <div class="tab-dot"></div>cookbook ref
+      </button>
+    </div>
+    <div class="topbar-right">
+      <button class="lang-btn" id="langBtn" onclick="toggleLang()">EN</button>
+      <span class="chip">v1.0-mvp</span>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-sect">
+        <div class="sect-label" data-i18n="template">Template</div>
+        <div class="tmpl-list">
+          <button class="tmpl sel" onclick="pickTmpl(this,'portfolio-project')">
+            <div class="tmpl-icon">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <rect x="2" y="2" width="4" height="4" rx="1" stroke="var(--c-orange)" stroke-width="1.2"/>
+                <rect x="8" y="2" width="4" height="4" rx="1" stroke="var(--c-muted)" stroke-width="1.2"/>
+                <rect x="2" y="8" width="4" height="4" rx="1" stroke="var(--c-muted)" stroke-width="1.2"/>
+                <rect x="8" y="8" width="4" height="4" rx="1" stroke="var(--c-muted)" stroke-width="1.2"/>
+              </svg>
+            </div>
+            <div>
+              <div class="tmpl-name">portfolio-project</div>
+              <div class="tmpl-desc" data-i18n="tmpl_portfolio">Showcase para recrutadores</div>
+            </div>
+          </button>
+          <button class="tmpl" onclick="pickTmpl(this,'saas')">
+            <div class="tmpl-icon">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <circle cx="7" cy="7" r="5" stroke="var(--c-muted)" stroke-width="1.2"/>
+                <path d="M7 4v3l2 2" stroke="var(--c-muted)" stroke-width="1.2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div>
+              <div class="tmpl-name">saas</div>
+              <div class="tmpl-desc" data-i18n="tmpl_saas">Produto com monetização</div>
+            </div>
+          </button>
+          <button class="tmpl" onclick="pickTmpl(this,'cli-tool')">
+            <div class="tmpl-icon">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <rect x="1" y="2" width="12" height="10" rx="2" stroke="var(--c-muted)" stroke-width="1.2"/>
+                <path d="M4 7l2 2-2 2" stroke="var(--c-muted)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M8 11h2" stroke="var(--c-muted)" stroke-width="1.2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div>
+              <div class="tmpl-name">cli-tool</div>
+              <div class="tmpl-desc" data-i18n="tmpl_cli">Utilitário de linha de comando</div>
+            </div>
+          </button>
+          <button class="tmpl" onclick="pickTmpl(this,'ai-workflow')">
+            <div class="tmpl-icon">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <circle cx="3" cy="7" r="2" stroke="var(--c-muted)" stroke-width="1.2"/>
+                <circle cx="11" cy="7" r="2" stroke="var(--c-muted)" stroke-width="1.2"/>
+                <path d="M5 7h4" stroke="var(--c-muted)" stroke-width="1.2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div>
+              <div class="tmpl-name">ai-workflow</div>
+              <div class="tmpl-desc" data-i18n="tmpl_ai">Pipeline com LLM</div>
+            </div>
+          </button>
         </div>
+      </div>
 
-        <div class="screen active" id="screen-overview">
-          <h3 data-i18n="overview.title">Visão geral do produto</h3>
-          <p data-i18n="overview.desc">
-            O fluxo abaixo representa o coração do MVP já implementado na CLI:
-          </p>
-          <div class="flow">
-            <span>Input</span>
-            <span>Analyze</span>
-            <span>AI Engine</span>
-            <span>Template</span>
-            <span>Outputs</span>
+      <div class="sidebar-sect">
+        <div class="sect-label" data-i18n="output_files">Output files</div>
+        <div class="output-list">
+          <div class="out-row on" onclick="toggleOut(this)">
+            <span class="out-fname">README.md</span>
+            <div class="out-chk"><div class="out-chk-mark"></div></div>
+          </div>
+          <div class="out-row on" onclick="toggleOut(this)">
+            <span class="out-fname">ARCHITECTURE.md</span>
+            <div class="out-chk"><div class="out-chk-mark"></div></div>
+          </div>
+          <div class="out-row on" onclick="toggleOut(this)">
+            <span class="out-fname">PROJECT_PLAN.md</span>
+            <div class="out-chk"><div class="out-chk-mark"></div></div>
+          </div>
+          <div class="out-row" onclick="toggleOut(this)">
+            <span class="out-fname">ROADMAP.md</span>
+            <div class="out-chk"><div class="out-chk-mark"></div></div>
+          </div>
+          <div class="out-row" onclick="toggleOut(this)">
+            <span class="out-fname">PORTFOLIO_PITCH.md</span>
+            <div class="out-chk"><div class="out-chk-mark"></div></div>
           </div>
         </div>
+      </div>
 
-        <div class="screen" id="screen-analyze">
-          <h3 data-i18n="analyze.title">Tela de análise</h3>
-          <p data-i18n="analyze.desc">Recebe texto, arquivo ou pasta e extrai intenção, contexto e tema.</p>
-          <div class="mock-box">
-            <label for="input-preview" data-i18n="analyze.inputLabel">Input do usuário</label>
-            <textarea id="input-preview" readonly>
-Quero transformar aprendizado em projeto real para portfolio
-            </textarea>
-            <div class="chips">
-              <span data-i18n="analyze.chipTheme">tema: IA aplicada</span>
-              <span data-i18n="analyze.chipIntent">intenção: visibilidade profissional</span>
-              <span data-i18n="analyze.chipRisk">risco: input seguro</span>
+      <div class="key-wrap">
+        <div class="key-label" data-i18n="api_key">API Key</div>
+        <input class="key-input" id="apiKey" type="password" placeholder="sk-ant-api03-..." autocomplete="off"/>
+        <div class="key-note" data-i18n="api_note">Armazenada localmente. Nunca enviada a terceiros.</div>
+        <button class="run-btn" id="runBtn" onclick="runGenerate()">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M2 2l8 4-8 4V2z" fill="#fff"/>
+          </svg>
+          <span data-i18n="run_btn">repolaunch generate</span>
+        </button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <!-- VIEW: GENERATOR -->
+      <div id="viewGen" style="display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden">
+        <div class="input-zone">
+          <div class="input-header">
+            <span class="input-label">$ repolaunch analyze --stdin</span>
+            <span class="char-ct" id="charCt">0 chars</span>
+          </div>
+          <textarea class="inp" id="mainInp" oninput="onInput(this)"></textarea>
+          <div class="examples">
+            <span class="ex-label" data-i18n="examples">exemplos:</span>
+            <span class="ex" onclick="loadEx('repolaunch')">repolaunch-prd</span>
+            <span class="ex" onclick="loadEx('rag')">rag-with-claude</span>
+            <span class="ex" onclick="loadEx('cli')">cli-automation</span>
+            <span class="ex" onclick="loadEx('saas')">saas-product</span>
+          </div>
+        </div>
+        <div class="output-zone" id="outZone">
+          <div class="empty" id="emptyState">
+            <div class="empty-icon">
+              <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+                <path d="M3 19L11 5L19 19" stroke="var(--c-orange)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M7 13H15" stroke="var(--c-orange)" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="empty-h" data-i18n="empty_h">ready to generate</div>
+            <p class="empty-p" data-i18n="empty_p">Cole suas ideias no campo acima e clique em <code style="font-family:var(--mono);font-size:11px;background:var(--c-code-bg);padding:1px 5px;border-radius:3px">repolaunch generate</code> para criar documentação profissional.</p>
+            <div class="meta-row" style="margin-top:8px">
+              <div class="meta-item"><div class="meta-val">5</div><div class="meta-label" data-i18n="meta_docs">docs gerados</div></div>
+              <div class="meta-item"><div class="meta-val">&lt;60s</div><div class="meta-label" data-i18n="meta_time">tempo médio</div></div>
+              <div class="meta-item"><div class="meta-val">4</div><div class="meta-label" data-i18n="meta_tmpl">templates</div></div>
             </div>
           </div>
         </div>
+      </div>
 
-        <div class="screen" id="screen-generate">
-          <h3 data-i18n="generate.title">Tela de geração</h3>
-          <p data-i18n="generate.desc">Modo recruiter selecionado com geração dos documentos core.</p>
-          <ul class="file-list">
-            <li>README.md</li>
-            <li>ARCHITECTURE.md</li>
-            <li>ROADMAP.md</li>
-            <li>PROJECT_PLAN.md</li>
-            <li>PORTFOLIO_PITCH.md</li>
-            <li>ISSUES_SUGGESTIONS.md</li>
-          </ul>
-        </div>
-
-        <div class="screen" id="screen-outputs">
-          <h3 data-i18n="outputs.title">Preview de outputs gerados</h3>
-          <p data-i18n="outputs.desc">Carregado automaticamente da pasta outputs.</p>
-          <div class="output-grid">
-            <article class="output-card">
-              <h4>README.md</h4>
-              <pre id="out-readme" data-i18n="outputs.loading">Carregando...</pre>
-            </article>
-            <article class="output-card">
-              <h4>ROADMAP.md</h4>
-              <pre id="out-roadmap" data-i18n="outputs.loading">Carregando...</pre>
-            </article>
+      <!-- VIEW: ARCHITECTURE -->
+      <div id="viewArch" style="display:none;padding:20px;overflow-y:auto;flex:1">
+        <div class="about-wrap">
+          <div class="about-head">
+            <div class="about-icon">
+              <svg width="22" height="22" viewBox="0 0 18 18" fill="none">
+                <path d="M3 14L9 4L15 14" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M6 10.5H12" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div>
+              <div class="about-title">RepoLaunch AI</div>
+              <div class="about-tagline">// transforme aprendizado em projetos prontos para lançar</div>
+            </div>
+          </div>
+          <div class="about-section">
+            <div class="about-section-head">
+              <span class="about-section-title">system architecture — 6 layers</span>
+            </div>
+            <div class="about-section-body" id="archLayers"></div>
+          </div>
+          <div class="about-grid">
+            <div class="mini-sect">
+              <div class="mini-head"><span class="mini-title">tech stack</span></div>
+              <div class="mini-body" id="stackList"></div>
+            </div>
+            <div class="mini-sect">
+              <div class="mini-head"><span class="mini-title">roadmap</span></div>
+              <div class="mini-body" id="roadmapList"></div>
+            </div>
+          </div>
+          <div class="mini-sect">
+            <div class="mini-head"><span class="mini-title">folder structure</span></div>
+            <div style="padding:12px 14px;font-family:var(--mono);font-size:11px;line-height:1.8;color:var(--c-muted)" id="folderTree"></div>
           </div>
         </div>
+      </div>
 
-        <div class="screen" id="screen-security">
-          <h3 data-i18n="security.title">Tela de segurança</h3>
-          <p data-i18n="security.desc">Controles ativos no MVP:</p>
-          <div class="security-grid">
-            <article>
-              <h4>Input Sanitization</h4>
-              <p data-i18n="security.item1">Normalização e bloqueio de padrões de prompt injection.</p>
-            </article>
-            <article>
-              <h4>Prompt Security</h4>
-              <p data-i18n="security.item2">Separação entre system prompt e user input.</p>
-            </article>
-            <article>
-              <h4>Output Safety</h4>
-              <p data-i18n="security.item3">Bloqueio de comandos potencialmente perigosos.</p>
-            </article>
-            <article>
-              <h4 data-i18n="security.aiTitle">Resiliência de IA</h4>
-              <p data-i18n="security.item4">Timeout, retry e fallback entre providers.</p>
-            </article>
+      <!-- VIEW: COOKBOOK REF -->
+      <div id="viewDocs" style="display:none;padding:20px;overflow-y:auto;flex:1">
+        <div class="about-wrap">
+          <div class="about-section">
+            <div class="about-section-head">
+              <span class="about-section-title">anthropic cookbook — referências usadas</span>
+            </div>
+            <div class="about-section-body" id="cookbookRefs"></div>
+          </div>
+          <div class="mini-sect">
+            <div class="mini-head"><span class="mini-title">quick start</span></div>
+            <div style="padding:12px 14px;font-family:var(--mono);font-size:11px;line-height:2;color:var(--c-muted)" id="quickStart"></div>
           </div>
         </div>
-      </section>
+      </div>
     </main>
+  </div>
+</div>
 
-    <script src="./app.js" type="module"></script>
-  </body>
-  </html>
+<script>
+// ─── i18n ────────────────────────────────────────────────────────────────────
+var lang = 'pt';
+var i18n = {
+  pt: {
+    template: 'Template', output_files: 'Output files', api_key: 'API Key',
+    api_note: 'Armazenada localmente. Nunca enviada a terceiros.',
+    run_btn: 'repolaunch generate',
+    tmpl_portfolio: 'Showcase para recrutadores',
+    tmpl_saas: 'Produto com monetização',
+    tmpl_cli: 'Utilitário de linha de comando',
+    tmpl_ai: 'Pipeline com LLM',
+    examples: 'exemplos:',
+    empty_h: 'ready to generate',
+    empty_p: 'Cole suas ideias no campo acima e clique em <code style="font-family:var(--mono);font-size:11px;background:var(--c-code-bg);padding:1px 5px;border-radius:3px">repolaunch generate</code> para criar documentação profissional.',
+    meta_docs: 'docs gerados', meta_time: 'tempo médio', meta_tmpl: 'templates',
+    inp_placeholder: 'Cole aqui suas anotações, ideias de projeto, conteúdo de curso ou aprendizados...\n\nExemplo: aprendi sobre RAG com LangChain e quero criar uma CLI que indexa repositórios GitHub e gera documentação usando Claude API...',
+  },
+  en: {
+    template: 'Template', output_files: 'Output files', api_key: 'API Key',
+    api_note: 'Stored locally. Never sent to third parties.',
+    run_btn: 'repolaunch generate',
+    tmpl_portfolio: 'Showcase for recruiters',
+    tmpl_saas: 'Product with monetization',
+    tmpl_cli: 'Command-line utility',
+    tmpl_ai: 'LLM-powered pipeline',
+    examples: 'examples:',
+    empty_h: 'ready to generate',
+    empty_p: 'Paste your ideas above and click <code style="font-family:var(--mono);font-size:11px;background:var(--c-code-bg);padding:1px 5px;border-radius:3px">repolaunch generate</code> to create professional documentation.',
+    meta_docs: 'docs generated', meta_time: 'avg time', meta_tmpl: 'templates',
+    inp_placeholder: 'Paste your notes, project ideas, course content or learnings here...\n\nExample: I learned about RAG with LangChain and want to build a CLI that indexes GitHub repos and generates docs using Claude API...',
+  }
+};
+
+function applyLang() {
+  document.querySelectorAll('[data-i18n]').forEach(function(el) {
+    var k = el.getAttribute('data-i18n');
+    if (i18n[lang][k] !== undefined) el.innerHTML = i18n[lang][k];
+  });
+  var inp = document.getElementById('mainInp');
+  if (inp && !inp.value) inp.placeholder = i18n[lang].inp_placeholder;
+  document.getElementById('langBtn').textContent = lang === 'pt' ? 'EN' : 'PT';
+}
+
+function toggleLang() {
+  lang = lang === 'pt' ? 'en' : 'pt';
+  applyLang();
+}
+
+// ─── State ───────────────────────────────────────────────────────────────────
+var tmpl = 'portfolio-project';
+var generating = false;
+var files = {};
+var activeFile = null;
+
+// ─── Examples ────────────────────────────────────────────────────────────────
+var examples = {
+  repolaunch: 'Estou desenvolvendo o RepoLaunch AI, uma ferramenta CLI open-source que transforma anotações e ideias em projetos estruturados prontos para publicar no GitHub.\n\nStack: Node.js com TypeScript, Claude API como engine de IA principal.\n\nArquitetura em camadas: CLI → Controller → Service → AI Engine → Template Engine → Output Generator.\n\nFeatures MVP: análise de arquivos .md e .txt, geração automática de README, ARCHITECTURE, PROJECT_PLAN, ROADMAP e PORTFOLIO_PITCH.\n\nPúblico-alvo: devs iniciantes e intermediários, estudantes montando portfólio, freelancers.',
+  rag: 'Aprendi sobre RAG (Retrieval Augmented Generation) nos cookbooks da Anthropic.\n\nQuero criar uma CLI chamada ContextSearch que indexa documentos locais em um vector store e permite queries em linguagem natural usando Claude API.\n\nStack: Python, ChromaDB para embeddings, claude-sonnet-4-6 para geração de respostas com citações de fonte.\n\nFeatures: indexar PDFs e markdowns, busca semântica contextual, respostas com referência à fonte original.',
+  cli: 'Quero criar uma CLI de automação para desenvolvimento chamada DevKit.\n\nCentraliza tarefas repetitivas: setup de projetos, geração de boilerplate, deploy automatizado, análise de código com IA.\n\nStack: Node.js, commander.js, integração com GitHub API e Claude API para sugestões inteligentes de refatoração.',
+  saas: 'Ideia de SaaS chamado CodeReview AI — plataforma que analisa PRs automaticamente usando Claude API.\n\nSugere melhorias de código, detecta bugs e problemas de segurança, gera documentação automática.\n\nIntegração com GitHub via webhooks. Dashboard para times de engenharia. Planos freemium e pro.\n\nStack: Next.js + TypeScript, Prisma + PostgreSQL, Stripe para pagamentos.'
+};
+
+// ─── Arch / Docs static data ─────────────────────────────────────────────────
+var archLayers = [
+  ['#f07030','CLI layer','repolaunch init / analyze / generate / export'],
+  ['#ba7030','Controller layer','Orquestração de fluxo + validação de input'],
+  ['#9a6030','Service layer','Lógica de negócio + decisão de pipeline'],
+  ['#1d6b3a','AI engine','Claude API + prompt control + response parsing'],
+  ['#1a5a2e','Template engine','Estrutura de saída + padronização por tipo'],
+  ['#164a26','Output generator','Geração dos arquivos finais no filesystem'],
+];
+
+var stackItems = ['Node.js 20+ / TypeScript','Claude API (claude-sonnet-4-6)','OpenAI (fallback)','commander.js (CLI)','Zod (validação)','Jest + ts-jest'];
+var roadmapItems = [['v1','MVP — CLI + análise + docs'],['v2','GitHub integration + issues'],['v3','UI web + colaboração']];
+var cookbookRefs = [
+  ['patterns/agents/','Orquestração multi-agente — base do Controller layer'],
+  ['tool_use/','Tool use com Claude API — AI Engine layer'],
+  ['.claude/commands/','Slash commands — inspiração da CLI design'],
+  ['capabilities/classification/','Extração de intenção do input do usuário'],
+  ['misc/prompt_caching.ipynb','Prompt caching para otimizar o AI Engine'],
+  ['CLAUDE.md','Convenções: commits, env vars, modelo claude-sonnet-4-6'],
+];
+
+function buildStaticViews() {
+  // arch layers
+  var al = document.getElementById('archLayers');
+  if (al) al.innerHTML = archLayers.map(function(l) {
+    return '<div class="layer-row"><div class="layer-dot" style="background:'+l[0]+'"></div><span class="layer-name">'+l[1]+'</span><span class="layer-desc">'+l[2]+'</span></div>';
+  }).join('');
+
+  // stack
+  var sl = document.getElementById('stackList');
+  if (sl) sl.innerHTML = stackItems.map(function(s) {
+    return '<div class="mini-row"><div class="mini-dot"></div>'+s+'</div>';
+  }).join('');
+
+  // roadmap
+  var rl = document.getElementById('roadmapList');
+  if (rl) rl.innerHTML = roadmapItems.map(function(r) {
+    return '<div class="mini-row"><span style="font-weight:700;color:var(--c-orange)">'+r[0]+'</span>'+r[1]+'</div>';
+  }).join('');
+
+  // folder tree
+  var ft = document.getElementById('folderTree');
+  if (ft) ft.innerHTML = 'repolaunch-ai/<br>├── src/<br>│   ├── <span style="color:var(--c-orange)">cli/</span>          <span style="color:var(--c-hint)">— interface principal</span><br>│   ├── <span style="color:var(--c-orange)">controllers/</span>  <span style="color:var(--c-hint)">— orquestração</span><br>│   ├── <span style="color:var(--c-orange)">services/</span>     <span style="color:var(--c-hint)">— lógica de negócio</span><br>│   ├── <span style="color:var(--c-orange)">ai/</span>           <span style="color:var(--c-hint)">— Claude API engine</span><br>│   ├── <span style="color:var(--c-orange)">templates/</span>    <span style="color:var(--c-hint)">— template engine</span><br>│   └── <span style="color:var(--c-orange)">utils/</span>        <span style="color:var(--c-hint)">— helpers</span><br>├── outputs/<br>├── prompts/<br>├── tests/<br>└── <span style="color:var(--c-hint)">.env.example</span>';
+
+  // cookbook refs
+  var cr = document.getElementById('cookbookRefs');
+  if (cr) cr.innerHTML = cookbookRefs.map(function(r) {
+    return '<div class="layer-row"><div class="layer-dot" style="background:var(--c-orange)"></div><span class="layer-name" style="font-size:10px">'+r[0]+'</span><span class="layer-desc">'+r[1]+'</span></div>';
+  }).join('');
+
+  // quick start
+  var qs = document.getElementById('quickStart');
+  if (qs) qs.innerHTML = '<span style="color:var(--c-hint)"># clone e instale</span><br>git clone github.com/you/repolaunch-ai<br>npm install<br><br><span style="color:var(--c-hint)"># configure a API key</span><br>cp .env.example .env<br><span style="color:var(--c-hint)"># edite .env: ANTHROPIC_API_KEY=sk-ant-...</span><br><br><span style="color:var(--c-hint)"># use</span><br>repolaunch init<br>repolaunch analyze ./notes.md<br>repolaunch generate --template portfolio-project<br>repolaunch export';
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+function onInput(el) { document.getElementById('charCt').textContent = el.value.length + ' chars'; }
+function loadEx(k) { var i = document.getElementById('mainInp'); i.value = examples[k]; onInput(i); }
+function pickTmpl(btn, t) { document.querySelectorAll('.tmpl').forEach(function(b){b.classList.remove('sel')}); btn.classList.add('sel'); tmpl = t; }
+function toggleOut(row) { row.classList.toggle('on'); }
+function delay(ms) { return new Promise(function(r){setTimeout(r,ms)}); }
+
+function switchView(btn, view) {
+  document.querySelectorAll('.tab').forEach(function(b){b.classList.remove('on')});
+  btn.classList.add('on');
+  document.getElementById('viewGen').style.display = view === 'gen' ? 'flex' : 'none';
+  document.getElementById('viewArch').style.display = view === 'arch' ? 'block' : 'none';
+  document.getElementById('viewDocs').style.display = view === 'docs' ? 'block' : 'none';
+}
+
+// ─── Generate ─────────────────────────────────────────────────────────────────
+async function runGenerate() {
+  if (generating) return;
+  var input = document.getElementById('mainInp').value.trim();
+  if (!input) { document.getElementById('mainInp').focus(); return; }
+  var apiKey = document.getElementById('apiKey').value.trim();
+  var outputs = [].slice.call(document.querySelectorAll('.out-row.on')).map(function(r){return r.querySelector('.out-fname').textContent});
+  if (!outputs.length) return;
+
+  generating = true; files = {};
+  var btn = document.getElementById('runBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spin" style="width:10px;height:10px;border-width:1.5px"></div><span>running...</span>';
+
+  var zone = document.getElementById('outZone');
+  var steps = [
+    {k:'parse', l:'parsing input...'},
+    {k:'extract', l:'extracting context + intent...'},
+    {k:'llm', l:'calling claude api...'},
+    {k:'tmpl', l:'applying template: ' + tmpl + '...'},
+    {k:'write', l:'writing output files...'},
+  ];
+
+  zone.innerHTML = '<div class="progress-wrap">'
+    + '<div class="progress-head"><span class="progress-title">$ repolaunch generate --template ' + tmpl + '</span><span class="progress-sub" id="progSub">0/' + steps.length + ' steps</span></div>'
+    + '<div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>'
+    + '<div class="progress-body">'
+    + steps.map(function(s){
+        return '<div class="step-row" id="sr-'+s.k+'"><div class="step-ic" id="si-'+s.k+'"><div style="width:6px;height:6px;border-radius:50%;background:var(--c-hint)"></div></div><span class="step-text" id="st-'+s.k+'">'+s.l+'</span></div>';
+      }).join('')
+    + '</div></div>';
+
+  function pct(n) { var f=document.getElementById('progFill'); if(f) f.style.width=n+'%'; }
+  function setActive(k) {
+    var si=document.getElementById('si-'+k), st=document.getElementById('st-'+k);
+    if(si){si.className='step-ic active';si.innerHTML='<div class="spin"></div>';}
+    if(st){st.className='step-text active';}
+  }
+  function setDone(k, i) {
+    var si=document.getElementById('si-'+k), st=document.getElementById('st-'+k), ps=document.getElementById('progSub');
+    if(si){si.className='step-ic done';si.innerHTML='<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5 4-4" stroke="var(--c-green)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';}
+    if(st) st.className='step-text done';
+    if(ps) ps.textContent=(i+1)+'/'+steps.length+' steps';
+  }
+
+  setActive('parse'); await delay(250); setDone('parse',0); pct(20);
+  setActive('extract'); await delay(350); setDone('extract',1); pct(38);
+  setActive('llm');
+
+  var usedMock = false;
+  try {
+    var headers = {'Content-Type':'application/json'};
+    if (apiKey) headers['x-api-key'] = apiKey;
+    var sys = 'You are RepoLaunch AI — an expert system that transforms raw ideas and notes into professional engineering project documentation.\n\nGiven the user\'s input, generate structured professional markdown files.\nTemplate type: ' + tmpl + '\nFiles to generate: ' + outputs.join(', ') + '\n\nBe specific and concrete using actual details from the input.\nReturn ONLY a valid JSON object with no preamble or markdown fences.\nFormat: {"files":{"README.md":"content...","ARCHITECTURE.md":"content..."}}\nInclude only the requested files.';
+
+    var res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST', headers: headers,
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514', max_tokens: 4000,
+        system: sys,
+        messages: [{role:'user', content:'Generate project documentation for:\n\n'+input}]
+      })
+    });
+
+    setDone('llm',2); pct(65); setActive('tmpl');
+
+    if (res.ok) {
+      var data = await res.json();
+      var raw = data.content.map(function(c){return c.text||''}).join('');
+      try {
+        var clean = raw.replace(/```json|```/g,'').trim();
+        var parsed = JSON.parse(clean);
+        files = parsed.files || {};
+      } catch(e) { usedMock = true; files = mockFiles(input, outputs, tmpl); }
+    } else { usedMock = true; files = mockFiles(input, outputs, tmpl); }
+  } catch(e) { usedMock = true; files = mockFiles(input, outputs, tmpl); }
+
+  await delay(300); setDone('tmpl',3); pct(85);
+  setActive('write'); await delay(250); setDone('write',4); pct(100);
+  await delay(400);
+  renderFiles(usedMock);
+
+  generating = false; btn.disabled = false;
+  btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 2l8 4-8 4V2z" fill="#fff"/></svg><span data-i18n="run_btn">repolaunch generate</span>';
+}
+
+// ─── Mock files ───────────────────────────────────────────────────────────────
+function mockFiles(input, outList, t) {
+  var name = input.split(/\s+/).slice(0,5).join(' ').replace(/[^a-zA-Z0-9 ]/g,'').trim() || 'My Project';
+  var r = {};
+
+  if (outList.includes('README.md')) r['README.md'] = '# ' + name + '\n\n> Transforme suas ideias em projetos prontos para produção.\n\n## Installation\n\n```bash\nnpm install -g repolaunch-ai\nrepolaunch init\n```\n\n## Usage\n\n```bash\n# Analyze your notes\nrepolaunch analyze ./notes.md\n\n# Generate all docs\nrepolaunch generate --template ' + t + '\n\n# Export to folder\nrepolaunch export --out ./docs\n```\n\n## Features\n\n- **Input Analyzer** — aceita .md, .txt ou texto direto\n- **AI Engine** — Claude API com prompts estruturados\n- **Template Engine** — templates por tipo de projeto\n- **Output Generator** — arquivos profissionais em segundos\n\n## License\n\nMIT';
+
+  if (outList.includes('ARCHITECTURE.md')) r['ARCHITECTURE.md'] = '# Architecture\n\n## Overview\n\n```\nInput\n  └─ CLI Layer         repolaunch commands\n       └─ Controller   Orchestration + validation\n            └─ Service Business logic + pipeline\n                 └─ AI Engine   Claude API\n                      └─ Template Engine\n                           └─ Output Generator\n```\n\n## Layer Responsibilities\n\n### CLI Layer\nInterface principal via commander.js. Parsing de comandos e flags.\n\n### Controller Layer\nOrquestração de fluxo. Validação de input. Roteamento para services.\n\n### Service Layer\nLógica de negócio. Decisão de qual pipeline executar baseado no template.\n\n### AI Engine\nComunicação com Claude API. Controle de prompts. Parsing de respostas JSON.\nFallback para OpenAI em caso de timeout ou erro.\n\n### Template Engine\nDefinição de estrutura de saída por tipo: portfolio-project, saas, cli-tool, ai-workflow.\n\n### Output Generator\nPersistência dos arquivos finais no filesystem.\n\n## Security\n\n- API keys via .env (nunca commitadas)\n- Input sanitization contra prompt injection\n- Rate limiting por execução\n- Error handling sem exposição de stack';
+
+  if (outList.includes('PROJECT_PLAN.md')) r['PROJECT_PLAN.md'] = '# Project Plan\n\n## Phase 1 — MVP (2 semanas)\n\n- [ ] Setup do projeto com TypeScript\n- [ ] CLI com commander.js\n- [ ] Input Analyzer (md, txt, texto direto)\n- [ ] AI Engine com Claude API\n- [ ] Template Engine básico\n- [ ] Output: README.md + ARCHITECTURE.md\n\n## Phase 2 — Core (1 mês)\n\n- [ ] Todos os 5 outputs principais\n- [ ] 4 tipos de template\n- [ ] Error handling robusto\n- [ ] Testes unitários com Jest\n- [ ] Documentação completa\n\n## Phase 3 — Polish\n\n- [ ] GitHub integration\n- [ ] Prompt versioning com fallback\n- [ ] Publicação no npm\n\n## Definition of Done\n\n- CLI instalável via `npm install -g repolaunch-ai`\n- Gerar projeto completo em menos de 60s\n- Testes cobrindo > 80% do código';
+
+  if (outList.includes('ROADMAP.md')) r['ROADMAP.md'] = '# Roadmap\n\n## v1.0 — MVP\n\n- CLI funcional\n- Análise de texto e arquivos .md\n- Geração de README + ARCHITECTURE\n- 4 tipos de template\n\n## v2.0 — Integrations\n\n- Repo Analyzer (leitura de repo existente)\n- GitHub integration: issues, PRs, changelog\n- Prompt versioning com fallback OpenAI\n\n## v3.0 — Platform\n\n- UI web\n- Colaboração em time\n- API pública\n- Compartilhamento de projetos';
+
+  if (outList.includes('PORTFOLIO_PITCH.md')) r['PORTFOLIO_PITCH.md'] = '# Portfolio Pitch\n\n## What is it?\n\nCLI open-source que usa Claude API para transformar ideias brutas em documentação de engenharia profissional em menos de 60 segundos.\n\n## Why it matters\n\nDemonstra domínio completo de:\n\n- **Product thinking**: PRD real → MVP → roadmap executável\n- **Software architecture**: 6 camadas com separation of concerns\n- **AI integration**: prompts estruturados, output controlado, fallback\n- **Security**: env vars, input sanitization, rate limiting, safe error handling\n- **CLI design**: UX developer-first, comandos intuitivos\n\n## Technical highlights\n\n- Arquitetura modular extensível por novos templates\n- AI Engine com fallback para OpenAI em caso de erro\n- Template Engine separado do AI Engine\n\n## Impact\n\nReduz de horas para segundos o tempo de estruturar um projeto novo.\n\n---\nBuilt with Claude API · Anthropic Cookbooks reference implementation';
+
+  return r;
+}
+
+// ─── Render output files ──────────────────────────────────────────────────────
+function renderFiles(mock) {
+  var zone = document.getElementById('outZone');
+  var fnames = Object.keys(files);
+  if (!fnames.length) return;
+  activeFile = fnames[0];
+  var lines = Object.values(files).join('\n').split('\n').length;
+  var mockNote = mock ? '<span style="font-family:var(--mono);font-size:10px;color:var(--c-hint);padding:0 8px">preview (sem api key)</span>' : '';
+
+  zone.innerHTML = '<div class="file-card">'
+    + '<div class="file-card-head">'
+    + '<div class="file-tabs" id="fileTabs">'
+    + fnames.map(function(f){return '<button class="file-tab'+(f===activeFile?' on':'')+'" onclick="switchFile(\''+f+'\')">'+f+'</button>'}).join('')
+    + '</div>'
+    + '<div class="file-actions">'+mockNote+'<button class="file-btn" onclick="copyFile()">copy</button><button class="file-btn" onclick="exportFile()">export</button></div>'
+    + '</div>'
+    + '<div class="file-body" id="fileBody">'+renderMd(files[activeFile]||'')+'</div>'
+    + '</div>'
+    + '<div class="stats-row">'
+    + '<div class="stat-card"><div class="stat-v">'+fnames.length+'</div><div class="stat-l">files</div></div>'
+    + '<div class="stat-card"><div class="stat-v">'+lines+'</div><div class="stat-l">lines</div></div>'
+    + '<div class="stat-card"><div class="stat-v">'+tmpl+'</div><div class="stat-l">template</div></div>'
+    + '</div>';
+}
+
+function switchFile(f) {
+  activeFile = f;
+  document.querySelectorAll('.file-tab').forEach(function(t){t.classList.toggle('on', t.textContent===f)});
+  var fb = document.getElementById('fileBody');
+  if (fb) fb.innerHTML = renderMd(files[f]||'');
+}
+
+function renderMd(txt) {
+  return txt
+    .replace(/^# (.+)$/gm, '<span class="md-h1">$1</span>')
+    .replace(/^## (.+)$/gm, '<span class="md-h2">$1</span>')
+    .replace(/^### (.+)$/gm, '<span class="md-h3">$1</span>')
+    .replace(/^---$/gm, '<span class="md-line"></span>')
+    .replace(/^- \[x\] (.+)$/gm, '<div class="md-todo md-done">$1</div>')
+    .replace(/^- \[ \] (.+)$/gm, '<div class="md-todo">$1</div>')
+    .replace(/^- (.+)$/gm, '<div class="md-bullet">$1</div>')
+    .replace(/\*\*(.+?)\*\*/g, '<span class="md-bold">$1</span>')
+    .replace(/`([^`\n]+)`/g, '<code class="md-code">$1</code>')
+    .replace(/```[\w]*\n([\s\S]*?)```/g, function(m,c){return '<div class="md-pre">'+c.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</div>'})
+    .replace(/\n{3,}/g, '\n\n');
+}
+
+function exportFile() {
+  if (!activeFile || !files[activeFile]) return;
+  var blob = new Blob([files[activeFile]], {type:'text/markdown'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a'); a.href=url; a.download=activeFile; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function copyFile() {
+  if (!activeFile || !files[activeFile]) return;
+  navigator.clipboard.writeText(files[activeFile]).catch(function(){});
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+buildStaticViews();
+applyLang();
+document.getElementById('mainInp').placeholder = i18n[lang].inp_placeholder;
+</script>
+</body>
+</html>
