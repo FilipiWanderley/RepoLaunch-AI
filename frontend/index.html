@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RepoLaunch AI MVP UI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="bg-noise"></div>
+    <header class="hero">
+      <div class="lang-switch" role="group" aria-label="Language switch">
+        <button class="lang-btn active" data-lang="pt">PT</button>
+        <button class="lang-btn" data-lang="en">EN</button>
+      </div>
+      <p class="tag" data-i18n="hero.tag">MVP PREVIEW</p>
+      <h1 data-i18n="hero.title">RepoLaunch AI</h1>
+      <p class="subtitle" data-i18n="hero.subtitle">
+        Transforme aprendizado em projetos reais prontos para GitHub
+      </p>
+      <div class="hero-stats">
+        <article class="stat-card">
+          <span data-i18n="stats.mode">Modo ativo</span>
+          <strong id="active-mode">recruiter</strong>
+        </article>
+        <article class="stat-card">
+          <span data-i18n="stats.files">Arquivos gerados</span>
+          <strong id="files-count">--</strong>
+        </article>
+        <article class="stat-card">
+          <span data-i18n="stats.status">Status</span>
+          <strong class="ok" data-i18n="stats.running">running</strong>
+        </article>
+      </div>
+    </header>
+
+    <main>
+      <section class="panel">
+        <h2 data-i18n="panel.title">Telas do MVP</h2>
+        <div class="tabs" role="tablist" aria-label="MVP screens">
+          <button class="tab active" data-screen="overview" data-i18n="tabs.overview">Overview</button>
+          <button class="tab" data-screen="analyze" data-i18n="tabs.analyze">Analyze</button>
+          <button class="tab" data-screen="generate" data-i18n="tabs.generate">Generate</button>
+          <button class="tab" data-screen="outputs" data-i18n="tabs.outputs">Outputs</button>
+          <button class="tab" data-screen="security" data-i18n="tabs.security">Security</button>
+        </div>
+
+        <div class="screen active" id="screen-overview">
+          <h3 data-i18n="overview.title">Visão geral do produto</h3>
+          <p data-i18n="overview.desc">
+            O fluxo abaixo representa o coração do MVP já implementado na CLI:
+          </p>
+          <div class="flow">
+            <span>Input</span>
+            <span>Analyze</span>
+            <span>AI Engine</span>
+            <span>Template</span>
+            <span>Outputs</span>
+          </div>
+        </div>
+
+        <div class="screen" id="screen-analyze">
+          <h3 data-i18n="analyze.title">Tela de análise</h3>
+          <p data-i18n="analyze.desc">Recebe texto, arquivo ou pasta e extrai intenção, contexto e tema.</p>
+          <div class="mock-box">
+            <label for="input-preview" data-i18n="analyze.inputLabel">Input do usuário</label>
+            <textarea id="input-preview" readonly>
+Quero transformar aprendizado em projeto real para portfolio
+            </textarea>
+            <div class="chips">
+              <span data-i18n="analyze.chipTheme">tema: IA aplicada</span>
+              <span data-i18n="analyze.chipIntent">intenção: visibilidade profissional</span>
+              <span data-i18n="analyze.chipRisk">risco: input seguro</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="screen" id="screen-generate">
+          <h3 data-i18n="generate.title">Tela de geração</h3>
+          <p data-i18n="generate.desc">Modo recruiter selecionado com geração dos documentos core.</p>
+          <ul class="file-list">
+            <li>README.md</li>
+            <li>ARCHITECTURE.md</li>
+            <li>ROADMAP.md</li>
+            <li>PROJECT_PLAN.md</li>
+            <li>PORTFOLIO_PITCH.md</li>
+            <li>ISSUES_SUGGESTIONS.md</li>
+          </ul>
+        </div>
+
+        <div class="screen" id="screen-outputs">
+          <h3 data-i18n="outputs.title">Preview de outputs gerados</h3>
+          <p data-i18n="outputs.desc">Carregado automaticamente da pasta outputs.</p>
+          <div class="output-grid">
+            <article class="output-card">
+              <h4>README.md</h4>
+              <pre id="out-readme" data-i18n="outputs.loading">Carregando...</pre>
+            </article>
+            <article class="output-card">
+              <h4>ROADMAP.md</h4>
+              <pre id="out-roadmap" data-i18n="outputs.loading">Carregando...</pre>
+            </article>
+          </div>
+        </div>
+
+        <div class="screen" id="screen-security">
+          <h3 data-i18n="security.title">Tela de segurança</h3>
+          <p data-i18n="security.desc">Controles ativos no MVP:</p>
+          <div class="security-grid">
+            <article>
+              <h4>Input Sanitization</h4>
+              <p data-i18n="security.item1">Normalização e bloqueio de padrões de prompt injection.</p>
+            </article>
+            <article>
+              <h4>Prompt Security</h4>
+              <p data-i18n="security.item2">Separação entre system prompt e user input.</p>
+            </article>
+            <article>
+              <h4>Output Safety</h4>
+              <p data-i18n="security.item3">Bloqueio de comandos potencialmente perigosos.</p>
+            </article>
+            <article>
+              <h4 data-i18n="security.aiTitle">Resiliência de IA</h4>
+              <p data-i18n="security.item4">Timeout, retry e fallback entre providers.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="./app.js" type="module"></script>
+  </body>
+  </html>

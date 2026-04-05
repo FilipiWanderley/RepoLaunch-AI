@@ -288,6 +288,33 @@ repolaunch-ai/
 - use cases
 - inspiracao (Anthropic Academy)
 
+## 16. Internacionalizacao (PT-BR / EN)
+
+### Objetivo
+- oferecer experiencia bilingue no MVP web para ampliar alcance global
+- facilitar entendimento para publico brasileiro e internacional
+- manter consistencia de navegacao e conteudo entre idiomas
+
+### Escopo (MVP)
+- interface frontend com seletor de idioma (PT-BR e EN)
+- traducao de textos de navegacao e telas principais
+- preservacao do mesmo layout e fluxo funcional em ambos os idiomas
+
+### Requisitos funcionais
+- usuario pode alternar idioma sem recarregar a pagina
+- idioma selecionado atualiza titulos, botoes e descricoes das telas
+- idioma padrao inicial: PT-BR
+
+### Requisitos nao funcionais
+- sem regressao de performance perceptivel
+- implementacao simples e de facil manutencao
+- compativel com desktop e mobile
+
+### Criterios de aceite
+- frontend MVP exibe versoes PT-BR e EN funcionando
+- alternancia de idioma atualiza toda a UI principal
+- testes existentes seguem passando apos implementacao
+
 ## Conclusao
 Se bem executado, o RepoLaunch AI demonstra:
 - pensamento de produto
