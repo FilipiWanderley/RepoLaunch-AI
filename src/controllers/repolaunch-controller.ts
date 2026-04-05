@@ -1,4 +1,5 @@
 import path from "node:path";
+import { randomUUID } from "node:crypto";
 import { AIEngine } from "../ai/ai-engine";
 import {
   buildSystemPrompt,
@@ -31,6 +32,8 @@ type GenerateBundle = {
 export type WebGenerateResponse = {
   files: Record<string, string>;
   metadata: {
+    generationId: string;
+    createdAt: string;
     provider: "anthropic" | "openai" | "mock";
     mode: OutputMode;
     template: TemplateType;
@@ -38,6 +41,24 @@ export type WebGenerateResponse = {
     promptRegistrySource: "file" | "embedded";
   };
 };
+
+export type WebGenerationHistoryItem = {
+  generationId: string;
+  createdAt: string;
+  files: Record<string, string>;
+  metadata: WebGenerateResponse["metadata"];
+};
+
+export type WebGenerationHistorySummary = {
+  generationId: string;
+  createdAt: string;
+  fileCount: number;
+  fileNames: string[];
+  metadata: Omit<WebGenerateResponse["metadata"], "generationId" | "createdAt">;
+};
+
+const WEB_HISTORY_FILE = "web-generation-history.json";
+const WEB_HISTORY_MAX_ITEMS = 30;
 
 export class RepoLaunchController {
   private readonly aiEngine = new AIEngine();
@@ -132,16 +153,52 @@ export class RepoLaunchController {
       return acc;
     }, {});
 
+    const generationId = randomUUID();
+    const createdAt = new Date().toISOString();
+    const metadata: WebGenerateResponse["metadata"] = {
+      generationId,
+      createdAt,
+      provider: execution.aiResponse.provider,
+      mode: execution.mode,
+      template: execution.template,
+      promptVersion: execution.promptResolution.selected.version,
+      promptRegistrySource: execution.promptResolution.source
+    };
+
+    await this.appendWebHistory({
+      generationId,
+      createdAt,
+      files,
+      metadata
+    });
+
     return {
       files,
-      metadata: {
-        provider: execution.aiResponse.provider,
-        mode: execution.mode,
-        template: execution.template,
-        promptVersion: execution.promptResolution.selected.version,
-        promptRegistrySource: execution.promptResolution.source
-      }
+      metadata
     };
+  }
+
+  async listWebGenerations(limit = 10): Promise<WebGenerationHistorySummary[]> {
+    const history = await this.readWebHistory();
+
+    return history.slice(0, Math.max(1, limit)).map((item) => ({
+      generationId: item.generationId,
+      createdAt: item.createdAt,
+      fileCount: Object.keys(item.files).length,
+      fileNames: Object.keys(item.files),
+      metadata: {
+        provider: item.metadata.provider,
+        mode: item.metadata.mode,
+        template: item.metadata.template,
+        promptVersion: item.metadata.promptVersion,
+        promptRegistrySource: item.metadata.promptRegistrySource
+      }
+    }));
+  }
+
+  async getWebGeneration(generationId: string): Promise<WebGenerationHistoryItem | null> {
+    const history = await this.readWebHistory();
+    return history.find((item) => item.generationId === generationId) ?? null;
   }
 
   async listPrompts(): Promise<void> {
@@ -200,6 +257,20 @@ export class RepoLaunchController {
       mode,
       template
     };
+  }
+
+  private async readWebHistory(): Promise<WebGenerationHistoryItem[]> {
+    try {
+      return await this.outputService.readJson<WebGenerationHistoryItem[]>(WEB_HISTORY_FILE);
+    } catch {
+      return [];
+    }
+  }
+
+  private async appendWebHistory(item: WebGenerationHistoryItem): Promise<void> {
+    const current = await this.readWebHistory();
+    const next = [item, ...current].slice(0, WEB_HISTORY_MAX_ITEMS);
+    await this.outputService.writeJson(WEB_HISTORY_FILE, next);
   }
 
   async exportOutputs(format: ExportFormat = "json"): Promise<void> {

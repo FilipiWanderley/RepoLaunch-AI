@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import JSZip from "jszip";
 import { z } from "zod";
 import { RepoLaunchController } from "../controllers/repolaunch-controller";
 import { normalizeMode, normalizeTemplateType } from "../types/output";
@@ -14,6 +15,10 @@ const GenerateRequestSchema = z.object({
   template: z.string().optional(),
   promptVersion: z.string().optional(),
   outputFiles: z.array(z.string().min(1)).optional()
+});
+
+const HistoryQuerySchema = z.object({
+  limit: z.coerce.number().int().positive().max(50).optional()
 });
 
 export function createServerApp(): express.Express {
@@ -65,6 +70,55 @@ export function createServerApp(): express.Express {
       });
 
       res.json(result);
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.get("/api/history", async (req, res, next) => {
+    try {
+      const query = HistoryQuerySchema.parse(req.query);
+      const items = await controller.listWebGenerations(query.limit ?? 10);
+      res.json({ items });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.get("/api/history/:generationId/export.zip", async (req, res, next) => {
+    try {
+      const generationId = String(req.params.generationId ?? "").trim();
+      if (!generationId) {
+        throw new CliError("generationId e obrigatorio.", {
+          code: "INVALID_GENERATION_ID",
+          hint: "Informe um generationId valido na rota.",
+          exitCode: 400
+        });
+      }
+
+      const item = await controller.getWebGeneration(generationId);
+      if (!item) {
+        throw new CliError("Geracao nao encontrada.", {
+          code: "GENERATION_NOT_FOUND",
+          hint: "Revise o generationId e tente novamente.",
+          exitCode: 404
+        });
+      }
+
+      const zip = new JSZip();
+      for (const [fileName, content] of Object.entries(item.files)) {
+        zip.file(fileName, content);
+      }
+
+      const archive = await zip.generateAsync({
+        type: "nodebuffer",
+        compression: "DEFLATE",
+        compressionOptions: { level: 6 }
+      });
+
+      res.setHeader("Content-Type", "application/zip");
+      res.setHeader("Content-Disposition", `attachment; filename="repolaunch-${generationId}.zip"`);
+      res.send(archive);
     } catch (error) {
       next(error);
     }

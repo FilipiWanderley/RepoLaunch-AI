@@ -39,6 +39,30 @@ describe("HTTP API", () => {
     expect(response.body.files["README.md"]).toBeTruthy();
     expect(response.body.files["ARCHITECTURE.md"]).toBeTruthy();
     expect(response.body.metadata.promptVersion).toBe("v1");
+    expect(response.body.metadata.generationId).toBeTruthy();
+  });
+
+  it("deve listar historico e exportar zip por generationId", async () => {
+    const app = createServerApp();
+
+    const generation = await request(app).post("/api/generate").send({
+      text: "Quero criar um projeto para portfolio e exportar tudo em zip",
+      outputFiles: ["README.md", "ARCHITECTURE.md"]
+    });
+
+    expect(generation.status).toBe(200);
+    const generationId = generation.body.metadata.generationId as string;
+
+    const history = await request(app).get("/api/history?limit=5");
+    expect(history.status).toBe(200);
+    expect(Array.isArray(history.body.items)).toBe(true);
+    expect(history.body.items.length).toBeGreaterThan(0);
+    expect(history.body.items[0].generationId).toBe(generationId);
+
+    const archive = await request(app).get(`/api/history/${generationId}/export.zip`);
+    expect(archive.status).toBe(200);
+    expect(archive.headers["content-type"]).toContain("application/zip");
+    expect(archive.body).toBeTruthy();
   });
 
   it("deve rejeitar payload invalido", async () => {

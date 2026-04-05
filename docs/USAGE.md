@@ -18,6 +18,8 @@ npx repolaunch export --format json
 - `GET /api/health`: status da API
 - `GET /api/prompts`: versoes disponiveis de prompt
 - `POST /api/generate`: gera arquivos por payload
+- `GET /api/history?limit=10`: lista geracoes recentes
+- `GET /api/history/:generationId/export.zip`: baixa zip da geracao
 
 Headers opcionais:
 

@@ -115,6 +115,8 @@ npx repolaunch export --format json
 - healthcheck: `GET http://localhost:8787/api/health`
 - prompts: `GET http://localhost:8787/api/prompts`
 - gerar docs: `POST http://localhost:8787/api/generate`
+- historico de geracoes: `GET http://localhost:8787/api/history?limit=10`
+- export zip por geracao: `GET http://localhost:8787/api/history/:generationId/export.zip`
 
 ### Seguranca da API local
 

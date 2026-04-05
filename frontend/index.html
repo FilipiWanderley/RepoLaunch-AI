@@ -596,6 +596,7 @@ var tmpl = 'portfolio-project';
 var generating = false;
 var files = {};
 var activeFile = null;
+var lastGenerationId = null;
 
 // ─── Examples ────────────────────────────────────────────────────────────────
 var examples = {
@@ -752,8 +753,9 @@ async function runGenerate() {
     if (res.ok) {
       var data = await res.json();
       files = data.files || {};
+      lastGenerationId = data.metadata && data.metadata.generationId ? data.metadata.generationId : null;
     } else { usedMock = true; files = mockFiles(input, outputs, tmpl); }
-  } catch(e) { usedMock = true; files = mockFiles(input, outputs, tmpl); }
+  } catch(e) { usedMock = true; files = mockFiles(input, outputs, tmpl); lastGenerationId = null; }
 
   await delay(300); setDone('tmpl',3); pct(85);
   setActive('write'); await delay(250); setDone('write',4); pct(100);
@@ -790,13 +792,16 @@ function renderFiles(mock) {
   activeFile = fnames[0];
   var lines = Object.values(files).join('\n').split('\n').length;
   var mockNote = mock ? '<span style="font-family:var(--mono);font-size:10px;color:var(--c-hint);padding:0 8px">preview (api offline)</span>' : '';
+  var zipButton = lastGenerationId
+    ? '<button class="file-btn" onclick="exportGenerationZip()">zip</button>'
+    : '';
 
   zone.innerHTML = '<div class="file-card">'
     + '<div class="file-card-head">'
     + '<div class="file-tabs" id="fileTabs">'
     + fnames.map(function(f){return '<button class="file-tab'+(f===activeFile?' on':'')+'" onclick="switchFile(\''+f+'\')">'+f+'</button>'}).join('')
     + '</div>'
-    + '<div class="file-actions">'+mockNote+'<button class="file-btn" onclick="copyFile()">copy</button><button class="file-btn" onclick="exportFile()">export</button></div>'
+    + '<div class="file-actions">'+mockNote+zipButton+'<button class="file-btn" onclick="copyFile()">copy</button><button class="file-btn" onclick="exportFile()">export</button></div>'
     + '</div>'
     + '<div class="file-body" id="fileBody">'+renderMd(files[activeFile]||'')+'</div>'
     + '</div>'
@@ -840,6 +845,30 @@ function exportFile() {
 function copyFile() {
   if (!activeFile || !files[activeFile]) return;
   navigator.clipboard.writeText(files[activeFile]).catch(function(){});
+}
+
+async function exportGenerationZip() {
+  if (!lastGenerationId) return;
+
+  try {
+    var headers = {};
+    if (API_TOKEN) headers['x-api-token'] = API_TOKEN;
+    var response = await fetch(API_BASE + '/api/history/' + encodeURIComponent(lastGenerationId) + '/export.zip', {
+      method: 'GET',
+      headers: headers
+    });
+    if (!response.ok) return;
+
+    var blob = await response.blob();
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'repolaunch-' + lastGenerationId + '.zip';
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch (e) {
+    // sem throw para manter UX fluida no frontend estatico
+  }
 }
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
