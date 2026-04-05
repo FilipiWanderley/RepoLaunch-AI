@@ -177,5 +177,15 @@ describe("HTTP API", () => {
     expect(projectsList.status).toBe(200);
     expect(Array.isArray(projectsList.body.projects)).toBe(true);
     expect(projectsList.body.projects.find((project: { projectId: string }) => project.projectId === projectId)).toBeTruthy();
+
+    const share = await request(app).post(`/api/collab/projects/${projectId}/share`).send({});
+    expect(share.status).toBe(200);
+    expect(share.body.shareId).toBeTruthy();
+    expect(typeof share.body.shareUrl).toBe("string");
+
+    const sharedReadOnly = await request(app).get(`/api/share/${share.body.shareId}`);
+    expect(sharedReadOnly.status).toBe(200);
+    expect(sharedReadOnly.body.project.projectId).toBe(projectId);
+    expect(Array.isArray(sharedReadOnly.body.generations)).toBe(true);
   });
 });

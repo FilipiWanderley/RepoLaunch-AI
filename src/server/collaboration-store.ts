@@ -11,6 +11,8 @@ export type CollaborationProject = {
   createdAt: string;
   updatedAt: string;
   generationIds: string[];
+  shareId?: string;
+  sharedAt?: string;
 };
 
 type CollaborationStoreData = {
@@ -70,6 +72,31 @@ export class CollaborationStore {
 
     await this.write(data);
     return project;
+  }
+
+  async createOrGetShareId(projectId: string): Promise<{ project: CollaborationProject; shareId: string } | null> {
+    const data = await this.read();
+    const project = data.projects.find((entry) => entry.projectId === projectId);
+    if (!project) {
+      return null;
+    }
+
+    if (!project.shareId) {
+      project.shareId = randomUUID();
+      project.sharedAt = nowIso();
+      project.updatedAt = nowIso();
+      await this.write(data);
+    }
+
+    return {
+      project,
+      shareId: project.shareId
+    };
+  }
+
+  async getProjectByShareId(shareId: string): Promise<CollaborationProject | null> {
+    const data = await this.read();
+    return data.projects.find((project) => project.shareId === shareId) ?? null;
   }
 
   private async read(): Promise<CollaborationStoreData> {

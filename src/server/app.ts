@@ -182,7 +182,8 @@ export function createServerApp(): express.Express {
           description: project.description,
           createdAt: project.createdAt,
           updatedAt: project.updatedAt,
-          generationCount: project.generationIds.length
+          generationCount: project.generationIds.length,
+          shareId: project.shareId
         }))
       });
     } catch (error) {
@@ -250,6 +251,70 @@ export function createServerApp(): express.Express {
       res.json({
         project,
         attachedGenerationId: payload.generationId
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.post("/api/collab/projects/:projectId/share", async (req, res, next) => {
+    try {
+      const projectId = String(req.params.projectId ?? "").trim();
+      const shared = await collaborationStore.createOrGetShareId(projectId);
+      if (!shared) {
+        throw new CliError("Projeto de colaboracao nao encontrado.", {
+          code: "COLLAB_PROJECT_NOT_FOUND",
+          hint: "Revise o projectId e tente novamente.",
+          exitCode: 404
+        });
+      }
+
+      const shareUrl = `${req.protocol}://${req.get("host")}/api/share/${shared.shareId}`;
+      res.json({
+        projectId,
+        shareId: shared.shareId,
+        shareUrl
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.get("/api/share/:shareId", async (req, res, next) => {
+    try {
+      const shareId = String(req.params.shareId ?? "").trim();
+      if (!shareId) {
+        throw new CliError("shareId e obrigatorio.", {
+          code: "INVALID_SHARE_ID",
+          hint: "Informe um shareId valido.",
+          exitCode: 400
+        });
+      }
+
+      const project = await collaborationStore.getProjectByShareId(shareId);
+      if (!project) {
+        throw new CliError("Projeto compartilhado nao encontrado.", {
+          code: "SHARED_PROJECT_NOT_FOUND",
+          hint: "Revise o link de compartilhamento.",
+          exitCode: 404
+        });
+      }
+
+      const generations = await Promise.all(
+        project.generationIds.map(async (generationId) => controller.getWebGeneration(generationId))
+      );
+
+      res.json({
+        project: {
+          projectId: project.projectId,
+          name: project.name,
+          description: project.description,
+          createdAt: project.createdAt,
+          updatedAt: project.updatedAt,
+          sharedAt: project.sharedAt,
+          generationCount: project.generationIds.length
+        },
+        generations: generations.filter((item) => Boolean(item))
       });
     } catch (error) {
       next(error);

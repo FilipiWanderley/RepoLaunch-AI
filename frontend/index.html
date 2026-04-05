@@ -439,7 +439,9 @@ color:var(--c-muted);white-space:pre-wrap;max-height:380px;overflow-y:auto;
         <select class="key-input" id="projectSelect" onchange="onProjectSelect(this.value)"></select>
         <input class="key-input" id="projectName" type="text" placeholder="novo projeto" style="margin-top:6px" />
         <button class="file-btn" style="width:100%;margin-top:6px" onclick="createProject()" data-i18n="collab_create">criar projeto</button>
+        <button class="file-btn" style="width:100%;margin-top:6px" onclick="createShareLink()" data-i18n="collab_share">gerar link publico</button>
         <div class="key-note" id="projectInfo">colaboracao: sem projeto selecionado</div>
+        <div class="key-note" id="shareInfo">share: ainda nao gerado</div>
         <button class="file-btn" style="width:100%;margin-top:8px" onclick="refreshMetrics()" data-i18n="metrics_btn">atualizar metricas</button>
         <div class="key-note" id="metricsInfo">metricas: aguardando API</div>
         <div class="key-note" id="metricsStatusInfo">status: -</div>
@@ -553,6 +555,7 @@ var lang = 'pt';
 var API_BASE = localStorage.getItem('repolaunch_api_base') || 'http://localhost:8787';
 var API_TOKEN = localStorage.getItem('repolaunch_api_token') || '';
 var currentProjectId = localStorage.getItem('repolaunch_project_id') || '';
+var currentShareId = '';
 var projectsCache = [];
 var promptVersion = 'v2';
 var i18n = {
@@ -562,6 +565,7 @@ var i18n = {
     api_note: 'Frontend usa a API local; chaves ficam somente no backend.',
     collab_ws: 'Workspace colaborativo',
     collab_create: 'criar projeto',
+    collab_share: 'gerar link publico',
     metrics_btn: 'atualizar metricas',
     run_btn: 'repolaunch generate',
     tmpl_portfolio: 'Showcase para recrutadores',
@@ -580,6 +584,7 @@ var i18n = {
     api_note: 'Frontend uses local API; keys stay only in backend.',
     collab_ws: 'Collaborative workspace',
     collab_create: 'create project',
+    collab_share: 'generate public link',
     metrics_btn: 'refresh metrics',
     run_btn: 'repolaunch generate',
     tmpl_portfolio: 'Showcase for recruiters',
@@ -804,19 +809,31 @@ function renderProjects() {
   select.innerHTML = options.join('');
 
   var info = document.getElementById('projectInfo');
+  var shareInfo = document.getElementById('shareInfo');
   if (!info) return;
   if (!currentProjectId) {
     info.textContent = 'colaboracao: sem projeto selecionado';
+    if (shareInfo) shareInfo.textContent = 'share: ainda nao gerado';
     return;
   }
 
   var selectedProject = projectsCache.find(function(project) { return project.projectId === currentProjectId; });
   if (!selectedProject) {
     info.textContent = 'colaboracao: projeto nao encontrado';
+    if (shareInfo) shareInfo.textContent = 'share: indisponivel';
     return;
   }
 
   info.textContent = 'colaboracao: ' + selectedProject.name + ' (' + (selectedProject.generationCount || 0) + ' geracoes)';
+  if (shareInfo) {
+    if (selectedProject.shareId) {
+      shareInfo.textContent = 'share: ' + selectedProject.shareId.slice(0, 8) + '...';
+      currentShareId = selectedProject.shareId;
+    } else {
+      shareInfo.textContent = 'share: ainda nao gerado';
+      currentShareId = '';
+    }
+  }
 }
 
 async function loadProjects() {
@@ -876,6 +893,68 @@ async function createProject() {
     await loadProjects();
   } catch (e) {
     // fallback silencioso para manter UX fluida
+  }
+}
+
+async function createShareLink() {
+  if (!currentProjectId) return;
+
+  try {
+    var response = await fetch(API_BASE + '/api/collab/projects/' + encodeURIComponent(currentProjectId) + '/share', {
+      method: 'POST',
+      headers: apiHeaders('application/json'),
+      body: '{}'
+    });
+    if (!response.ok) return;
+
+    var data = await response.json();
+    currentShareId = data.shareId || '';
+
+    var shareUrl = data.shareUrl || (window.location.origin + window.location.pathname + '?share=' + encodeURIComponent(currentShareId));
+    var shareInfo = document.getElementById('shareInfo');
+    if (shareInfo) shareInfo.textContent = 'share: link copiado';
+    await navigator.clipboard.writeText(shareUrl);
+    await loadProjects();
+  } catch (e) {
+    var fallbackInfo = document.getElementById('shareInfo');
+    if (fallbackInfo) fallbackInfo.textContent = 'share: falha ao gerar link';
+  }
+}
+
+function readShareIdFromQuery() {
+  try {
+    var params = new URLSearchParams(window.location.search);
+    return params.get('share') || '';
+  } catch (e) {
+    return '';
+  }
+}
+
+async function loadSharedProjectFromQuery() {
+  var shareId = readShareIdFromQuery();
+  if (!shareId) return;
+
+  try {
+    var response = await fetch(API_BASE + '/api/share/' + encodeURIComponent(shareId), {
+      method: 'GET',
+      headers: apiHeaders()
+    });
+    if (!response.ok) return;
+
+    var data = await response.json();
+    var info = document.getElementById('projectInfo');
+    if (info) info.textContent = 'colaboracao: modo compartilhado (' + (data.project.name || 'workspace') + ')';
+    var shareInfo = document.getElementById('shareInfo');
+    if (shareInfo) shareInfo.textContent = 'share: leitura publica';
+
+    if (Array.isArray(data.generations) && data.generations.length > 0) {
+      var latest = data.generations[0];
+      files = latest.files || {};
+      lastGenerationId = latest.generationId || null;
+      renderFiles(false);
+    }
+  } catch (e) {
+    // fallback silencioso
   }
 }
 
@@ -1091,6 +1170,7 @@ if (apiTokenInput) apiTokenInput.value = API_TOKEN;
 document.getElementById('mainInp').placeholder = i18n[lang].inp_placeholder;
 refreshMetrics();
 loadProjects();
+loadSharedProjectFromQuery();
 </script>
 </body>
 </html>

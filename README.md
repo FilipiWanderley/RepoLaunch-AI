@@ -121,6 +121,8 @@ npx repolaunch export --format json
 - metricas de API: `GET http://localhost:8787/api/metrics?windowMinutes=15`
 - colaboracao: `GET/POST http://localhost:8787/api/collab/projects`
 - vincular geracao ao projeto: `POST http://localhost:8787/api/collab/projects/:projectId/generations`
+- gerar link publico: `POST http://localhost:8787/api/collab/projects/:projectId/share`
+- leitura publica compartilhada: `GET http://localhost:8787/api/share/:shareId`
 
 O endpoint de metricas inclui:
 

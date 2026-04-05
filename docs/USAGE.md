@@ -25,6 +25,8 @@ npx repolaunch export --format json
 - `GET /api/collab/projects`: lista workspaces colaborativos
 - `POST /api/collab/projects`: cria workspace colaborativo
 - `POST /api/collab/projects/:projectId/generations`: vincula uma geracao ao workspace
+- `POST /api/collab/projects/:projectId/share`: gera link publico do workspace
+- `GET /api/share/:shareId`: leitura publica do workspace compartilhado
 
 Headers opcionais:
 
