@@ -94,3 +94,10 @@ Exemplo de payload para `POST /api/generate`:
 - Veja [docs/examples/technical.md](docs/examples/technical.md)
 - Veja [docs/examples/recruiter.md](docs/examples/recruiter.md)
 - Veja [docs/examples/simplified.md](docs/examples/simplified.md)
+
+## Release da CLI
+
+- validar antes de publicar:
+	- `npm run release:check`
+	- `npm run release:pack`
+- CI de release: `.github/workflows/release.yml`

@@ -176,6 +176,17 @@ No arquivo `.env`, voce pode ajustar:
 - `GITHUB_TOKEN`: token para publicar issues (opcional)
 - `GITHUB_REPO`: repositorio padrao no formato owner/repo
 
+### Release da CLI (npm)
+
+- workflow: `.github/workflows/release.yml`
+- gatilhos:
+  - tag `v*` (publica automaticamente se `NPM_TOKEN` estiver configurado)
+  - `workflow_dispatch` com `publish=true`
+- comandos locais de pre-check:
+  - `npm run release:check`
+  - `npm run release:pack`
+
+
 ### Registry de prompt
 
 - arquivo: `config/prompt-registry.json`

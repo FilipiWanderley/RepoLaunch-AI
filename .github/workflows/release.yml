@@ -1,0 +1,49 @@
+name: Release CLI
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: "Publicar no npm (requer NPM_TOKEN)"
+        required: false
+        default: "false"
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          registry-url: https://registry.npmjs.org
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate release
+        run: npm run release:check
+
+      - name: Package preview
+        run: npm run release:pack
+
+      - name: Publish to npm (tag push)
+        if: startsWith(github.ref, 'refs/tags/v') && secrets.NPM_TOKEN != ''
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public
+
+      - name: Publish to npm (manual)
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.publish == 'true' && secrets.NPM_TOKEN != ''
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public
