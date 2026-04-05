@@ -7,7 +7,7 @@ import {
   buildReadmeTemplate,
   buildRoadmapTemplate
 } from "../templates/doc-templates";
-import { OutputMode } from "../types/output";
+import { OutputMode, TemplateType } from "../types/output";
 
 export type GeneratedFile = {
   fileName: string;
@@ -18,33 +18,38 @@ type GenerateOptions = {
   aiBrief?: string;
   aiProvider?: string;
   mode?: OutputMode;
+  template?: TemplateType;
 };
 
 export class ProjectGeneratorService {
   generateFromAnalysis(analysis: AnalysisResult, options: GenerateOptions = {}): GeneratedFile[] {
     const mode = options.mode ?? "technical";
+    const template = options.template ?? "portfolio-project";
 
     return [
       {
         fileName: "README.md",
-        content: buildReadmeTemplate(analysis, mode, options.aiBrief, options.aiProvider)
+        content: buildReadmeTemplate(analysis, mode, template, options.aiBrief, options.aiProvider)
       },
       {
         fileName: "ARCHITECTURE.md",
-        content: buildArchitectureTemplate(analysis, mode, options.aiBrief)
+        content: buildArchitectureTemplate(analysis, mode, template, options.aiBrief)
       },
-      { fileName: "ROADMAP.md", content: buildRoadmapTemplate(analysis, mode, options.aiBrief) },
+      {
+        fileName: "ROADMAP.md",
+        content: buildRoadmapTemplate(analysis, mode, template, options.aiBrief)
+      },
       {
         fileName: "PROJECT_PLAN.md",
-        content: buildProjectPlanTemplate(analysis, mode, options.aiBrief)
+        content: buildProjectPlanTemplate(analysis, mode, template, options.aiBrief)
       },
       {
         fileName: "PORTFOLIO_PITCH.md",
-        content: buildPortfolioPitchTemplate(analysis, mode, options.aiBrief)
+        content: buildPortfolioPitchTemplate(analysis, mode, template, options.aiBrief)
       },
       {
         fileName: "ISSUES_SUGGESTIONS.md",
-        content: buildIssuesSuggestionsTemplate(analysis, mode)
+        content: buildIssuesSuggestionsTemplate(analysis, mode, template)
       }
     ];
   }

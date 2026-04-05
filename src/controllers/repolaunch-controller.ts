@@ -5,7 +5,7 @@ import { ExecutionGuardService } from "../services/execution-guard-service";
 import { InputAnalyzerService } from "../services/input-analyzer-service";
 import { ProjectGeneratorService } from "../services/project-generator-service";
 import { OutputService } from "../services/output-service";
-import { ExportFormat, OutputMode } from "../types/output";
+import { ExportFormat, OutputMode, TemplateType } from "../types/output";
 import { logger } from "../utils/logger";
 import { validateOutputSafety } from "../utils/output-safety";
 
@@ -29,7 +29,12 @@ export class RepoLaunchController {
     logger.info(`Intencao: ${analysis.intent}`);
   }
 
-  async generate(target?: string, text?: string, mode: OutputMode = "technical"): Promise<void> {
+  async generate(
+    target?: string,
+    text?: string,
+    mode: OutputMode = "technical",
+    template: TemplateType = "portfolio-project"
+  ): Promise<void> {
     this.executionGuard.assertCanExecute();
 
     const analysis = await this.inputAnalyzer.analyze({ target, text, fallbackToLatest: true });
@@ -41,7 +46,8 @@ export class RepoLaunchController {
     const files = this.projectGenerator.generateFromAnalysis(analysis, {
       aiBrief: aiResponse.content,
       aiProvider: aiResponse.provider,
-      mode
+      mode,
+      template
     });
 
     await this.outputService.ensureBaseStructure();
@@ -54,6 +60,7 @@ export class RepoLaunchController {
     await this.outputService.writeJson("latest-analysis.json", analysis);
     logger.info(`Geracao enriquecida via provider: ${aiResponse.provider}`);
     logger.info(`Modo de saida aplicado: ${mode}`);
+    logger.info(`Template aplicado: ${template}`);
     logger.info("Geracao concluida.");
   }
 

@@ -1,5 +1,69 @@
 import { AnalysisResult } from "../services/input-analyzer-service";
-import { OutputMode } from "../types/output";
+import { OutputMode, TemplateType } from "../types/output";
+
+function templateLabel(template: TemplateType): string {
+  if (template === "saas") {
+    return "SaaS";
+  }
+
+  if (template === "cli-tool") {
+    return "CLI Tool";
+  }
+
+  if (template === "ai-workflow") {
+    return "AI Workflow";
+  }
+
+  return "Portfolio Project";
+}
+
+function templateFocus(template: TemplateType): string {
+  if (template === "saas") {
+    return "Foco em entrega de valor continuo, onboarding e retencao de usuarios.";
+  }
+
+  if (template === "cli-tool") {
+    return "Foco em experiencia de comando, automacao e produtividade tecnica.";
+  }
+
+  if (template === "ai-workflow") {
+    return "Foco em orquestracao de prompts, resiliencia de providers e qualidade de output.";
+  }
+
+  return "Foco em demonstracao de habilidades para portfolio e crescimento de carreira.";
+}
+
+function templateActions(template: TemplateType): string[] {
+  if (template === "saas") {
+    return [
+      "- Definir problema de usuario e proposta de valor com clareza",
+      "- Estruturar onboarding e primeira experiencia de uso",
+      "- Priorizar metricas de ativacao e retencao"
+    ];
+  }
+
+  if (template === "cli-tool") {
+    return [
+      "- Definir comandos principais e sintaxe consistente",
+      "- Padronizar erros e feedback de execucao",
+      "- Garantir performance e confiabilidade de automacao"
+    ];
+  }
+
+  if (template === "ai-workflow") {
+    return [
+      "- Definir contratos de prompt e output",
+      "- Implementar fallback e politicas de seguranca",
+      "- Medir qualidade dos artefatos gerados"
+    ];
+  }
+
+  return [
+    "- Priorizar entregas com alto valor de portfolio",
+    "- Evidenciar arquitetura, testes e boas praticas",
+    "- Publicar com narrativa clara de impacto"
+  ];
+}
 
 function modeLabel(mode: OutputMode): string {
   if (mode === "recruiter") {
@@ -151,6 +215,7 @@ function maybeAIBrief(aiBrief?: string, title = "Resumo estrategico de IA"): str
 export function buildReadmeTemplate(
   analysis: AnalysisResult,
   mode: OutputMode,
+  template: TemplateType,
   aiBrief?: string,
   aiProvider?: string
 ): string {
@@ -166,8 +231,14 @@ export function buildReadmeTemplate(
     "## Modo",
     modeLabel(mode),
     "",
+    "## Template",
+    templateLabel(template),
+    "",
     "## Foco",
     modeFocus(mode),
+    "",
+    "## Foco do template",
+    templateFocus(template),
     "",
     "## Contexto",
     analysis.context,
@@ -175,6 +246,9 @@ export function buildReadmeTemplate(
     `## Provider de IA`,
     aiProvider ?? "mock",
     ...maybeAIBrief(aiBrief),
+    "",
+    "## Diretrizes do template",
+    ...templateActions(template),
     "",
     `## ${modeActionTitle(mode)}`,
     ...modeActions(mode)
@@ -184,6 +258,7 @@ export function buildReadmeTemplate(
 export function buildArchitectureTemplate(
   analysis: AnalysisResult,
   mode: OutputMode,
+  template: TemplateType,
   aiBrief?: string
 ): string {
   return [
@@ -196,6 +271,7 @@ export function buildArchitectureTemplate(
     `Tema principal: ${analysis.theme}`,
     `Direcao: ${analysis.intent}`,
     `Modo: ${modeLabel(mode)}`,
+    `Template: ${templateLabel(template)}`,
     ...maybeAIBrief(aiBrief, "Recomendacoes de arquitetura")
   ].join("\n");
 }
@@ -203,17 +279,20 @@ export function buildArchitectureTemplate(
 export function buildRoadmapTemplate(
   analysis: AnalysisResult,
   mode: OutputMode,
+  template: TemplateType,
   aiBrief?: string
 ): string {
   return [
     "# Roadmap",
     "",
     `Modo de planejamento: ${modeLabel(mode)}`,
+    `Template selecionado: ${templateLabel(template)}`,
     "",
     "## v1 (MVP)",
     "- Fluxo analyze",
     "- Fluxo generate",
     "- Outputs principais",
+    ...templateActions(template),
     "",
     "## v2",
     "- Repo analyzer",
@@ -229,12 +308,14 @@ export function buildRoadmapTemplate(
 export function buildProjectPlanTemplate(
   analysis: AnalysisResult,
   mode: OutputMode,
+  template: TemplateType,
   aiBrief?: string
 ): string {
   return [
     "# Project Plan",
     "",
     `Modo: ${modeLabel(mode)}`,
+    `Template: ${templateLabel(template)}`,
     "",
     "## Objetivo",
     analysis.intent,
@@ -257,12 +338,14 @@ export function buildProjectPlanTemplate(
 export function buildPortfolioPitchTemplate(
   analysis: AnalysisResult,
   mode: OutputMode,
+  template: TemplateType,
   aiBrief?: string
 ): string {
   return [
     "# Portfolio Pitch",
     "",
     `Modo: ${modeLabel(mode)}`,
+    `Template: ${templateLabel(template)}`,
     "",
     modePitch(mode),
     "",
@@ -276,11 +359,16 @@ export function buildPortfolioPitchTemplate(
   ].join("\n");
 }
 
-export function buildIssuesSuggestionsTemplate(analysis: AnalysisResult, mode: OutputMode): string {
+export function buildIssuesSuggestionsTemplate(
+  analysis: AnalysisResult,
+  mode: OutputMode,
+  template: TemplateType
+): string {
   return [
     "# Issues Suggestions",
     "",
     `Modo: ${modeLabel(mode)}`,
+    `Template: ${templateLabel(template)}`,
     "",
     "## 1) feat: implementar pipeline base",
     `Tema: ${analysis.theme}`,

@@ -59,6 +59,23 @@ describe("CLI integration", () => {
     expect(issues[0]?.labels).toContain("mvp");
   });
 
+  it("deve aplicar template saas nos documentos gerados", async () => {
+    await runCli([
+      "generate",
+      "--mode",
+      "technical",
+      "--template",
+      "saas",
+      "--text",
+      "Quero criar um SaaS de produtividade com onboarding forte"
+    ]);
+
+    const readme = await fs.readFile(path.join(workspaceDir, "outputs", "README.md"), "utf8");
+    expect(readme).toContain("## Template");
+    expect(readme).toContain("SaaS");
+    expect(readme).toContain("onboarding");
+  });
+
   it("deve retornar erro orientado a acao ao gerar sem analise previa", async () => {
     await expect(runCli(["generate"])).rejects.toMatchObject<CliError>({
       message: "Nenhuma analise previa encontrada.",

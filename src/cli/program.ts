@@ -1,6 +1,6 @@
 import { Command } from "commander";
 import { RepoLaunchController } from "../controllers/repolaunch-controller";
-import { normalizeExportFormat, normalizeMode } from "../types/output";
+import { normalizeExportFormat, normalizeMode, normalizeTemplateType } from "../types/output";
 
 export function createProgram(): Command {
   const controller = new RepoLaunchController();
@@ -34,9 +34,23 @@ export function createProgram(): Command {
       "Modo de saida: technical | recruiter | simplified",
       "technical"
     )
+    .option(
+      "-p, --template <template>",
+      "Template: portfolio-project | saas | cli-tool | ai-workflow",
+      "portfolio-project"
+    )
     .argument("[target]", "Caminho do arquivo ou pasta")
-    .action(async (target: string | undefined, options: { text?: string; mode?: string }) =>
-      controller.generate(target, options.text, normalizeMode(options.mode))
+    .action(
+      async (
+        target: string | undefined,
+        options: { text?: string; mode?: string; template?: string }
+      ) =>
+        controller.generate(
+          target,
+          options.text,
+          normalizeMode(options.mode),
+          normalizeTemplateType(options.template)
+        )
     );
 
   program

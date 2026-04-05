@@ -81,7 +81,7 @@ npm install
 npm run ci
 npx repolaunch init
 npx repolaunch analyze ./meus-arquivos
-npx repolaunch generate --mode technical
+npx repolaunch generate --mode technical --template portfolio-project
 npx repolaunch export --format json
 ```
 
@@ -90,6 +90,13 @@ npx repolaunch export --format json
 - technical
 - recruiter
 - simplified
+
+### Templates de projeto
+
+- portfolio-project
+- saas
+- cli-tool
+- ai-workflow
 
 ### Formatos de export
 
