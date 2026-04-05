@@ -182,6 +182,8 @@ No arquivo `.env`, voce pode ajustar:
 - gatilhos:
   - tag `v*` (publica automaticamente se `NPM_TOKEN` estiver configurado)
   - `workflow_dispatch` com `publish=true`
+- prerequisito GitHub Actions:
+  - definir secret `NPM_TOKEN` em: `Settings > Secrets and variables > Actions`
 - comandos locais de pre-check:
   - `npm run release:check`
   - `npm run release:pack`

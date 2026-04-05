@@ -10,6 +10,12 @@
     "doc": "docs",
     "test": "tests"
   },
+  "files": [
+    "dist",
+    "config",
+    "README.md",
+    ".env.example"
+  ],
   "scripts": {
     "build": "rimraf dist && tsc -p tsconfig.json",
     "ci": "npm run typecheck && npm test && npm run build",
@@ -35,6 +41,9 @@
     "url": "https://github.com/FilipiWanderley/RepoLaunch-AI/issues"
   },
   "homepage": "https://github.com/FilipiWanderley/RepoLaunch-AI#readme",
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "commander": "^14.0.3",
     "cors": "^2.8.6",

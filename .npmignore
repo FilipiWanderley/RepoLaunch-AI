@@ -1,0 +1,10 @@
+# Controlled via package.json "files".
+# Keep this file to avoid npm fallback warnings and to document intent.
+
+*
+!dist/**
+!config/**
+!README.md
+!.env.example
+!package.json
+!package-lock.json
