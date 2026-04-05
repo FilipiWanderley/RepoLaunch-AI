@@ -5,12 +5,12 @@
 </p>
 
 <p align="center">
-  Plataforma de geracao de projeto com arquitetura em camadas, seguranca por padrao e foco em entrega real.
+  Plataforma de geração de projetos com arquitetura em camadas, segurança por padrão e foco em execução real.
 </p>
 
 <p align="center">
   <img alt="CI" src="https://github.com/FilipiWanderley/RepoLaunch-AI/actions/workflows/ci.yml/badge.svg" />
-  <img alt="Status" src="https://img.shields.io/badge/status-concluido-14532d?style=for-the-badge" />
+  <img alt="Status" src="https://img.shields.io/badge/status-concluído-14532d?style=for-the-badge" />
   <img alt="Node" src="https://img.shields.io/badge/node-%3E%3D20-0f766e?style=for-the-badge&logo=node.js&logoColor=white" />
   <img alt="TypeScript" src="https://img.shields.io/badge/typescript-strict-1d4ed8?style=for-the-badge&logo=typescript&logoColor=white" />
   <img alt="API" src="https://img.shields.io/badge/api-express%205-7c3aed?style=for-the-badge" />
@@ -19,98 +19,120 @@
 
 ---
 
-## Creditos
+## Créditos
 
 **Projeto pensado, arquitetado e desenvolvido por Filipi Wanderley (FilipiWanderley).**
 
 ---
 
-## Resumo Executivo
+## Visão Geral
 
-RepoLaunch AI recebe notas, ideias, texto livre ou repositorios e transforma isso em documentacao profissional e plano de execucao pronto para publicar.
+RepoLaunch AI recebe anotações, texto livre, pastas de código ou repositórios e transforma esse material em entregáveis profissionais para execução e publicação.
 
-Principais entregaveis gerados:
+A proposta do produto é simples:
 
-- README.md
-- ARCHITECTURE.md
-- ROADMAP.md
-- PROJECT_PLAN.md
-- PORTFOLIO_PITCH.md
-- sugestoes de issues
+- reduzir o tempo entre aprendizado e entrega real;
+- gerar documentação clara e consistente;
+- estruturar arquitetura e plano de ação com padrão profissional;
+- apoiar publicação, colaboração e evolução contínua.
+
+---
+
+## O Que o Projeto Entrega
+
+### Entradas suportadas
+
+- texto direto via CLI;
+- arquivos Markdown e TXT;
+- diretórios de projeto;
+- análise de repositório existente.
+
+### Saídas geradas
+
+- README.md técnico e estratégico;
+- ARCHITECTURE.md;
+- ROADMAP.md;
+- PROJECT_PLAN.md;
+- PORTFOLIO_PITCH.md;
+- exportação estruturada (Markdown, JSON, formato de issues).
 
 ---
 
 ## Status do Projeto
 
-### Macro status
+### Status macro
 
-- MVP: concluido
-- V2 (analise de repo, prompt versioning, export e GitHub sync): concluido
-- V3 Core (colaboracao, compartilhamento, auditoria e filtros): concluido
-- Endpoints operacionais (health, metrics, history, zip): concluido
-- Deploy serverless (Vercel): concluido
+- MVP: concluído;
+- V2 (análise de repositório, versionamento de prompts, export e sync GitHub): concluído;
+- V3 (colaboração, compartilhamento público, trilha de auditoria, filtros): concluído;
+- segurança de API e observabilidade operacional: concluído;
+- deploy serverless (Vercel): concluído.
 
-### Grafico de progresso por etapa
+### Gráfico de progresso
 
 ```text
 MVP                     [####################] 100%
 V2                      [####################] 100%
-V3 Core                 [####################] 100%
+V3                      [####################] 100%
+Segurança e Auth        [####################] 100%
 Observabilidade         [####################] 100%
-Seguranca API           [####################] 100%
 Deploy Vercel           [####################] 100%
 ```
 
-### Checklist de capacidade entregue
+### Checklist funcional
 
-- [x] CLI funcional (`init`, `analyze`, `generate`, `export`, `repo-analyze`, `github-sync`, `prompts list`)
-- [x] API local para frontend e integracao externa
-- [x] Controle de autenticacao por token para rotas criticas
-- [x] Rate limit configuravel por ambiente
-- [x] Historico e export ZIP por geracao
-- [x] Colaboracao com papeis owner/editor/viewer
-- [x] Link publico de compartilhamento
-- [x] Trilha de auditoria por workspace
-- [x] Pipeline CI e fluxo de release
+- [x] CLI com fluxo completo (`init`, `analyze`, `generate`, `export`);
+- [x] análise de repositório (`repo-analyze`);
+- [x] sincronização com GitHub (`github-sync`);
+- [x] gestão de prompts (`prompts list`);
+- [x] API local para frontend e integrações;
+- [x] histórico de gerações com export ZIP;
+- [x] autenticação por token para rotas críticas;
+- [x] rate limit por IP configurável;
+- [x] colaboração por workspace com RBAC (owner/editor/viewer);
+- [x] compartilhamento público por link;
+- [x] trilha de auditoria por projeto;
+- [x] login colaborativo opcional com sessão assinada;
+- [x] pipeline de CI e workflow de release.
 
 ---
 
-## Arquitetura (Padrao Profissional)
+## Arquitetura
 
-### Visao de camadas
+### Diagrama de camadas
 
 ```mermaid
 flowchart TD
-    A[CLI / API Entry Points] --> B[Controller Layer]
+    A[CLI / API] --> B[Controller Layer]
     B --> C[Service Layer]
-    C --> D[AI Engine Layer]
-    C --> E[Collaboration Layer]
+    C --> D[AI Engine]
+    C --> E[Collaboration Store]
     C --> F[Output Service]
     D --> G[Prompt Registry]
     C --> H[Template Engine]
-    F --> I[(outputs/ ou /tmp/outputs)]
+    F --> I[(outputs ou /tmp/outputs)]
 ```
 
 ### Fluxo ponta a ponta
 
 ```mermaid
 sequenceDiagram
-    participant U as Usuario
-    participant CLI as CLI/API
-    participant CTR as Controller
-    participant SRV as Services
-    participant AI as AI Engine
-    participant TPL as Templates
-    participant OUT as Output Store
+    participant U as Usuário
+    participant I as Interface CLI/API
+    participant C as Controller
+    participant S as Services
+    participant A as AI Engine
+    participant T as Templates
+    participant O as Output Store
 
-    U->>CLI: envia input (texto, pasta, repo)
-    CLI->>CTR: valida e orquestra
-    CTR->>SRV: inicia pipeline
-    SRV->>AI: gera estrutura base
-    AI-->>SRV: resposta padronizada
-    SRV->>TPL: aplica template de saida
-    TPL->>OUT: grava artefatos
-    OUT-->>U: docs finais + metadados
+    U->>I: envia input (texto, pasta, repo)
+    I->>C: validação e orquestração
+    C->>S: execução do pipeline
+    S->>A: geração base orientada por prompt
+    A-->>S: resposta estruturada
+    S->>T: montagem dos artefatos
+    T->>O: persistência dos arquivos
+    O-->>U: saída final + metadados
 ```
 
 ### Estrutura de pastas
@@ -137,30 +159,33 @@ repolaunch-ai/
 
 ---
 
-## Seguranca em Camadas
+## Segurança
 
-### Principios aplicados
+### Pilares aplicados
 
-- segredos em `.env` (nunca versionar `.env`)
-- autenticacao por `x-api-token` para rotas sensiveis
-- rate limiting por IP com janela configuravel
-- validacao de entrada e padronizacao de output
-- controles de permissao em colaboracao (RBAC)
-- trilha de auditoria para acoes criticas
+- credenciais via `.env`;
+- proteção para não versionar `.env` no Git;
+- autenticação de API via `x-api-token`;
+- autenticação colaborativa opcional via sessão (`x-collab-token`);
+- autorização por papéis (owner/editor/viewer);
+- rate limiting por janela de tempo;
+- validação de entrada e padronização de saída;
+- trilha de auditoria de ações críticas;
+- tratamento de erro sem exposição de dados sensíveis.
 
 ### Diagrama de defesa
 
 ```mermaid
 flowchart LR
-    A[Input Cliente] --> B[Validacao + Sanitizacao]
-    B --> C[Auth Token / Sessao Colab]
-    C --> D[RBAC owner editor viewer]
-    D --> E[Rate Limit + Monitoring]
-    E --> F[Servico de Geracao]
-    F --> G[Output Safety + Persistencia]
+    A[Cliente] --> B[Validação e Sanitização]
+    B --> C[Autenticação]
+    C --> D[Autorização RBAC]
+    D --> E[Rate Limit e Monitoramento]
+    E --> F[Pipeline de Geração]
+    F --> G[Persistência e Output Safety]
 ```
 
-### Variaveis de seguranca e operacao
+### Variáveis de ambiente relevantes
 
 - `API_AUTH_TOKEN`
 - `API_RATE_LIMIT_WINDOW_MS`
@@ -169,26 +194,71 @@ flowchart LR
 - `COLLAB_AUTH_SESSION_TTL_MINUTES`
 - `AI_TIMEOUT_MS`
 - `AI_MAX_RETRIES`
+- `DEFAULT_PROMPT_VERSION`
+- `GITHUB_TOKEN` (opcional)
+- `GITHUB_REPO` (opcional)
 
 ---
 
-## Stack Utilizada
+## Stack Tecnológica
 
 | Camada | Tecnologias | Objetivo |
 |---|---|---|
-| Runtime e linguagem | Node.js 20+, TypeScript strict | Base performatica com tipagem forte |
-| CLI | Commander | Comandos consistentes para fluxo de produtividade |
-| API HTTP | Express 5, CORS | Exposicao de endpoints para frontend e integracao |
-| Validacao | Zod | Contratos e schema safety |
-| IA | Anthropic/OpenAI compativel + fallback | Geracao resiliente e portavel |
-| Configuracao | dotenv | Gestao de ambiente local e deploy |
-| Testes | Jest, ts-jest, Supertest | Cobertura de unidade e contrato HTTP |
-| Empacotamento | npm, release workflow | Publicacao e distribuicao da CLI |
-| Deploy serverless | Vercel (`src/server/vercel.ts`, `vercel.json`) | Execucao pronta para ambiente serverless |
+| Runtime e Linguagem | Node.js 20+, TypeScript strict | desempenho, tipagem forte e manutenção segura |
+| CLI | Commander | experiência consistente de linha de comando |
+| API HTTP | Express 5, CORS | endpoints para frontend e integrações externas |
+| Validação | Zod | contratos e validação de schemas |
+| IA | compatível com Anthropic/OpenAI + fallback | geração resiliente e portável |
+| Configuração | dotenv | gestão de ambiente local e deploy |
+| Testes | Jest, ts-jest, Supertest | testes unitários e de contrato HTTP |
+| Empacotamento | npm, workflow de release | distribuição e publicação da CLI |
+| Deploy | Vercel (`src/server/vercel.ts`, `vercel.json`) | execução serverless |
 
 ---
 
-## API e Operacao
+## CLI
+
+### Comandos principais
+
+```bash
+npx repolaunch init
+npx repolaunch analyze ./meus-arquivos
+npx repolaunch generate --mode technical --template portfolio-project
+npx repolaunch generate --prompt-version v2 --mode recruiter --template saas
+npx repolaunch export --format json
+npx repolaunch repo-analyze .
+npx repolaunch github-sync --repo FilipiWanderley/RepoLaunch-AI
+npx repolaunch prompts list
+```
+
+### Modos de saída
+
+- `technical`
+- `recruiter`
+- `simplified`
+
+### Templates disponíveis
+
+- `portfolio-project`
+- `saas`
+- `cli-tool`
+- `ai-workflow`
+
+### Formatos de exportação
+
+- `markdown`
+- `json`
+- `issues`
+
+---
+
+## API
+
+### Inicialização local
+
+```bash
+npm run dev:api
+```
 
 ### Endpoints principais
 
@@ -200,15 +270,68 @@ flowchart LR
 - `GET /api/history/:generationId/export.zip`
 - `GET /api/metrics?windowMinutes=15`
 - `GET/POST /api/collab/projects`
+- `GET /api/collab/projects/:projectId/members`
+- `POST /api/collab/projects/:projectId/members`
+- `PATCH /api/collab/projects/:projectId/members/:userId`
+- `GET /api/collab/projects/:projectId/audit?limit=30`
+- `POST /api/collab/projects/:projectId/generations`
+- `POST /api/collab/projects/:projectId/share`
 - `POST /api/collab/auth/login` (opcional)
 - `GET /api/share/:shareId`
 
 ### Observabilidade
 
-- metricas por janela de tempo
-- taxa de erro e status codes
-- visao de uptime e checks de dependencia
-- monitoramento de degradacao via health detalhado
+- contagem de requisições por janela;
+- taxa de erro e distribuição por status (`2xx`, `3xx`, `4xx`, `5xx`);
+- série temporal recente de tráfego e bloqueios de rate limit;
+- health detalhado com uptime, memória e checks de dependências.
+
+---
+
+## Frontend e Colaboração
+
+A interface web consome a API local e oferece:
+
+- gestão de workspaces colaborativos;
+- navegação por gerações vinculadas ao projeto;
+- filtros por metadados (`mode`, `template`, `promptVersion`, `provider`);
+- chips de filtro combináveis (lógica AND);
+- persistência de estado no URL (`q`, `chips`, `gen`);
+- modo de leitura pública por link compartilhado.
+
+---
+
+## Deploy e Release
+
+### Release da CLI
+
+- workflow: `.github/workflows/release.yml`;
+- gatilhos por tag `v*` e `workflow_dispatch`;
+- publicação condicionada ao secret `NPM_TOKEN`.
+
+### Comandos de validação pré-release
+
+```bash
+npm run release:check
+npm run release:pack
+```
+
+### Deploy serverless
+
+- entrypoint dedicado para Vercel em `src/server/vercel.ts`;
+- configuração de build/rotas em `vercel.json`;
+- persistência ajustada para `/tmp/outputs` em ambiente Vercel.
+
+---
+
+## Qualidade de Engenharia
+
+- arquitetura modular por responsabilidades;
+- separação clara entre interface, orquestração e domínio;
+- cobertura de testes automatizados;
+- padrão de resiliência com timeout, retry e fallback;
+- pipeline de CI para regressão e build;
+- documentação orientada a produto e operação.
 
 ---
 
@@ -222,36 +345,11 @@ npm install
 npm run ci
 ```
 
-### CLI
-
-```bash
-npx repolaunch init
-npx repolaunch analyze ./meus-arquivos
-npx repolaunch generate --mode technical --template portfolio-project
-npx repolaunch export --format json
-```
-
-### API local
-
-```bash
-npm run dev:api
-```
-
 ---
 
-## Qualidade de Engenharia
+## Contribuição
 
-- arquitetura modular por responsabilidade
-- testes automatizados e pipeline CI
-- padrao de falha controlada (fallback e retry)
-- separacao clara entre camada de entrada, servico e persistencia
-- base preparada para evolucao sem acoplamento desnecessario
-
----
-
-## Contribuicao
-
-Contribuicoes sao bem-vindas com PRs pequenas, objetivas e testadas.
+Contribuições são bem-vindas com PRs pequenas, objetivas e testadas.
 
 Checklist recomendado antes de abrir PR:
 
@@ -261,7 +359,7 @@ Checklist recomendado antes de abrir PR:
 
 ---
 
-## Licenca
+## Licença
 
 ISC
 
@@ -271,8 +369,8 @@ ISC
 
 **Filipi Wanderley (FilipiWanderley)**
 
-- idealizador do produto
-- responsavel pela arquitetura
-- responsavel pela implementacao de ponta a ponta
+- idealizador do produto;
+- responsável pela arquitetura;
+- responsável pela implementação de ponta a ponta.
 
-RepoLaunch AI foi concebido para transformar conhecimento em ativo de carreira com engenharia de alto nivel.
+RepoLaunch AI foi concebido para transformar conhecimento em ativo de carreira com engenharia de alto nível.
