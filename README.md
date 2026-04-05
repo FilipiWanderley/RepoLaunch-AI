@@ -5,367 +5,274 @@
 </p>
 
 <p align="center">
-  Construído por <strong>FilipiWanderley</strong> para transformar estudo em execução de verdade.
+  Plataforma de geracao de projeto com arquitetura em camadas, seguranca por padrao e foco em entrega real.
 </p>
 
 <p align="center">
   <img alt="CI" src="https://github.com/FilipiWanderley/RepoLaunch-AI/actions/workflows/ci.yml/badge.svg" />
-  <img alt="Status" src="https://img.shields.io/badge/status-em%20constru%C3%A7%C3%A3o-ff6b35?style=for-the-badge" />
+  <img alt="Status" src="https://img.shields.io/badge/status-concluido-14532d?style=for-the-badge" />
   <img alt="Node" src="https://img.shields.io/badge/node-%3E%3D20-0f766e?style=for-the-badge&logo=node.js&logoColor=white" />
-  <img alt="TypeScript" src="https://img.shields.io/badge/typescript-strict-0b3b8c?style=for-the-badge&logo=typescript&logoColor=white" />
-  <img alt="CLI" src="https://img.shields.io/badge/cli-repolaunch-e85d04?style=for-the-badge&logo=gnubash&logoColor=white" />
-  <img alt="AI" src="https://img.shields.io/badge/ai-claude%20%2B%20openai-2a9d8f?style=for-the-badge" />
+  <img alt="TypeScript" src="https://img.shields.io/badge/typescript-strict-1d4ed8?style=for-the-badge&logo=typescript&logoColor=white" />
+  <img alt="API" src="https://img.shields.io/badge/api-express%205-7c3aed?style=for-the-badge" />
+  <img alt="CLI" src="https://img.shields.io/badge/cli-repolaunch-e85d04?style=for-the-badge" />
 </p>
 
 ---
 
-## O problema que quase todo dev enfrenta
+## Creditos
 
-Você estuda, aprende e pratica, mas trava em pontos críticos:
-
-- Não sei qual projeto criar
-- Não sei estruturar arquitetura com clareza
-- Não sei escrever documentação que impressiona
-- Não consigo transformar aprendizado em ativo de carreira
-
-RepoLaunch AI foi criado para fechar esse gap.
+**Projeto pensado, arquitetado e desenvolvido por Filipi Wanderley (FilipiWanderley).**
 
 ---
 
-## O que entra e o que sai
+## Resumo Executivo
 
-### Input
+RepoLaunch AI recebe notas, ideias, texto livre ou repositorios e transforma isso em documentacao profissional e plano de execucao pronto para publicar.
 
-- Anotações em Markdown ou TXT
-- Pasta de código
-- Ideias soltas em texto
-- Conteúdo de cursos (exemplo: Anthropic Academy)
+Principais entregaveis gerados:
 
-### Output
-
-- README.md profissional
+- README.md
 - ARCHITECTURE.md
 - ROADMAP.md
 - PROJECT_PLAN.md
 - PORTFOLIO_PITCH.md
-- Sugestões de issues
+- sugestoes de issues
 
 ---
 
-## Impacto em segundos
+## Status do Projeto
 
-### Exemplo rápido
+### Macro status
 
-Input:
+- MVP: concluido
+- V2 (analise de repo, prompt versioning, export e GitHub sync): concluido
+- V3 Core (colaboracao, compartilhamento, auditoria e filtros): concluido
+- Endpoints operacionais (health, metrics, history, zip): concluido
+- Deploy serverless (Vercel): concluido
 
-> Fiz um curso de IA e quero criar algo com isso
+### Grafico de progresso por etapa
 
-Output:
+```text
+MVP                     [####################] 100%
+V2                      [####################] 100%
+V3 Core                 [####################] 100%
+Observabilidade         [####################] 100%
+Seguranca API           [####################] 100%
+Deploy Vercel           [####################] 100%
+```
 
-- projeto estruturado
-- arquitetura definida
-- plano de execução
-- pitch pronto para LinkedIn
+### Checklist de capacidade entregue
+
+- [x] CLI funcional (`init`, `analyze`, `generate`, `export`, `repo-analyze`, `github-sync`, `prompts list`)
+- [x] API local para frontend e integracao externa
+- [x] Controle de autenticacao por token para rotas criticas
+- [x] Rate limit configuravel por ambiente
+- [x] Historico e export ZIP por geracao
+- [x] Colaboracao com papeis owner/editor/viewer
+- [x] Link publico de compartilhamento
+- [x] Trilha de auditoria por workspace
+- [x] Pipeline CI e fluxo de release
+
+---
+
+## Arquitetura (Padrao Profissional)
+
+### Visao de camadas
+
+```mermaid
+flowchart TD
+    A[CLI / API Entry Points] --> B[Controller Layer]
+    B --> C[Service Layer]
+    C --> D[AI Engine Layer]
+    C --> E[Collaboration Layer]
+    C --> F[Output Service]
+    D --> G[Prompt Registry]
+    C --> H[Template Engine]
+    F --> I[(outputs/ ou /tmp/outputs)]
+```
+
+### Fluxo ponta a ponta
+
+```mermaid
+sequenceDiagram
+    participant U as Usuario
+    participant CLI as CLI/API
+    participant CTR as Controller
+    participant SRV as Services
+    participant AI as AI Engine
+    participant TPL as Templates
+    participant OUT as Output Store
+
+    U->>CLI: envia input (texto, pasta, repo)
+    CLI->>CTR: valida e orquestra
+    CTR->>SRV: inicia pipeline
+    SRV->>AI: gera estrutura base
+    AI-->>SRV: resposta padronizada
+    SRV->>TPL: aplica template de saida
+    TPL->>OUT: grava artefatos
+    OUT-->>U: docs finais + metadados
+```
+
+### Estrutura de pastas
+
+```text
+repolaunch-ai/
+|- src/
+|  |- ai/
+|  |- cli/
+|  |- controllers/
+|  |- server/
+|  |- services/
+|  |- templates/
+|  |- utils/
+|- config/
+|- docs/
+|- frontend/
+|- outputs/
+|- tests/
+|- vercel.json
+|- PRD.md
+|- README.md
+```
+
+---
+
+## Seguranca em Camadas
+
+### Principios aplicados
+
+- segredos em `.env` (nunca versionar `.env`)
+- autenticacao por `x-api-token` para rotas sensiveis
+- rate limiting por IP com janela configuravel
+- validacao de entrada e padronizacao de output
+- controles de permissao em colaboracao (RBAC)
+- trilha de auditoria para acoes criticas
+
+### Diagrama de defesa
+
+```mermaid
+flowchart LR
+    A[Input Cliente] --> B[Validacao + Sanitizacao]
+    B --> C[Auth Token / Sessao Colab]
+    C --> D[RBAC owner editor viewer]
+    D --> E[Rate Limit + Monitoring]
+    E --> F[Servico de Geracao]
+    F --> G[Output Safety + Persistencia]
+```
+
+### Variaveis de seguranca e operacao
+
+- `API_AUTH_TOKEN`
+- `API_RATE_LIMIT_WINDOW_MS`
+- `API_RATE_LIMIT_MAX`
+- `COLLAB_AUTH_USERS`
+- `COLLAB_AUTH_SESSION_TTL_MINUTES`
+- `AI_TIMEOUT_MS`
+- `AI_MAX_RETRIES`
+
+---
+
+## Stack Utilizada
+
+| Camada | Tecnologias | Objetivo |
+|---|---|---|
+| Runtime e linguagem | Node.js 20+, TypeScript strict | Base performatica com tipagem forte |
+| CLI | Commander | Comandos consistentes para fluxo de produtividade |
+| API HTTP | Express 5, CORS | Exposicao de endpoints para frontend e integracao |
+| Validacao | Zod | Contratos e schema safety |
+| IA | Anthropic/OpenAI compativel + fallback | Geracao resiliente e portavel |
+| Configuracao | dotenv | Gestao de ambiente local e deploy |
+| Testes | Jest, ts-jest, Supertest | Cobertura de unidade e contrato HTTP |
+| Empacotamento | npm, release workflow | Publicacao e distribuicao da CLI |
+| Deploy serverless | Vercel (`src/server/vercel.ts`, `vercel.json`) | Execucao pronta para ambiente serverless |
+
+---
+
+## API e Operacao
+
+### Endpoints principais
+
+- `GET /api/health`
+- `GET /api/health/details`
+- `GET /api/prompts`
+- `POST /api/generate`
+- `GET /api/history?limit=10`
+- `GET /api/history/:generationId/export.zip`
+- `GET /api/metrics?windowMinutes=15`
+- `GET/POST /api/collab/projects`
+- `POST /api/collab/auth/login` (opcional)
+- `GET /api/share/:shareId`
+
+### Observabilidade
+
+- metricas por janela de tempo
+- taxa de erro e status codes
+- visao de uptime e checks de dependencia
+- monitoramento de degradacao via health detalhado
 
 ---
 
 ## Quick Start
 
 ```bash
-git clone https://github.com/FilipiWanderley/repolaunch-ai
-cd repolaunch-ai
+git clone https://github.com/FilipiWanderley/RepoLaunch-AI.git
+cd RepoLaunch-AI
 cp .env.example .env
-# adicione sua API key
-
 npm install
 npm run ci
+```
+
+### CLI
+
+```bash
 npx repolaunch init
 npx repolaunch analyze ./meus-arquivos
 npx repolaunch generate --mode technical --template portfolio-project
-npx repolaunch generate --prompt-version v2 --mode technical --template portfolio-project
-npx repolaunch prompts list
-npm run dev:api
-npx repolaunch repo-analyze .
-npx repolaunch github-sync --repo FilipiWanderley/RepoLaunch-AI
 npx repolaunch export --format json
 ```
 
-### Modos de saida
+### API local
 
-- technical
-- recruiter
-- simplified
-
-### Templates de projeto
-
-- portfolio-project
-- saas
-- cli-tool
-- ai-workflow
-
-### Formatos de export
-
-- json
-- markdown
-- issues (GitHub issues)
-
-### API local para frontend
-
-- iniciar API: `npm run dev:api`
-- healthcheck: `GET http://localhost:8787/api/health`
-- health detalhado: `GET http://localhost:8787/api/health/details`
-- prompts: `GET http://localhost:8787/api/prompts`
-- gerar docs: `POST http://localhost:8787/api/generate`
-- historico de geracoes: `GET http://localhost:8787/api/history?limit=10`
-- export zip por geracao: `GET http://localhost:8787/api/history/:generationId/export.zip`
-- metricas de API: `GET http://localhost:8787/api/metrics?windowMinutes=15`
-- colaboracao: `GET/POST http://localhost:8787/api/collab/projects`
-- listar membros do projeto: `GET http://localhost:8787/api/collab/projects/:projectId/members`
-- login colaborativo (opcional): `POST http://localhost:8787/api/collab/auth/login`
-- adicionar/atualizar membro (owner): `POST http://localhost:8787/api/collab/projects/:projectId/members`
-- atualizar papel de membro (owner): `PATCH http://localhost:8787/api/collab/projects/:projectId/members/:userId`
-- trilha de auditoria do workspace: `GET http://localhost:8787/api/collab/projects/:projectId/audit?limit=30`
-- vincular geracao ao projeto: `POST http://localhost:8787/api/collab/projects/:projectId/generations`
-- gerar link publico: `POST http://localhost:8787/api/collab/projects/:projectId/share`
-- leitura publica compartilhada: `GET http://localhost:8787/api/share/:shareId`
-- frontend compartilhado: `?share=<shareId>` agora permite navegar entre multiplas geracoes anexadas ao workspace
-- no modo compartilhado, e possivel filtrar geracoes por metadados (`mode`, `template`, `promptVersion`, `provider`)
-- filtros rapidos em chips (mode/template/prompt/provider) aceleram a navegação entre geracoes compartilhadas
-- os chips podem ser combinados ao mesmo tempo (logica AND) para refinar o conjunto exibido
-- o estado da tela compartilhada e persistido no URL (`q`, `chips`, `gen`) para reabrir o mesmo recorte
-
-O endpoint de metricas inclui:
-
-- total de requests e erros
-- breakdown por status code (`2xx`, `3xx`, `4xx`, `5xx`)
-- serie temporal da janela recente (requests, erros e rate-limit por minuto)
-
-O health detalhado inclui:
-
-- status geral (`ok` ou `degraded`)
-- uptime e memoria do processo
-- checks de env, prompt registry, provider de IA e escrita em `outputs`/`config`
-
-### Seguranca da API local
-
-- `API_AUTH_TOKEN`: quando definido, exige header `x-api-token` em `/api/prompts` e `/api/generate`
-- `API_RATE_LIMIT_WINDOW_MS`: janela do rate limit em ms
-- `API_RATE_LIMIT_MAX`: maximo de requisicoes por IP por janela
-- `x-collab-user`: identifica o membro atual para controle de permissoes em colaboracao (owner/editor/viewer)
-- `COLLAB_AUTH_USERS`: habilita login colaborativo real no formato `user:senha:nome,user2:senha2:nome2`
-- `COLLAB_AUTH_SESSION_TTL_MINUTES`: expiracao do token colaborativo em minutos
-- `x-collab-token`: token de sessao colaborativa (quando login estiver habilitado)
-
-### Exemplos de saida por modo
-
-- [technical](docs/examples/technical.md)
-- [recruiter](docs/examples/recruiter.md)
-- [simplified](docs/examples/simplified.md)
-- guia de uso: [docs/USAGE.md](docs/USAGE.md)
-
----
-
-## Configuracao de resiliencia
-
-No arquivo `.env`, voce pode ajustar:
-
-- `AI_TIMEOUT_MS`: timeout por chamada ao provider
-- `AI_MAX_RETRIES`: tentativas de retry por provider
-- `DEFAULT_PROMPT_VERSION`: versao de prompt usada por padrao no generate
-- `LOG_LEVEL`: debug, info, warning ou error
-- `GITHUB_TOKEN`: token para publicar issues (opcional)
-- `GITHUB_REPO`: repositorio padrao no formato owner/repo
-
-### Release da CLI (npm)
-
-- workflow: `.github/workflows/release.yml`
-- gatilhos:
-  - tag `v*` (publica automaticamente se `NPM_TOKEN` estiver configurado)
-  - `workflow_dispatch` com `publish=true`
-- prerequisito GitHub Actions:
-  - definir secret `NPM_TOKEN` em: `Settings > Secrets and variables > Actions`
-- comandos locais de pre-check:
-  - `npm run release:check`
-  - `npm run release:pack`
-
-
-### Registry de prompt
-
-- arquivo: `config/prompt-registry.json`
-- comando: `repolaunch prompts list`
-- se o arquivo estiver ausente ou invalido, o sistema usa prompts embutidos como fallback
-
----
-
-## Erros comuns (CLI)
-
-- `ANALYSIS_NOT_FOUND`: rode `repolaunch analyze --text "..."` antes de `generate` sem input.
-- `TARGET_NOT_FOUND`: revise o caminho informado em `analyze`.
-- `INVALID_ANALYZE_INPUT`: informe `--text` ou um caminho valido.
-
----
-
-## Arquitetura profissional
-
-```mermaid
-flowchart TD
-    A[CLI Layer] --> B[Controller Layer]
-    B --> C[Service Layer]
-    C --> D[AI Engine]
-    D --> E[Template Engine]
-    E --> F[Output Generator]
-
-    C --> G[(Input Analyzer)]
-    D --> H[(Prompt Manager)]
-    F --> I[(outputs/)]
+```bash
+npm run dev:api
 ```
 
 ---
 
-## Estrutura de pastas com visão de camadas
+## Qualidade de Engenharia
 
-```mermaid
-flowchart LR
-    R[repolaunch-ai] --> SRC[src]
-    R --> OUT[outputs]
-    R --> PRO[prompts]
-    R --> CFG[config]
-    R --> TST[tests]
-    R --> DOC[docs]
-
-    SRC --> CLI[cli]
-    SRC --> CTR[controllers]
-    SRC --> SRV[services]
-    SRC --> AI[ai]
-    SRC --> TMP[templates]
-    SRC --> UTL[utils]
-```
+- arquitetura modular por responsabilidade
+- testes automatizados e pipeline CI
+- padrao de falha controlada (fallback e retry)
+- separacao clara entre camada de entrada, servico e persistencia
+- base preparada para evolucao sem acoplamento desnecessario
 
 ---
 
-## Segurança em camadas
+## Contribuicao
 
-```mermaid
-flowchart TD
-    U[User Input] --> V[Validação de tipo e tamanho]
-    V --> S[Sanitização básica]
-    S --> P[Separação system prompt e user input]
-    P --> R[Rate limiting por execução]
-    R --> L[Logs estruturados sem segredos]
-    L --> O[Output Safety Validation]
+Contribuicoes sao bem-vindas com PRs pequenas, objetivas e testadas.
 
-    K[.env e secrets] --> P
-    E[Error Handler Seguro] --> L
-```
+Checklist recomendado antes de abrir PR:
+
+- `npm run typecheck`
+- `npm test`
+- `npm run build`
 
 ---
 
-## Stack Cards
+## Licenca
 
-| Camada | Stack | Objetivo |
-|---|---|---|
-| Runtime e CLI | <img alt="Node" src="https://img.shields.io/badge/Node.js-20+-14532d?style=flat-square&logo=node.js&logoColor=white" /> <img alt="TS" src="https://img.shields.io/badge/TypeScript-Strict-1d4ed8?style=flat-square&logo=typescript&logoColor=white" /> <img alt="Commander" src="https://img.shields.io/badge/Commander-CLI-9a3412?style=flat-square" /> | Performance, tipagem forte e UX de terminal profissional |
-| IA e prompts | <img alt="Anthropic" src="https://img.shields.io/badge/Claude-Anthropic-0f766e?style=flat-square" /> <img alt="OpenAI" src="https://img.shields.io/badge/OpenAI-Fallback-166534?style=flat-square" /> | Geração confiável com fallback e padronização de saída |
-| Qualidade e segurança | <img alt="Zod" src="https://img.shields.io/badge/Zod-Validacao-7c2d12?style=flat-square" /> <img alt="Jest" src="https://img.shields.io/badge/Jest-Testes-b91c1c?style=flat-square&logo=jest&logoColor=white" /> <img alt="dotenv" src="https://img.shields.io/badge/dotenv-Env-365314?style=flat-square" /> | Resiliência, validação de contrato e segurança de configuração |
-
----
-
-## Como funciona
-
-1. Usuário fornece input (texto, arquivos ou repositório)
-2. Input Analyzer extrai intenção, contexto e tema
-3. AI Engine produz estrutura base com prompts controlados
-4. Template Engine organiza os documentos finais
-5. Output Generator cria os arquivos automaticamente
-
----
-
-## Casos de uso reais
-
-### Devs
-
-- Transformar estudo em projeto concreto
-- Gerar documentação profissional para portfólio
-
-### Estudantes
-
-- Montar portfólio com mais velocidade
-- Estruturar aprendizado em entregáveis
-
-### Criadores
-
-- Organizar ideias e publicar com narrativa técnica
-
----
-
-## Engenharia que recrutador enxerga
-
-- Arquitetura modular por camadas
-- Separação clara de responsabilidades
-- Engine de templates reutilizável
-- Abstração para múltiplos provedores de IA
-- CLI profissional com foco em ship rápido
-- Design orientado a produto
-- Segurança como requisito de base
-
----
-
-## Roadmap
-
-### v1 - MVP
-
-- Geração de README
-- ROADMAP e PROJECT_PLAN
-- Fluxo base de análise de texto
-
-### v2
-
-- Análise de repositório existente
-- Integração com GitHub para issues e PRs
-
-### v3
-
-- Interface web
-- Colaboração
-- Exportação avançada
-
----
-
-## Filosofia
-
-> Aprender é ótimo.
-> Construir é o que muda sua carreira.
-
----
-
-## Inspiração
-
-Projeto desenvolvido por FilipiWanderley, inspirado por aprendizado em IA aplicada,
-incluindo conteúdos da Anthropic Academy.
-
----
-
-## Contribuição
-
-Contribuições são bem-vindas.
-
-Se esse projeto te ajudou, deixe uma estrela e compartilhe com quem está evoluindo na carreira.
+ISC
 
 ---
 
 ## Autor
 
-**FilipiWanderley**
+**Filipi Wanderley (FilipiWanderley)**
 
-- Engenheiro focado em IA aplicada
-- Construindo ferramentas úteis para desenvolvedores
-- Transformando aprendizado em execução real
+- idealizador do produto
+- responsavel pela arquitetura
+- responsavel pela implementacao de ponta a ponta
 
----
-
-## RepoLaunch AI
-
-**By FilipiWanderley**
-
-Transforme aprendizado em projetos.
-Transforme projetos em oportunidades.
+RepoLaunch AI foi concebido para transformar conhecimento em ativo de carreira com engenharia de alto nivel.
