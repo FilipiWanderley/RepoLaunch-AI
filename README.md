@@ -367,7 +367,13 @@ ISC
 
 ## Autor
 
-**Filipi Wanderley (FilipiWanderley)**
+<p>
+  <a href="https://github.com/FilipiWanderley">
+    <img src="https://github.com/FilipiWanderley.png" width="96" alt="Foto de perfil de Filipi Wanderley" />
+  </a>
+</p>
+
+**[Filipi Wanderley](https://github.com/FilipiWanderley)**
 
 - idealizador do produto;
 - responsável pela arquitetura;
