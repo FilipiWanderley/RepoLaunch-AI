@@ -650,7 +650,7 @@ var sharedProjectName = '';
 var sharedGenerations = [];
 var sharedVisibleGenerations = [];
 var sharedFilterText = '';
-var sharedQuickToken = '';
+var sharedQuickTokens = [];
 
 // ─── Examples ────────────────────────────────────────────────────────────────
 var examples = {
@@ -1082,7 +1082,7 @@ async function loadSharedProjectFromQuery() {
     sharedProjectName = (data.project && data.project.name) ? data.project.name : 'workspace';
     sharedGenerations = Array.isArray(data.generations) ? data.generations : [];
     sharedFilterText = '';
-    sharedQuickToken = '';
+    sharedQuickTokens = [];
     var sharedFilterInput = document.getElementById('sharedFilter');
     if (sharedFilterInput) sharedFilterInput.value = '';
     renderSharedQuickFilters();
@@ -1123,10 +1123,22 @@ function buildSharedQuickTokens() {
   var providers = uniqueValues(sharedGenerations.map(function(item) { return item && item.metadata ? item.metadata.provider : ''; }), 3);
 
   var tokens = [];
-  modes.forEach(function(value) { tokens.push({ value: String(value).toLowerCase(), label: 'mode ' + value }); });
-  templates.forEach(function(value) { tokens.push({ value: String(value).toLowerCase(), label: 'template ' + value }); });
-  prompts.forEach(function(value) { tokens.push({ value: String(value).toLowerCase(), label: 'prompt ' + value }); });
-  providers.forEach(function(value) { tokens.push({ value: String(value).toLowerCase(), label: 'provider ' + value }); });
+  modes.forEach(function(value) {
+    var normalized = String(value).toLowerCase();
+    tokens.push({ id: 'mode:' + normalized, key: 'mode', value: normalized, label: 'mode ' + value });
+  });
+  templates.forEach(function(value) {
+    var normalized = String(value).toLowerCase();
+    tokens.push({ id: 'template:' + normalized, key: 'template', value: normalized, label: 'template ' + value });
+  });
+  prompts.forEach(function(value) {
+    var normalized = String(value).toLowerCase();
+    tokens.push({ id: 'prompt:' + normalized, key: 'prompt', value: normalized, label: 'prompt ' + value });
+  });
+  providers.forEach(function(value) {
+    var normalized = String(value).toLowerCase();
+    tokens.push({ id: 'provider:' + normalized, key: 'provider', value: normalized, label: 'provider ' + value });
+  });
   return tokens.slice(0, 10);
 }
 
@@ -1141,20 +1153,43 @@ function renderSharedQuickFilters() {
 
   var tokens = buildSharedQuickTokens();
   container.innerHTML = tokens.map(function(token) {
-    var activeClass = token.value === sharedQuickToken ? ' on' : '';
-    return '<button class="quick-chip' + activeClass + '" type="button" onclick="applySharedQuickFilter(\'' + token.value + '\')">' + token.label + '</button>';
+    var activeClass = sharedQuickTokens.indexOf(token.id) >= 0 ? ' on' : '';
+    return '<button class="quick-chip' + activeClass + '" type="button" onclick="applySharedQuickFilter(\'' + token.id + '\')">' + token.label + '</button>';
   }).join('');
 }
 
-function applySharedQuickFilter(token) {
+function applySharedQuickFilter(tokenId) {
   if (!sharedMode) return;
-  sharedQuickToken = sharedQuickToken === token ? '' : token;
-  var sharedFilterInput = document.getElementById('sharedFilter');
-  if (sharedFilterInput) {
-    sharedFilterInput.value = sharedQuickToken;
+
+  if (sharedQuickTokens.indexOf(tokenId) >= 0) {
+    sharedQuickTokens = sharedQuickTokens.filter(function(item) { return item !== tokenId; });
+  } else {
+    sharedQuickTokens.push(tokenId);
   }
-  applySharedFilter(sharedQuickToken);
+
+  applySharedFilter(sharedFilterText);
   renderSharedQuickFilters();
+}
+
+function getMetadataByQuickKey(metadata, key) {
+  if (key === 'mode') return String(metadata.mode || '').toLowerCase();
+  if (key === 'template') return String(metadata.template || '').toLowerCase();
+  if (key === 'prompt') return String(metadata.promptVersion || '').toLowerCase();
+  if (key === 'provider') return String(metadata.provider || '').toLowerCase();
+  return '';
+}
+
+function matchesQuickTokens(item) {
+  if (!sharedQuickTokens.length) return true;
+  var metadata = (item && item.metadata) ? item.metadata : {};
+
+  return sharedQuickTokens.every(function(tokenId) {
+    var parts = String(tokenId).split(':');
+    if (parts.length < 2) return true;
+    var key = parts[0];
+    var value = parts.slice(1).join(':');
+    return getMetadataByQuickKey(metadata, key) === value;
+  });
 }
 
 function getSharedGenerationSummary(item) {
@@ -1172,16 +1207,10 @@ function applySharedFilter(value) {
   if (!sharedMode) return;
 
   sharedFilterText = String(value || '').trim().toLowerCase();
-  if (!sharedFilterText) {
-    sharedQuickToken = '';
-  }
-  if (!sharedFilterText) {
-    sharedVisibleGenerations = sharedGenerations.slice();
-  } else {
-    sharedVisibleGenerations = sharedGenerations.filter(function(item) {
-      return getSharedGenerationSummary(item).indexOf(sharedFilterText) >= 0;
-    });
-  }
+  sharedVisibleGenerations = sharedGenerations.filter(function(item) {
+    var matchesText = !sharedFilterText || getSharedGenerationSummary(item).indexOf(sharedFilterText) >= 0;
+    return matchesText && matchesQuickTokens(item);
+  });
 
   if (!sharedVisibleGenerations.length) {
     var sharedMetaInfo = document.getElementById('sharedMetaInfo');
