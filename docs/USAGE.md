@@ -35,6 +35,7 @@ npx repolaunch export --format json
 	- cada item de `generations` inclui `metadata` (mode/template/promptVersion/provider) usado nos filtros da tela compartilhada
 	- a tela compartilhada gera chips dinamicos com esses metadados para filtro rapido por um clique
 	- multiplos chips podem ficar ativos simultaneamente e o frontend aplica filtro AND entre eles
+	- query params opcionais para persistencia de estado: `q` (filtro texto), `chips` (lista csv), `gen` (generationId selecionado)
 
 Headers opcionais:
 

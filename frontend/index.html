@@ -1055,21 +1055,77 @@ async function createShareLink() {
   }
 }
 
-function readShareIdFromQuery() {
+function readShareStateFromQuery() {
   try {
     var params = new URLSearchParams(window.location.search);
-    return params.get('share') || '';
+    var chipsRaw = params.get('chips') || '';
+    var chips = chipsRaw
+      .split(',')
+      .map(function(item) { return String(item || '').trim(); })
+      .filter(function(item) { return Boolean(item); });
+
+    return {
+      shareId: params.get('share') || '',
+      filterText: params.get('q') || '',
+      chips: chips,
+      generationId: params.get('gen') || ''
+    };
   } catch (e) {
-    return '';
+    return {
+      shareId: '',
+      filterText: '',
+      chips: [],
+      generationId: ''
+    };
+  }
+}
+
+function syncShareStateToQuery() {
+  if (!sharedMode) return;
+
+  try {
+    var url = new URL(window.location.href);
+    var params = url.searchParams;
+    var state = readShareStateFromQuery();
+    var shareId = state.shareId || currentShareId;
+
+    if (shareId) {
+      params.set('share', shareId);
+    }
+
+    if (sharedFilterText) {
+      params.set('q', sharedFilterText);
+    } else {
+      params.delete('q');
+    }
+
+    if (sharedQuickTokens.length) {
+      params.set('chips', sharedQuickTokens.join(','));
+    } else {
+      params.delete('chips');
+    }
+
+    if (lastGenerationId) {
+      params.set('gen', lastGenerationId);
+    } else {
+      params.delete('gen');
+    }
+
+    url.search = params.toString();
+    window.history.replaceState({}, '', url.toString());
+  } catch (e) {
+    // fallback silencioso para nao interromper a UX
   }
 }
 
 async function loadSharedProjectFromQuery() {
-  var shareId = readShareIdFromQuery();
+  var initialState = readShareStateFromQuery();
+  var shareId = initialState.shareId;
   if (!shareId) return;
 
   sharedMode = true;
   currentProjectId = '';
+  currentShareId = shareId;
 
   try {
     var response = await fetch(API_BASE + '/api/share/' + encodeURIComponent(shareId), {
@@ -1081,10 +1137,11 @@ async function loadSharedProjectFromQuery() {
     var data = await response.json();
     sharedProjectName = (data.project && data.project.name) ? data.project.name : 'workspace';
     sharedGenerations = Array.isArray(data.generations) ? data.generations : [];
-    sharedFilterText = '';
-    sharedQuickTokens = [];
+    sharedFilterText = String(initialState.filterText || '').trim().toLowerCase();
+    sharedQuickTokens = Array.isArray(initialState.chips) ? initialState.chips.slice(0, 10) : [];
+    lastGenerationId = initialState.generationId || lastGenerationId;
     var sharedFilterInput = document.getElementById('sharedFilter');
-    if (sharedFilterInput) sharedFilterInput.value = '';
+    if (sharedFilterInput) sharedFilterInput.value = sharedFilterText;
     renderSharedQuickFilters();
     var info = document.getElementById('projectInfo');
     if (info) info.textContent = 'colaboracao: modo compartilhado (' + sharedProjectName + ')';
@@ -1092,7 +1149,7 @@ async function loadSharedProjectFromQuery() {
     if (shareInfo) shareInfo.textContent = 'share: leitura publica';
 
     if (sharedGenerations.length > 0) {
-      applySharedFilter('');
+      applySharedFilter(sharedFilterText);
     } else {
       var auditInfo = document.getElementById('auditInfo');
       if (auditInfo) auditInfo.textContent = 'auditoria: sem geracoes compartilhadas';
@@ -1215,6 +1272,7 @@ function applySharedFilter(value) {
   if (!sharedVisibleGenerations.length) {
     var sharedMetaInfo = document.getElementById('sharedMetaInfo');
     if (sharedMetaInfo) sharedMetaInfo.textContent = 'share meta: nenhum resultado para o filtro';
+    syncShareStateToQuery();
     renderSharedQuickFilters();
     return;
   }
@@ -1227,6 +1285,7 @@ function applySharedFilter(value) {
     targetGenerationId = sharedVisibleGenerations[0].generationId;
   }
   switchSharedGeneration(targetGenerationId);
+  syncShareStateToQuery();
   renderSharedQuickFilters();
 }
 
@@ -1257,6 +1316,8 @@ function switchSharedGeneration(generationId) {
       + ' | ' + (metadata.provider || 'na')
       + ' | ' + createdLabel;
   }
+
+  syncShareStateToQuery();
 }
 
 async function attachLatestGenerationToProject() {

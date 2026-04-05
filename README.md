@@ -131,6 +131,7 @@ npx repolaunch export --format json
 - no modo compartilhado, e possivel filtrar geracoes por metadados (`mode`, `template`, `promptVersion`, `provider`)
 - filtros rapidos em chips (mode/template/prompt/provider) aceleram a navegação entre geracoes compartilhadas
 - os chips podem ser combinados ao mesmo tempo (logica AND) para refinar o conjunto exibido
+- o estado da tela compartilhada e persistido no URL (`q`, `chips`, `gen`) para reabrir o mesmo recorte
 
 O endpoint de metricas inclui:
 
