@@ -129,6 +129,7 @@ npx repolaunch export --format json
 - leitura publica compartilhada: `GET http://localhost:8787/api/share/:shareId`
 - frontend compartilhado: `?share=<shareId>` agora permite navegar entre multiplas geracoes anexadas ao workspace
 - no modo compartilhado, e possivel filtrar geracoes por metadados (`mode`, `template`, `promptVersion`, `provider`)
+- filtros rapidos em chips (mode/template/prompt/provider) aceleram a navegação entre geracoes compartilhadas
 
 O endpoint de metricas inclui:
 

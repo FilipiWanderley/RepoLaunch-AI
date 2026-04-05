@@ -165,6 +165,15 @@ border-radius:5px;outline:none;transition:border-color 0.15s;
 }
 .key-input:focus{border-color:var(--c-orange)}
 .key-note{font-size:10px;color:var(--c-hint);margin-top:6px;line-height:1.5}
+.quick-filters{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.quick-chip{
+font-family:var(--mono);font-size:10px;font-weight:600;
+padding:4px 8px;border-radius:999px;border:1px solid var(--c-border);
+background:var(--c-surface);color:var(--c-muted);cursor:pointer;
+transition:all 0.12s;
+}
+.quick-chip:hover{border-color:var(--c-orange);color:var(--c-orange)}
+.quick-chip.on{background:var(--c-orange-bg);border-color:var(--c-orange-border);color:var(--c-orange)}
 
 .run-btn{
 width:100%;padding:10px 16px;
@@ -453,6 +462,7 @@ color:var(--c-muted);white-space:pre-wrap;max-height:380px;overflow-y:auto;
         <div class="key-note" id="shareInfo">share: ainda nao gerado</div>
         <div class="key-note" id="auditInfo">auditoria: sem eventos</div>
         <input class="key-input" id="sharedFilter" type="text" placeholder="filtro share: modo/template/prompt" style="margin-top:6px" oninput="applySharedFilter(this.value)" />
+        <div class="quick-filters" id="sharedQuickFilters"></div>
         <div class="key-note" id="sharedMetaInfo">share meta: -</div>
         <button class="file-btn" style="width:100%;margin-top:8px" onclick="refreshMetrics()" data-i18n="metrics_btn">atualizar metricas</button>
         <div class="key-note" id="metricsInfo">metricas: aguardando API</div>
@@ -640,6 +650,7 @@ var sharedProjectName = '';
 var sharedGenerations = [];
 var sharedVisibleGenerations = [];
 var sharedFilterText = '';
+var sharedQuickToken = '';
 
 // ─── Examples ────────────────────────────────────────────────────────────────
 var examples = {
@@ -1071,8 +1082,10 @@ async function loadSharedProjectFromQuery() {
     sharedProjectName = (data.project && data.project.name) ? data.project.name : 'workspace';
     sharedGenerations = Array.isArray(data.generations) ? data.generations : [];
     sharedFilterText = '';
+    sharedQuickToken = '';
     var sharedFilterInput = document.getElementById('sharedFilter');
     if (sharedFilterInput) sharedFilterInput.value = '';
+    renderSharedQuickFilters();
     var info = document.getElementById('projectInfo');
     if (info) info.textContent = 'colaboracao: modo compartilhado (' + sharedProjectName + ')';
     var shareInfo = document.getElementById('shareInfo');
@@ -1091,6 +1104,59 @@ async function loadSharedProjectFromQuery() {
   }
 }
 
+function uniqueValues(values, limit) {
+  var map = {};
+  var out = [];
+  values.forEach(function(value) {
+    var normalized = String(value || '').trim();
+    if (!normalized || map[normalized]) return;
+    map[normalized] = true;
+    out.push(normalized);
+  });
+  return out.slice(0, limit || out.length);
+}
+
+function buildSharedQuickTokens() {
+  var modes = uniqueValues(sharedGenerations.map(function(item) { return item && item.metadata ? item.metadata.mode : ''; }), 3);
+  var templates = uniqueValues(sharedGenerations.map(function(item) { return item && item.metadata ? item.metadata.template : ''; }), 3);
+  var prompts = uniqueValues(sharedGenerations.map(function(item) { return item && item.metadata ? item.metadata.promptVersion : ''; }), 3);
+  var providers = uniqueValues(sharedGenerations.map(function(item) { return item && item.metadata ? item.metadata.provider : ''; }), 3);
+
+  var tokens = [];
+  modes.forEach(function(value) { tokens.push({ value: String(value).toLowerCase(), label: 'mode ' + value }); });
+  templates.forEach(function(value) { tokens.push({ value: String(value).toLowerCase(), label: 'template ' + value }); });
+  prompts.forEach(function(value) { tokens.push({ value: String(value).toLowerCase(), label: 'prompt ' + value }); });
+  providers.forEach(function(value) { tokens.push({ value: String(value).toLowerCase(), label: 'provider ' + value }); });
+  return tokens.slice(0, 10);
+}
+
+function renderSharedQuickFilters() {
+  var container = document.getElementById('sharedQuickFilters');
+  if (!container) return;
+
+  if (!sharedMode || !sharedGenerations.length) {
+    container.innerHTML = '';
+    return;
+  }
+
+  var tokens = buildSharedQuickTokens();
+  container.innerHTML = tokens.map(function(token) {
+    var activeClass = token.value === sharedQuickToken ? ' on' : '';
+    return '<button class="quick-chip' + activeClass + '" type="button" onclick="applySharedQuickFilter(\'' + token.value + '\')">' + token.label + '</button>';
+  }).join('');
+}
+
+function applySharedQuickFilter(token) {
+  if (!sharedMode) return;
+  sharedQuickToken = sharedQuickToken === token ? '' : token;
+  var sharedFilterInput = document.getElementById('sharedFilter');
+  if (sharedFilterInput) {
+    sharedFilterInput.value = sharedQuickToken;
+  }
+  applySharedFilter(sharedQuickToken);
+  renderSharedQuickFilters();
+}
+
 function getSharedGenerationSummary(item) {
   var metadata = (item && item.metadata) ? item.metadata : {};
   var parts = [
@@ -1107,6 +1173,9 @@ function applySharedFilter(value) {
 
   sharedFilterText = String(value || '').trim().toLowerCase();
   if (!sharedFilterText) {
+    sharedQuickToken = '';
+  }
+  if (!sharedFilterText) {
     sharedVisibleGenerations = sharedGenerations.slice();
   } else {
     sharedVisibleGenerations = sharedGenerations.filter(function(item) {
@@ -1117,6 +1186,7 @@ function applySharedFilter(value) {
   if (!sharedVisibleGenerations.length) {
     var sharedMetaInfo = document.getElementById('sharedMetaInfo');
     if (sharedMetaInfo) sharedMetaInfo.textContent = 'share meta: nenhum resultado para o filtro';
+    renderSharedQuickFilters();
     return;
   }
 
@@ -1128,6 +1198,7 @@ function applySharedFilter(value) {
     targetGenerationId = sharedVisibleGenerations[0].generationId;
   }
   switchSharedGeneration(targetGenerationId);
+  renderSharedQuickFilters();
 }
 
 function switchSharedGeneration(generationId) {
