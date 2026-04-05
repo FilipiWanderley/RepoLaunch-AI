@@ -22,6 +22,10 @@ const HistoryQuerySchema = z.object({
   limit: z.coerce.number().int().positive().max(50).optional()
 });
 
+const MetricsQuerySchema = z.object({
+  windowMinutes: z.coerce.number().int().positive().max(120).optional()
+});
+
 export function createServerApp(): express.Express {
   const app = express();
   const controller = new RepoLaunchController();
@@ -63,8 +67,13 @@ export function createServerApp(): express.Express {
     });
   });
 
-  app.get("/api/metrics", (_req, res) => {
-    res.json(getApiMetrics());
+  app.get("/api/metrics", (req, res, next) => {
+    try {
+      const query = MetricsQuerySchema.parse(req.query);
+      res.json(getApiMetrics(query.windowMinutes ?? 15));
+    } catch (error) {
+      next(error);
+    }
   });
 
   app.post("/api/generate", async (req, res, next) => {

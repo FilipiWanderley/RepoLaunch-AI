@@ -437,6 +437,8 @@ color:var(--c-muted);white-space:pre-wrap;max-height:380px;overflow-y:auto;
         <div class="key-note" data-i18n="api_note">Frontend usa a API local; chaves ficam somente no backend.</div>
         <button class="file-btn" style="width:100%;margin-top:8px" onclick="refreshMetrics()" data-i18n="metrics_btn">atualizar metricas</button>
         <div class="key-note" id="metricsInfo">metricas: aguardando API</div>
+        <div class="key-note" id="metricsStatusInfo">status: -</div>
+        <div class="key-note" id="metricsGraph">janela 15m: -</div>
         <button class="run-btn" id="runBtn" onclick="runGenerate()">
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
             <path d="M2 2l8 4-8 4V2z" fill="#fff"/>
@@ -773,6 +775,8 @@ async function runGenerate() {
 
 async function refreshMetrics() {
   var info = document.getElementById('metricsInfo');
+  var statusInfo = document.getElementById('metricsStatusInfo');
+  var graphInfo = document.getElementById('metricsGraph');
   if (!info) return;
 
   try {
@@ -786,6 +790,8 @@ async function refreshMetrics() {
 
     if (!response.ok) {
       info.textContent = 'metricas: indisponivel';
+      if (statusInfo) statusInfo.textContent = 'status: -';
+      if (graphInfo) graphInfo.textContent = 'janela 15m: -';
       return;
     }
 
@@ -794,8 +800,26 @@ async function refreshMetrics() {
     var errors = data.totalErrors || 0;
     var limited = data.totalRateLimitExceeded || 0;
     info.textContent = 'metricas: req ' + requests + ' | erros ' + errors + ' | rate-limit ' + limited;
+
+    if (statusInfo) {
+      var st = data.statusBreakdown || {};
+      statusInfo.textContent = 'status: 2xx ' + (st['2xx'] || 0) + ' | 4xx ' + (st['4xx'] || 0) + ' | 5xx ' + (st['5xx'] || 0);
+    }
+
+    if (graphInfo) {
+      var points = data.recent && Array.isArray(data.recent.points) ? data.recent.points : [];
+      var bars = points.slice(-8).map(function(point) {
+        var req = point.requests || 0;
+        var lvl = Math.max(1, Math.min(8, req));
+        return '▁▂▃▄▅▆▇█'.charAt(lvl - 1);
+      }).join('');
+      var windowMinutes = data.recent && data.recent.windowMinutes ? data.recent.windowMinutes : 15;
+      graphInfo.textContent = 'janela ' + windowMinutes + 'm: ' + (bars || '-');
+    }
   } catch (e) {
     info.textContent = 'metricas: offline';
+    if (statusInfo) statusInfo.textContent = 'status: -';
+    if (graphInfo) graphInfo.textContent = 'janela 15m: -';
   }
 }
 

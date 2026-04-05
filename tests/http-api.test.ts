@@ -117,7 +117,7 @@ describe("HTTP API", () => {
       text: ""
     });
 
-    const metrics = await request(app).get("/api/metrics");
+    const metrics = await request(app).get("/api/metrics?windowMinutes=30");
     expect(metrics.status).toBe(200);
     expect(metrics.body.totalRequests).toBeGreaterThanOrEqual(3);
     expect(metrics.body.totalErrors).toBeGreaterThanOrEqual(1);
@@ -128,5 +128,10 @@ describe("HTTP API", () => {
     expect(promptsKey).toBeTruthy();
     expect(generateKey).toBeTruthy();
     expect(metrics.body.routes[generateKey as string].avgLatencyMs).toBeGreaterThanOrEqual(0);
+    expect(metrics.body.statusBreakdown["2xx"]).toBeGreaterThanOrEqual(1);
+    expect(metrics.body.statusBreakdown["4xx"]).toBeGreaterThanOrEqual(1);
+    expect(metrics.body.recent.windowMinutes).toBe(30);
+    expect(Array.isArray(metrics.body.recent.points)).toBe(true);
+    expect(metrics.body.recent.points.length).toBeGreaterThanOrEqual(1);
   });
 });
