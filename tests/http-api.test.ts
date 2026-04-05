@@ -147,13 +147,31 @@ describe("HTTP API", () => {
 
   it("deve criar projeto colaborativo e vincular geracao", async () => {
     const app = createServerApp();
+    const ownerHeaders = { "x-collab-user": "alice" };
+    const editorHeaders = { "x-collab-user": "bob" };
+    const viewerHeaders = { "x-collab-user": "carol" };
 
-    const createdProject = await request(app).post("/api/collab/projects").send({
-      name: "Workspace Squad Alpha",
-      description: "Projeto para compartilhamento interno"
-    });
+    const createdProject = await request(app)
+      .post("/api/collab/projects")
+      .set(ownerHeaders)
+      .send({
+        name: "Workspace Squad Alpha",
+        description: "Projeto para compartilhamento interno"
+      });
     expect(createdProject.status).toBe(201);
     const projectId = createdProject.body.project.projectId as string;
+
+    const addEditor = await request(app)
+      .post(`/api/collab/projects/${projectId}/members`)
+      .set(ownerHeaders)
+      .send({ userId: "bob", role: "editor" });
+    expect(addEditor.status).toBe(201);
+
+    const addViewer = await request(app)
+      .post(`/api/collab/projects/${projectId}/members`)
+      .set(ownerHeaders)
+      .send({ userId: "carol", role: "viewer" });
+    expect(addViewer.status).toBe(201);
 
     const generation = await request(app).post("/api/generate").send({
       text: "Quero gerar documentos para um workspace colaborativo",
@@ -164,21 +182,45 @@ describe("HTTP API", () => {
 
     const attached = await request(app)
       .post(`/api/collab/projects/${projectId}/generations`)
+      .set(editorHeaders)
       .send({ generationId });
     expect(attached.status).toBe(200);
     expect(attached.body.attachedGenerationId).toBe(generationId);
 
-    const projectDetails = await request(app).get(`/api/collab/projects/${projectId}`);
+    const viewerAttachAttempt = await request(app)
+      .post(`/api/collab/projects/${projectId}/generations`)
+      .set(viewerHeaders)
+      .send({ generationId });
+    expect(viewerAttachAttempt.status).toBe(403);
+    expect(viewerAttachAttempt.body.error.code).toBe("COLLAB_FORBIDDEN");
+
+    const members = await request(app)
+      .get(`/api/collab/projects/${projectId}/members`)
+      .set(editorHeaders);
+    expect(members.status).toBe(200);
+    expect(Array.isArray(members.body.members)).toBe(true);
+    expect(members.body.members.find((member: { userId: string; role: string }) => member.userId === "bob")?.role).toBe(
+      "editor"
+    );
+
+    const projectDetails = await request(app)
+      .get(`/api/collab/projects/${projectId}`)
+      .set(ownerHeaders);
     expect(projectDetails.status).toBe(200);
     expect(projectDetails.body.project.generationIds).toContain(generationId);
     expect(Array.isArray(projectDetails.body.generations)).toBe(true);
 
-    const projectsList = await request(app).get("/api/collab/projects");
+    const projectsList = await request(app)
+      .get("/api/collab/projects")
+      .set(ownerHeaders);
     expect(projectsList.status).toBe(200);
     expect(Array.isArray(projectsList.body.projects)).toBe(true);
     expect(projectsList.body.projects.find((project: { projectId: string }) => project.projectId === projectId)).toBeTruthy();
 
-    const share = await request(app).post(`/api/collab/projects/${projectId}/share`).send({});
+    const share = await request(app)
+      .post(`/api/collab/projects/${projectId}/share`)
+      .set(editorHeaders)
+      .send({});
     expect(share.status).toBe(200);
     expect(share.body.shareId).toBeTruthy();
     expect(typeof share.body.shareUrl).toBe("string");

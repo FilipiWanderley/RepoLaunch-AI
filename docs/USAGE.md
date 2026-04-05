@@ -24,6 +24,9 @@ npx repolaunch export --format json
 - `GET /api/metrics?windowMinutes=15`: metricas de requests, erros, status code e janela temporal
 - `GET /api/collab/projects`: lista workspaces colaborativos
 - `POST /api/collab/projects`: cria workspace colaborativo
+- `GET /api/collab/projects/:projectId/members`: lista membros do workspace
+- `POST /api/collab/projects/:projectId/members`: adiciona/atualiza membro (apenas owner)
+- `PATCH /api/collab/projects/:projectId/members/:userId`: altera papel do membro (apenas owner)
 - `POST /api/collab/projects/:projectId/generations`: vincula uma geracao ao workspace
 - `POST /api/collab/projects/:projectId/share`: gera link publico do workspace
 - `GET /api/share/:shareId`: leitura publica do workspace compartilhado
@@ -31,6 +34,7 @@ npx repolaunch export --format json
 Headers opcionais:
 
 - `x-api-token`: obrigatorio quando `API_AUTH_TOKEN` estiver definido no backend
+- `x-collab-user`: identifica o usuario atual para RBAC de colaboracao (`owner`, `editor`, `viewer`)
 
 Exemplo de payload para `POST /api/generate`:
 

@@ -436,11 +436,20 @@ color:var(--c-muted);white-space:pre-wrap;max-height:380px;overflow-y:auto;
         <input class="key-input" id="apiToken" type="password" placeholder="opcional" autocomplete="off"/>
         <div class="key-note" data-i18n="api_note">Frontend usa a API local; chaves ficam somente no backend.</div>
         <div class="key-label" data-i18n="collab_ws" style="margin-top:10px">Workspace colaborativo</div>
+        <input class="key-input" id="collabUser" type="text" placeholder="local-user" autocomplete="off"/>
         <select class="key-input" id="projectSelect" onchange="onProjectSelect(this.value)"></select>
         <input class="key-input" id="projectName" type="text" placeholder="novo projeto" style="margin-top:6px" />
         <button class="file-btn" style="width:100%;margin-top:6px" onclick="createProject()" data-i18n="collab_create">criar projeto</button>
+        <input class="key-input" id="memberUser" type="text" placeholder="membro-user" style="margin-top:6px" />
+        <select class="key-input" id="memberRole" style="margin-top:6px">
+          <option value="viewer">viewer</option>
+          <option value="editor">editor</option>
+          <option value="owner">owner</option>
+        </select>
+        <button class="file-btn" style="width:100%;margin-top:6px" onclick="addMemberToProject()" data-i18n="collab_add_member">adicionar membro</button>
         <button class="file-btn" style="width:100%;margin-top:6px" onclick="createShareLink()" data-i18n="collab_share">gerar link publico</button>
         <div class="key-note" id="projectInfo">colaboracao: sem projeto selecionado</div>
+        <div class="key-note" id="memberInfo">membros: sem dados</div>
         <div class="key-note" id="shareInfo">share: ainda nao gerado</div>
         <button class="file-btn" style="width:100%;margin-top:8px" onclick="refreshMetrics()" data-i18n="metrics_btn">atualizar metricas</button>
         <div class="key-note" id="metricsInfo">metricas: aguardando API</div>
@@ -554,6 +563,7 @@ color:var(--c-muted);white-space:pre-wrap;max-height:380px;overflow-y:auto;
 var lang = 'pt';
 var API_BASE = localStorage.getItem('repolaunch_api_base') || 'http://localhost:8787';
 var API_TOKEN = localStorage.getItem('repolaunch_api_token') || '';
+var COLLAB_USER = localStorage.getItem('repolaunch_collab_user') || 'local-user';
 var currentProjectId = localStorage.getItem('repolaunch_project_id') || '';
 var currentShareId = '';
 var projectsCache = [];
@@ -564,6 +574,7 @@ var i18n = {
     api_token: 'API Token',
     api_note: 'Frontend usa a API local; chaves ficam somente no backend.',
     collab_ws: 'Workspace colaborativo',
+    collab_add_member: 'adicionar membro',
     collab_create: 'criar projeto',
     collab_share: 'gerar link publico',
     metrics_btn: 'atualizar metricas',
@@ -583,6 +594,7 @@ var i18n = {
     api_token: 'API Token',
     api_note: 'Frontend uses local API; keys stay only in backend.',
     collab_ws: 'Collaborative workspace',
+    collab_add_member: 'add member',
     collab_create: 'create project',
     collab_share: 'generate public link',
     metrics_btn: 'refresh metrics',
@@ -795,7 +807,14 @@ function apiHeaders(contentType) {
   var headers = {};
   if (contentType) headers['Content-Type'] = contentType;
   if (API_TOKEN) headers['x-api-token'] = API_TOKEN;
+  if (COLLAB_USER) headers['x-collab-user'] = COLLAB_USER;
   return headers;
+}
+
+function updateCollabUserFromInput() {
+  var userInput = document.getElementById('collabUser');
+  COLLAB_USER = (userInput && userInput.value ? userInput.value.trim().toLowerCase() : '') || 'local-user';
+  localStorage.setItem('repolaunch_collab_user', COLLAB_USER);
 }
 
 function renderProjects() {
@@ -813,6 +832,8 @@ function renderProjects() {
   if (!info) return;
   if (!currentProjectId) {
     info.textContent = 'colaboracao: sem projeto selecionado';
+    var memberInfoEmpty = document.getElementById('memberInfo');
+    if (memberInfoEmpty) memberInfoEmpty.textContent = 'membros: sem dados';
     if (shareInfo) shareInfo.textContent = 'share: ainda nao gerado';
     return;
   }
@@ -820,11 +841,15 @@ function renderProjects() {
   var selectedProject = projectsCache.find(function(project) { return project.projectId === currentProjectId; });
   if (!selectedProject) {
     info.textContent = 'colaboracao: projeto nao encontrado';
+    var memberInfoMissing = document.getElementById('memberInfo');
+    if (memberInfoMissing) memberInfoMissing.textContent = 'membros: indisponivel';
     if (shareInfo) shareInfo.textContent = 'share: indisponivel';
     return;
   }
 
-  info.textContent = 'colaboracao: ' + selectedProject.name + ' (' + (selectedProject.generationCount || 0) + ' geracoes)';
+  info.textContent = 'colaboracao: ' + selectedProject.name + ' (' + (selectedProject.generationCount || 0) + ' geracoes, papel ' + (selectedProject.currentUserRole || 'none') + ')';
+  var memberInfo = document.getElementById('memberInfo');
+  if (memberInfo) memberInfo.textContent = 'membros: ' + (selectedProject.memberCount || 0);
   if (shareInfo) {
     if (selectedProject.shareId) {
       shareInfo.textContent = 'share: ' + selectedProject.shareId.slice(0, 8) + '...';
@@ -837,6 +862,7 @@ function renderProjects() {
 }
 
 async function loadProjects() {
+  updateCollabUserFromInput();
   try {
     var response = await fetch(API_BASE + '/api/collab/projects', {
       method: 'GET',
@@ -872,6 +898,7 @@ function onProjectSelect(projectId) {
 }
 
 async function createProject() {
+  updateCollabUserFromInput();
   var input = document.getElementById('projectName');
   var name = input && input.value ? input.value.trim() : '';
   if (!name) return;
@@ -896,7 +923,40 @@ async function createProject() {
   }
 }
 
+async function addMemberToProject() {
+  updateCollabUserFromInput();
+  if (!currentProjectId) return;
+
+  var memberUserInput = document.getElementById('memberUser');
+  var memberRoleInput = document.getElementById('memberRole');
+  var memberUser = memberUserInput && memberUserInput.value ? memberUserInput.value.trim().toLowerCase() : '';
+  var memberRole = memberRoleInput && memberRoleInput.value ? memberRoleInput.value : 'viewer';
+  if (!memberUser) return;
+
+  try {
+    var response = await fetch(API_BASE + '/api/collab/projects/' + encodeURIComponent(currentProjectId) + '/members', {
+      method: 'POST',
+      headers: apiHeaders('application/json'),
+      body: JSON.stringify({ userId: memberUser, role: memberRole })
+    });
+
+    var memberInfo = document.getElementById('memberInfo');
+    if (!response.ok) {
+      if (memberInfo) memberInfo.textContent = 'membros: sem permissao para atualizar';
+      return;
+    }
+
+    if (memberUserInput) memberUserInput.value = '';
+    if (memberInfo) memberInfo.textContent = 'membros: atualizado';
+    await loadProjects();
+  } catch (e) {
+    var errorInfo = document.getElementById('memberInfo');
+    if (errorInfo) errorInfo.textContent = 'membros: falha ao adicionar';
+  }
+}
+
 async function createShareLink() {
+  updateCollabUserFromInput();
   if (!currentProjectId) return;
 
   try {
@@ -959,6 +1019,7 @@ async function loadSharedProjectFromQuery() {
 }
 
 async function attachLatestGenerationToProject() {
+  updateCollabUserFromInput();
   if (!currentProjectId || !lastGenerationId) return;
 
   try {
@@ -1167,6 +1228,8 @@ var apiBaseInput = document.getElementById('apiBase');
 if (apiBaseInput) apiBaseInput.value = API_BASE;
 var apiTokenInput = document.getElementById('apiToken');
 if (apiTokenInput) apiTokenInput.value = API_TOKEN;
+var collabUserInput = document.getElementById('collabUser');
+if (collabUserInput) collabUserInput.value = COLLAB_USER;
 document.getElementById('mainInp').placeholder = i18n[lang].inp_placeholder;
 refreshMetrics();
 loadProjects();

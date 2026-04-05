@@ -120,6 +120,9 @@ npx repolaunch export --format json
 - export zip por geracao: `GET http://localhost:8787/api/history/:generationId/export.zip`
 - metricas de API: `GET http://localhost:8787/api/metrics?windowMinutes=15`
 - colaboracao: `GET/POST http://localhost:8787/api/collab/projects`
+- listar membros do projeto: `GET http://localhost:8787/api/collab/projects/:projectId/members`
+- adicionar/atualizar membro (owner): `POST http://localhost:8787/api/collab/projects/:projectId/members`
+- atualizar papel de membro (owner): `PATCH http://localhost:8787/api/collab/projects/:projectId/members/:userId`
 - vincular geracao ao projeto: `POST http://localhost:8787/api/collab/projects/:projectId/generations`
 - gerar link publico: `POST http://localhost:8787/api/collab/projects/:projectId/share`
 - leitura publica compartilhada: `GET http://localhost:8787/api/share/:shareId`
@@ -141,6 +144,7 @@ O health detalhado inclui:
 - `API_AUTH_TOKEN`: quando definido, exige header `x-api-token` em `/api/prompts` e `/api/generate`
 - `API_RATE_LIMIT_WINDOW_MS`: janela do rate limit em ms
 - `API_RATE_LIMIT_MAX`: maximo de requisicoes por IP por janela
+- `x-collab-user`: identifica o membro atual para controle de permissoes em colaboracao (owner/editor/viewer)
 
 ### Exemplos de saida por modo
 

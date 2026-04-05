@@ -10,7 +10,7 @@ import { readEnv } from "../config/env";
 import { createApiSecurity } from "./security";
 import { getApiMetrics, recordApiError, recordApiRequest } from "./metrics";
 import { buildDetailedHealthReport } from "./health";
-import { CollaborationStore } from "./collaboration-store";
+import { CollaborationRole, CollaborationStore } from "./collaboration-store";
 
 const GenerateRequestSchema = z.object({
   text: z.string().min(1, "Texto de entrada e obrigatorio."),
@@ -37,6 +37,41 @@ const AttachGenerationSchema = z.object({
   generationId: z.string().min(1)
 });
 
+const ManageMemberSchema = z.object({
+  userId: z.string().min(1).max(80),
+  name: z.string().max(80).optional(),
+  role: z.enum(["owner", "editor", "viewer"])
+});
+
+function normalizeCollabUserId(value: string | undefined): string {
+  const normalized = String(value ?? "")
+    .trim()
+    .toLowerCase();
+  if (!normalized) {
+    return "local-user";
+  }
+  const safe = normalized.replace(/[^a-z0-9_.-]/g, "");
+  return safe || "local-user";
+}
+
+function getCollabUser(req: express.Request): { userId: string; name?: string } {
+  return {
+    userId: normalizeCollabUserId(req.get("x-collab-user")),
+    name: String(req.get("x-collab-user-name") ?? "").trim() || undefined
+  };
+}
+
+function requireProjectRole(project: { members: Array<{ userId: string; role: CollaborationRole }> }, userId: string, allowed: CollaborationRole[]): void {
+  const member = project.members.find((entry) => entry.userId === userId);
+  if (!member || !allowed.includes(member.role)) {
+    throw new CliError("Usuario sem permissao para esta operacao.", {
+      code: "COLLAB_FORBIDDEN",
+      hint: `Permissao requerida: ${allowed.join(", ")}.`,
+      exitCode: 403
+    });
+  }
+}
+
 export function createServerApp(): express.Express {
   const app = express();
   const controller = new RepoLaunchController();
@@ -48,7 +83,7 @@ export function createServerApp(): express.Express {
     rateLimitMax: env.API_RATE_LIMIT_MAX
   });
 
-  app.use(cors({ allowedHeaders: ["Content-Type", "x-api-token"] }));
+  app.use(cors({ allowedHeaders: ["Content-Type", "x-api-token", "x-collab-user", "x-collab-user-name"] }));
   app.use(express.json({ limit: "1mb" }));
   app.use("/api", (req, res, next) => {
     const startedAt = process.hrtime.bigint();
@@ -174,6 +209,7 @@ export function createServerApp(): express.Express {
 
   app.get("/api/collab/projects", async (_req, res, next) => {
     try {
+      const user = getCollabUser(_req);
       const projects = await collaborationStore.listProjects();
       res.json({
         projects: projects.map((project) => ({
@@ -183,6 +219,8 @@ export function createServerApp(): express.Express {
           createdAt: project.createdAt,
           updatedAt: project.updatedAt,
           generationCount: project.generationIds.length,
+          memberCount: project.members.length,
+          currentUserRole: project.members.find((member) => member.userId === user.userId)?.role,
           shareId: project.shareId
         }))
       });
@@ -194,7 +232,8 @@ export function createServerApp(): express.Express {
   app.post("/api/collab/projects", async (req, res, next) => {
     try {
       const payload = CreateProjectSchema.parse(req.body);
-      const project = await collaborationStore.createProject(payload.name.trim(), payload.description?.trim());
+      const user = getCollabUser(req);
+      const project = await collaborationStore.createProject(payload.name.trim(), payload.description?.trim(), user);
       res.status(201).json({ project });
     } catch (error) {
       next(error);
@@ -204,6 +243,7 @@ export function createServerApp(): express.Express {
   app.get("/api/collab/projects/:projectId", async (req, res, next) => {
     try {
       const projectId = String(req.params.projectId ?? "").trim();
+      const user = getCollabUser(req);
       const project = await collaborationStore.getProject(projectId);
       if (!project) {
         throw new CliError("Projeto de colaboracao nao encontrado.", {
@@ -212,6 +252,8 @@ export function createServerApp(): express.Express {
           exitCode: 404
         });
       }
+
+      requireProjectRole(project, user.userId, ["owner", "editor", "viewer"]);
 
       const generations = await Promise.all(
         project.generationIds.map(async (generationId) => controller.getWebGeneration(generationId))
@@ -229,7 +271,19 @@ export function createServerApp(): express.Express {
   app.post("/api/collab/projects/:projectId/generations", async (req, res, next) => {
     try {
       const projectId = String(req.params.projectId ?? "").trim();
+      const user = getCollabUser(req);
       const payload = AttachGenerationSchema.parse(req.body);
+
+      const existingProject = await collaborationStore.getProject(projectId);
+      if (!existingProject) {
+        throw new CliError("Projeto de colaboracao nao encontrado.", {
+          code: "COLLAB_PROJECT_NOT_FOUND",
+          hint: "Revise o projectId e tente novamente.",
+          exitCode: 404
+        });
+      }
+      requireProjectRole(existingProject, user.userId, ["owner", "editor"]);
+
       const generation = await controller.getWebGeneration(payload.generationId);
       if (!generation) {
         throw new CliError("Geracao nao encontrada para vinculacao.", {
@@ -240,13 +294,6 @@ export function createServerApp(): express.Express {
       }
 
       const project = await collaborationStore.attachGeneration(projectId, payload.generationId);
-      if (!project) {
-        throw new CliError("Projeto de colaboracao nao encontrado.", {
-          code: "COLLAB_PROJECT_NOT_FOUND",
-          hint: "Revise o projectId e tente novamente.",
-          exitCode: 404
-        });
-      }
 
       res.json({
         project,
@@ -260,6 +307,17 @@ export function createServerApp(): express.Express {
   app.post("/api/collab/projects/:projectId/share", async (req, res, next) => {
     try {
       const projectId = String(req.params.projectId ?? "").trim();
+      const user = getCollabUser(req);
+      const existingProject = await collaborationStore.getProject(projectId);
+      if (!existingProject) {
+        throw new CliError("Projeto de colaboracao nao encontrado.", {
+          code: "COLLAB_PROJECT_NOT_FOUND",
+          hint: "Revise o projectId e tente novamente.",
+          exitCode: 404
+        });
+      }
+      requireProjectRole(existingProject, user.userId, ["owner", "editor"]);
+
       const shared = await collaborationStore.createOrGetShareId(projectId);
       if (!shared) {
         throw new CliError("Projeto de colaboracao nao encontrado.", {
@@ -276,6 +334,100 @@ export function createServerApp(): express.Express {
         shareUrl
       });
     } catch (error) {
+      next(error);
+    }
+  });
+
+  app.get("/api/collab/projects/:projectId/members", async (req, res, next) => {
+    try {
+      const projectId = String(req.params.projectId ?? "").trim();
+      const user = getCollabUser(req);
+      const project = await collaborationStore.getProject(projectId);
+      if (!project) {
+        throw new CliError("Projeto de colaboracao nao encontrado.", {
+          code: "COLLAB_PROJECT_NOT_FOUND",
+          hint: "Revise o projectId e tente novamente.",
+          exitCode: 404
+        });
+      }
+
+      requireProjectRole(project, user.userId, ["owner", "editor", "viewer"]);
+      const members = await collaborationStore.listMembers(projectId);
+      res.json({ projectId, members: members ?? [] });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.post("/api/collab/projects/:projectId/members", async (req, res, next) => {
+    try {
+      const projectId = String(req.params.projectId ?? "").trim();
+      const payload = ManageMemberSchema.parse(req.body);
+      const user = getCollabUser(req);
+      const project = await collaborationStore.getProject(projectId);
+      if (!project) {
+        throw new CliError("Projeto de colaboracao nao encontrado.", {
+          code: "COLLAB_PROJECT_NOT_FOUND",
+          hint: "Revise o projectId e tente novamente.",
+          exitCode: 404
+        });
+      }
+
+      requireProjectRole(project, user.userId, ["owner"]);
+      const updated = await collaborationStore.upsertMember(projectId, {
+        userId: normalizeCollabUserId(payload.userId),
+        name: payload.name?.trim() || undefined,
+        role: payload.role
+      });
+      res.status(201).json({ project: updated });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.patch("/api/collab/projects/:projectId/members/:userId", async (req, res, next) => {
+    try {
+      const projectId = String(req.params.projectId ?? "").trim();
+      const targetUserId = normalizeCollabUserId(String(req.params.userId ?? "").trim());
+      const payload = ManageMemberSchema.omit({ userId: true }).parse(req.body);
+      const user = getCollabUser(req);
+      const project = await collaborationStore.getProject(projectId);
+      if (!project) {
+        throw new CliError("Projeto de colaboracao nao encontrado.", {
+          code: "COLLAB_PROJECT_NOT_FOUND",
+          hint: "Revise o projectId e tente novamente.",
+          exitCode: 404
+        });
+      }
+
+      requireProjectRole(project, user.userId, ["owner"]);
+      const updated = await collaborationStore.updateMemberRole(
+        projectId,
+        targetUserId,
+        payload.role,
+        payload.name?.trim() || undefined
+      );
+
+      if (!updated) {
+        throw new CliError("Membro de colaboracao nao encontrado.", {
+          code: "COLLAB_MEMBER_NOT_FOUND",
+          hint: "Revise o userId e tente novamente.",
+          exitCode: 404
+        });
+      }
+
+      res.json({ project: updated });
+    } catch (error) {
+      if (error instanceof Error && error.message === "LAST_OWNER_DEMOTION_NOT_ALLOWED") {
+        next(
+          new CliError("Nao e permitido remover o ultimo owner do workspace.", {
+            code: "COLLAB_LAST_OWNER_FORBIDDEN",
+            hint: "Promova outro membro para owner antes de alterar este papel.",
+            exitCode: 409
+          })
+        );
+        return;
+      }
       next(error);
     }
   });
