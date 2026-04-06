@@ -347,6 +347,111 @@ npm run ci
 
 ---
 
+## Como Rodar Localmente
+
+### Pré-requisitos
+
+- Node.js 20 ou superior
+- npm 9 ou superior
+- Chave de API da Anthropic ou OpenAI (ao menos uma)
+
+### 1. Clone o repositório
+
+```bash
+git clone https://github.com/FilipiWanderley/RepoLaunch-AI.git
+cd RepoLaunch-AI
+```
+
+### 2. Instale as dependências
+
+```bash
+npm install
+```
+
+### 3. Configure o ambiente
+
+Copie o arquivo de exemplo e preencha as variáveis necessárias:
+
+```bash
+cp .env.example .env
+```
+
+Edite o `.env` e defina ao menos:
+
+```env
+ANTHROPIC_API_KEY=sua_chave_aqui   # para usar Claude
+OPENAI_API_KEY=sua_chave_aqui      # para usar GPT (opcional)
+API_AUTH_TOKEN=um_token_secreto    # protege as rotas da API
+```
+
+As demais variáveis já possuem valores padrão no `.env.example` e funcionam sem alteração para uso local.
+
+### 4. Compile o projeto
+
+```bash
+npm run build
+```
+
+### 5. Rode a CLI
+
+Em modo de desenvolvimento (sem compilar a cada mudança):
+
+```bash
+npm run dev -- init
+npm run dev -- analyze ./minha-pasta
+npm run dev -- generate --mode technical --template portfolio-project
+```
+
+Com o build gerado:
+
+```bash
+npm start -- init
+```
+
+### 6. Rode a API
+
+Em modo de desenvolvimento:
+
+```bash
+npm run dev:api
+```
+
+Com o build gerado:
+
+```bash
+npm run start:api
+```
+
+A API ficará disponível em `http://localhost:3000`. Para verificar:
+
+```bash
+curl http://localhost:3000/api/health
+```
+
+### 7. Rode o frontend
+
+O frontend é uma aplicação estática. Basta abrir o arquivo `frontend/index.html` diretamente no navegador ou servir com qualquer servidor HTTP simples:
+
+```bash
+npx serve frontend
+```
+
+Ele consome a API local em `http://localhost:3000` por padrão.
+
+### 8. Execute os testes
+
+```bash
+npm test
+```
+
+Para rodar typecheck, testes e build de uma vez (mesmo que o CI):
+
+```bash
+npm run ci
+```
+
+---
+
 ## Contribuição
 
 Contribuições são bem-vindas com PRs pequenas, objetivas e testadas.
