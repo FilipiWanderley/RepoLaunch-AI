@@ -6,3 +6,4 @@ dist/
 outputs/*.md
 outputs/*.json
 coverage/
+.DS_Store
