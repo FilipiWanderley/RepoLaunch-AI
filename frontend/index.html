@@ -234,6 +234,10 @@ box-shadow:0 0 28px rgba(212,89,10,0.18);
 .meta-item{text-align:center}
 .meta-val{font-family:var(--mono);font-size:20px;font-weight:700;color:var(--c-text)}
 .meta-label{font-size:10px;color:var(--c-hint);margin-top:2px;text-transform:uppercase;letter-spacing:0.8px}
+.empty-tagline{font-size:13px;color:var(--c-muted);margin-top:5px;line-height:1.5}
+.file-badges{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap;justify-content:center}
+.file-badge{font-family:var(--mono);font-size:10px;color:var(--c-muted);background:var(--c-surface);border:1px solid var(--c-border);padding:4px 10px;border-radius:4px;letter-spacing:0.2px}
+.input-title{font-size:13px;font-weight:600;color:var(--c-text);margin-bottom:8px}
 
 .progress-wrap{background:var(--c-surface);border:1px solid var(--c-border);border-radius:8px;overflow:hidden}
 .progress-head{padding:12px 16px;border-bottom:1px solid var(--c-border);display:flex;align-items:center;justify-content:space-between}
@@ -488,6 +492,7 @@ color:var(--c-muted);white-space:pre-wrap;max-height:380px;overflow-y:auto;
       <!-- VIEW: GENERATOR -->
       <div id="viewGen" style="display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden">
         <div class="input-zone">
+          <div class="input-title" data-i18n="inp_label">Cole suas anotações ou ideia de projeto</div>
           <div class="input-header">
             <span class="input-label">$ repolaunch analyze --stdin</span>
             <span class="char-ct" id="charCt">0 chars</span>
@@ -509,7 +514,13 @@ color:var(--c-muted);white-space:pre-wrap;max-height:380px;overflow-y:auto;
                 <path d="M7 13H15" stroke="var(--c-orange)" stroke-width="1.8" stroke-linecap="round"/>
               </svg>
             </div>
-            <div class="empty-h" data-i18n="empty_h">ready to generate</div>
+            <div class="empty-h" data-i18n="empty_h">Ready to build.</div>
+            <div class="empty-tagline" data-i18n="empty_tagline">De uma ideia a um projeto pronto para lançar</div>
+            <div class="file-badges">
+              <span class="file-badge">README.md</span>
+              <span class="file-badge">ARCHITECTURE.md</span>
+              <span class="file-badge">ROADMAP.md</span>
+            </div>
             <p class="empty-p" data-i18n="empty_p">Cole suas ideias no campo acima e clique em <code style="font-family:var(--mono);font-size:11px;background:var(--c-code-bg);padding:1px 5px;border-radius:3px">repolaunch generate</code> para criar documentação profissional.</p>
             <div class="meta-row" style="margin-top:8px">
               <div class="meta-item"><div class="meta-val">5</div><div class="meta-label" data-i18n="meta_docs">docs gerados</div></div>
@@ -651,9 +662,11 @@ var i18n = {
     tmpl_cli: 'Utilitário de linha de comando',
     tmpl_ai: 'Pipeline com LLM',
     examples: 'exemplos:',
-    empty_h: 'ready to generate',
+    empty_h: 'Ready to build.',
+    empty_tagline: 'De uma ideia a um projeto pronto para lançar',
     empty_p: 'Cole suas ideias no campo acima e clique em <code style="font-family:var(--mono);font-size:11px;background:var(--c-code-bg);padding:1px 5px;border-radius:3px">repolaunch generate</code> para criar documentação profissional.',
     meta_docs: 'docs gerados', meta_time: 'tempo médio', meta_tmpl: 'templates',
+    inp_label: 'Cole suas anotações ou ideia de projeto',
     inp_placeholder: 'Cole aqui suas anotações, ideias de projeto, conteúdo de curso ou aprendizados...\n\nExemplo: aprendi sobre RAG com LangChain e quero criar uma CLI que indexa repositórios GitHub e gera documentação usando Claude API...',
   },
   en: {
@@ -718,9 +731,11 @@ var i18n = {
     tmpl_cli: 'Command-line utility',
     tmpl_ai: 'LLM-powered pipeline',
     examples: 'examples:',
-    empty_h: 'ready to generate',
+    empty_h: 'Ready to build.',
+    empty_tagline: 'Turn ideas into production-ready projects',
     empty_p: 'Paste your ideas above and click <code style="font-family:var(--mono);font-size:11px;background:var(--c-code-bg);padding:1px 5px;border-radius:3px">repolaunch generate</code> to create professional documentation.',
     meta_docs: 'docs generated', meta_time: 'avg time', meta_tmpl: 'templates',
+    inp_label: 'Paste your notes or project idea',
     inp_placeholder: 'Paste your notes, project ideas, course content or learnings here...\n\nExample: I learned about RAG with LangChain and want to build a CLI that indexes GitHub repos and generates docs using Claude API...',
   }
 };
@@ -861,11 +876,11 @@ async function runGenerate() {
 
   var zone = document.getElementById('outZone');
   var steps = [
-    {k:'parse', l:'parsing input...'},
-    {k:'extract', l:'extracting context + intent...'},
-    {k:'llm', l:'calling repolaunch api...'},
-    {k:'tmpl', l:'applying template: ' + tmpl + '...'},
-    {k:'write', l:'writing output files...'},
+    {k:'parse', l:'Analyzing input...'},
+    {k:'extract', l:'Generating architecture...'},
+    {k:'llm', l:'Creating documentation with AI...'},
+    {k:'tmpl', l:'Applying template: ' + tmpl + '...'},
+    {k:'write', l:'Writing output files...'},
   ];
 
   zone.innerHTML = '<div class="progress-wrap">'
@@ -1575,8 +1590,9 @@ async function refreshMetrics() {
         alertInfo.textContent = tr('metrics_alert_recent_errors');
         alertInfo.style.color = 'var(--c-muted)';
       } else {
-        alertInfo.textContent = tr('metrics_alert_stable');
+        alertInfo.innerHTML = '&#10003; ' + tr('metrics_alert_stable');
         alertInfo.style.color = 'var(--c-green)';
+        alertInfo.style.fontWeight = '600';
       }
     }
   } catch (e) {
