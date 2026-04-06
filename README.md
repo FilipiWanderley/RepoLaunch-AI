@@ -485,3 +485,493 @@ ISC
 - responsável pela implementação de ponta a ponta.
 
 RepoLaunch AI foi concebido para transformar conhecimento em ativo de carreira com engenharia de alto nível.
+
+---
+
+# RepoLaunch AI (English Version)
+
+<p align="center">
+  <strong>Turn learning into real projects ready for GitHub</strong>
+</p>
+
+<p align="center">
+  A project generation platform with layered architecture, secure-by-default design, and focus on real execution.
+</p>
+
+<p align="center">
+  <img alt="CI" src="https://github.com/FilipiWanderley/RepoLaunch-AI/actions/workflows/ci.yml/badge.svg" />
+  <img alt="Status" src="https://img.shields.io/badge/status-completed-14532d?style=for-the-badge" />
+  <img alt="Node" src="https://img.shields.io/badge/node-%3E%3D20-0f766e?style=for-the-badge&logo=node.js&logoColor=white" />
+  <img alt="TypeScript" src="https://img.shields.io/badge/typescript-strict-1d4ed8?style=for-the-badge&logo=typescript&logoColor=white" />
+  <img alt="API" src="https://img.shields.io/badge/api-express%205-7c3aed?style=for-the-badge" />
+  <img alt="CLI" src="https://img.shields.io/badge/cli-repolaunch-e85d04?style=for-the-badge" />
+</p>
+
+---
+
+## Credits
+
+**Project conceived, architected, and developed by Filipi Wanderley (FilipiWanderley).**
+
+---
+
+## Overview
+
+RepoLaunch AI receives notes, free text, code folders, or repositories and transforms that material into professional deliverables ready for execution and publishing.
+
+The product proposition is simple:
+
+- reduce the time between learning and real delivery;
+- generate clear and consistent documentation;
+- structure architecture and action plans with professional standards;
+- support publishing, collaboration, and continuous evolution.
+
+---
+
+## What the Project Delivers
+
+### Supported inputs
+
+- direct text via CLI;
+- Markdown and TXT files;
+- project directories;
+- analysis of an existing repository.
+
+### Generated outputs
+
+- technical and strategic README.md;
+- ARCHITECTURE.md;
+- ROADMAP.md;
+- PROJECT_PLAN.md;
+- PORTFOLIO_PITCH.md;
+- structured export (Markdown, JSON, issue format).
+
+---
+
+## Project Status
+
+### Macro status
+
+- MVP: completed;
+- V2 (repository analysis, prompt versioning, export and GitHub sync): completed;
+- V3 (collaboration, public sharing, audit trail, filters): completed;
+- API security and operational observability: completed;
+- serverless deployment (Vercel): completed.
+
+### Progress chart
+
+```text
+MVP                     [####################] 100%
+V2                      [####################] 100%
+V3                      [####################] 100%
+Security and Auth       [####################] 100%
+Observability           [####################] 100%
+Vercel Deploy           [####################] 100%
+```
+
+### Functional checklist
+
+- [x] CLI with full flow (`init`, `analyze`, `generate`, `export`);
+- [x] repository analysis (`repo-analyze`);
+- [x] GitHub synchronization (`github-sync`);
+- [x] prompt management (`prompts list`);
+- [x] local API for frontend and integrations;
+- [x] generation history with ZIP export;
+- [x] token authentication for critical routes;
+- [x] configurable IP-based rate limiting;
+- [x] workspace collaboration with RBAC (owner/editor/viewer);
+- [x] public sharing by link;
+- [x] project audit trail;
+- [x] optional collaborative login with signed session;
+- [x] CI pipeline and release workflow.
+
+---
+
+## Architecture
+
+### Layer diagram
+
+```mermaid
+flowchart TD
+    A[CLI / API] --> B[Controller Layer]
+    B --> C[Service Layer]
+    C --> D[AI Engine]
+    C --> E[Collaboration Store]
+    C --> F[Output Service]
+    D --> G[Prompt Registry]
+    C --> H[Template Engine]
+    F --> I[(outputs or /tmp/outputs)]
+```
+
+### End-to-end flow
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant I as CLI/API Interface
+    participant C as Controller
+    participant S as Services
+    participant A as AI Engine
+    participant T as Templates
+    participant O as Output Store
+
+    U->>I: sends input (text, folder, repo)
+    I->>C: validation and orchestration
+    C->>S: pipeline execution
+    S->>A: prompt-driven base generation
+    A-->>S: structured response
+    S->>T: artifact assembly
+    T->>O: file persistence
+    O-->>U: final output + metadata
+```
+
+### Folder structure
+
+```text
+repolaunch-ai/
+|- src/
+|  |- ai/
+|  |- cli/
+|  |- controllers/
+|  |- server/
+|  |- services/
+|  |- templates/
+|  |- utils/
+|- config/
+|- docs/
+|- frontend/
+|- outputs/
+|- tests/
+|- vercel.json
+|- PRD.md
+|- README.md
+```
+
+---
+
+## Security
+
+### Applied pillars
+
+- credentials via `.env`;
+- protection to avoid versioning `.env` in Git;
+- API authentication via `x-api-token`;
+- optional collaborative authentication via session (`x-collab-token`);
+- role-based authorization (owner/editor/viewer);
+- time-window rate limiting;
+- input validation and output standardization;
+- audit trail for critical actions;
+- error handling without exposing sensitive data.
+
+### Defense diagram
+
+```mermaid
+flowchart LR
+    A[Client] --> B[Validation and Sanitization]
+    B --> C[Authentication]
+    C --> D[RBAC Authorization]
+    D --> E[Rate Limit and Monitoring]
+    E --> F[Generation Pipeline]
+    F --> G[Persistence and Output Safety]
+```
+
+### Relevant environment variables
+
+- `API_AUTH_TOKEN`
+- `API_RATE_LIMIT_WINDOW_MS`
+- `API_RATE_LIMIT_MAX`
+- `COLLAB_AUTH_USERS`
+- `COLLAB_AUTH_SESSION_TTL_MINUTES`
+- `AI_TIMEOUT_MS`
+- `AI_MAX_RETRIES`
+- `DEFAULT_PROMPT_VERSION`
+- `GITHUB_TOKEN` (optional)
+- `GITHUB_REPO` (optional)
+
+---
+
+## Tech Stack
+
+| Layer | Technologies | Goal |
+|---|---|---|
+| Runtime and Language | Node.js 20+, TypeScript strict | performance, strong typing, and safe maintenance |
+| CLI | Commander | consistent command-line experience |
+| HTTP API | Express 5, CORS | endpoints for frontend and external integrations |
+| Validation | Zod | schema contracts and validation |
+| AI | compatible with Anthropic/OpenAI + fallback | resilient and portable generation |
+| Configuration | dotenv | local and deployment environment management |
+| Tests | Jest, ts-jest, Supertest | unit and HTTP contract tests |
+| Packaging | npm, release workflow | CLI distribution and publishing |
+| Deploy | Vercel (`src/server/vercel.ts`, `vercel.json`) | serverless runtime |
+
+---
+
+## CLI
+
+### Main commands
+
+```bash
+npx repolaunch init
+npx repolaunch analyze ./my-files
+npx repolaunch generate --mode technical --template portfolio-project
+npx repolaunch generate --prompt-version v2 --mode recruiter --template saas
+npx repolaunch export --format json
+npx repolaunch repo-analyze .
+npx repolaunch github-sync --repo FilipiWanderley/RepoLaunch-AI
+npx repolaunch prompts list
+```
+
+### Output modes
+
+- `technical`
+- `recruiter`
+- `simplified`
+
+### Available templates
+
+- `portfolio-project`
+- `saas`
+- `cli-tool`
+- `ai-workflow`
+
+### Export formats
+
+- `markdown`
+- `json`
+- `issues`
+
+---
+
+## API
+
+### Local startup
+
+```bash
+npm run dev:api
+```
+
+### Main endpoints
+
+- `GET /api/health`
+- `GET /api/health/details`
+- `GET /api/prompts`
+- `POST /api/generate`
+- `GET /api/history?limit=10`
+- `GET /api/history/:generationId/export.zip`
+- `GET /api/metrics?windowMinutes=15`
+- `GET/POST /api/collab/projects`
+- `GET /api/collab/projects/:projectId/members`
+- `POST /api/collab/projects/:projectId/members`
+- `PATCH /api/collab/projects/:projectId/members/:userId`
+- `GET /api/collab/projects/:projectId/audit?limit=30`
+- `POST /api/collab/projects/:projectId/generations`
+- `POST /api/collab/projects/:projectId/share`
+- `POST /api/collab/auth/login` (optional)
+- `GET /api/share/:shareId`
+
+### Observability
+
+- request count per time window;
+- error rate and status distribution (`2xx`, `3xx`, `4xx`, `5xx`);
+- recent traffic and rate-limit block time series;
+- detailed health with uptime, memory, and dependency checks.
+
+---
+
+## Frontend and Collaboration
+
+The web interface consumes the local API and provides:
+
+- collaborative workspace management;
+- navigation across project-linked generations;
+- metadata filters (`mode`, `template`, `promptVersion`, `provider`);
+- combinable filter chips (AND logic);
+- URL state persistence (`q`, `chips`, `gen`);
+- public read-only mode via shared link.
+
+---
+
+## Deploy and Release
+
+### CLI release
+
+- workflow: `.github/workflows/release.yml`;
+- triggers by `v*` tag and `workflow_dispatch`;
+- publication conditioned on `NPM_TOKEN` secret.
+
+### Pre-release validation commands
+
+```bash
+npm run release:check
+npm run release:pack
+```
+
+### Serverless deploy
+
+- dedicated Vercel entrypoint in `src/server/vercel.ts`;
+- build/routes configuration in `vercel.json`;
+- persistence adjusted to `/tmp/outputs` in Vercel environment.
+
+---
+
+## Engineering Quality
+
+- modular architecture by responsibility;
+- clear separation between interface, orchestration, and domain;
+- automated test coverage;
+- resilience pattern with timeout, retry, and fallback;
+- CI pipeline for regression and build;
+- documentation oriented to product and operations.
+
+---
+
+## Quick Start
+
+```bash
+git clone https://github.com/FilipiWanderley/RepoLaunch-AI.git
+cd RepoLaunch-AI
+cp .env.example .env
+npm install
+npm run ci
+```
+
+---
+
+## How to Run Locally
+
+### Prerequisites
+
+- Node.js 20 or higher
+- npm 9 or higher
+- Anthropic or OpenAI API key (at least one)
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/FilipiWanderley/RepoLaunch-AI.git
+cd RepoLaunch-AI
+```
+
+### 2. Install dependencies
+
+```bash
+npm install
+```
+
+### 3. Configure environment
+
+Copy the example file and fill in required variables:
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` and define at least:
+
+```env
+ANTHROPIC_API_KEY=your_key_here   # to use Claude
+OPENAI_API_KEY=your_key_here      # to use GPT (optional)
+API_AUTH_TOKEN=a_secret_token     # protects API routes
+```
+
+The remaining variables already have default values in `.env.example` and work without changes for local usage.
+
+### 4. Build the project
+
+```bash
+npm run build
+```
+
+### 5. Run the CLI
+
+In development mode (without rebuilding on every change):
+
+```bash
+npm run dev -- init
+npm run dev -- analyze ./my-folder
+npm run dev -- generate --mode technical --template portfolio-project
+```
+
+With build artifacts:
+
+```bash
+npm start -- init
+```
+
+### 6. Run the API
+
+In development mode:
+
+```bash
+npm run dev:api
+```
+
+With build artifacts:
+
+```bash
+npm run start:api
+```
+
+The API will be available at `http://localhost:3000`. To verify:
+
+```bash
+curl http://localhost:3000/api/health
+```
+
+### 7. Run the frontend
+
+The frontend is a static application. You can open `frontend/index.html` directly in the browser or serve it with any simple HTTP server:
+
+```bash
+npx serve frontend
+```
+
+It consumes the local API at `http://localhost:3000` by default.
+
+### 8. Run tests
+
+```bash
+npm test
+```
+
+To run typecheck, tests, and build together (same as CI):
+
+```bash
+npm run ci
+```
+
+---
+
+## Contribution
+
+Contributions are welcome with small, objective, and tested PRs.
+
+Recommended checklist before opening a PR:
+
+- `npm run typecheck`
+- `npm test`
+- `npm run build`
+
+---
+
+## License
+
+ISC
+
+---
+
+## Author
+
+<p>
+  <a href="https://github.com/FilipiWanderley">
+    <img src="https://github.com/FilipiWanderley.png" width="96" alt="Filipi Wanderley profile picture" />
+  </a>
+</p>
+
+**[Filipi Wanderley](https://github.com/FilipiWanderley)**
+
+- product creator;
+- architecture lead;
+- responsible for end-to-end implementation.
+
+RepoLaunch AI was conceived to transform knowledge into a career asset with high-level engineering.
