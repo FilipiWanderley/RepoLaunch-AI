@@ -214,7 +214,7 @@ background:var(--c-code-bg);border:1px solid var(--c-border);
 padding:3px 8px;border-radius:4px;cursor:pointer;white-space:nowrap;
 transition:all 0.12s;
 }
-.ex:hover{border-color:var(--c-orange);color:var(--c-orange)}
+.ex:hover{border-color:var(--c-orange);color:var(--c-orange);background:var(--c-orange-bg)}
 
 .output-zone{flex:1;padding:20px;overflow-y:auto;background:var(--c-bg);display:flex;flex-direction:column;gap:14px}
 
@@ -653,7 +653,7 @@ var i18n = {
     metrics_alert_rate_limit: 'alerta: rate-limit alto na janela recente',
     metrics_alert_error_rate: 'alerta: taxa de erro elevada na janela recente',
     metrics_alert_recent_errors: 'alerta: existem erros recentes na API',
-    metrics_alert_stable: 'alerta: operacao estavel',
+    metrics_alert_stable: '🟢 Operação estável',
     metrics_alert_api_offline: 'alerta: API offline',
     metrics_btn: 'atualizar metricas',
     run_btn: 'repolaunch generate',
@@ -663,8 +663,8 @@ var i18n = {
     tmpl_ai: 'Pipeline com LLM',
     examples: 'exemplos:',
     empty_h: 'Ready to build.',
-    empty_tagline: 'De uma ideia a um projeto pronto para lançar',
-    empty_p: 'Cole suas ideias no campo acima e clique em <code style="font-family:var(--mono);font-size:11px;background:var(--c-code-bg);padding:1px 5px;border-radius:3px">repolaunch generate</code> para criar documentação profissional.',
+    empty_tagline: 'From idea to production-ready project',
+    empty_p: 'Cole sua ideia e gere seu projeto.',
     meta_docs: 'docs gerados', meta_time: 'tempo médio', meta_tmpl: 'templates',
     inp_label: 'Cole suas anotações ou ideia de projeto',
     inp_placeholder: 'Cole aqui suas anotações, ideias de projeto, conteúdo de curso ou aprendizados...\n\nExemplo: aprendi sobre RAG com LangChain e quero criar uma CLI que indexa repositórios GitHub e gera documentação usando Claude API...',
@@ -722,7 +722,7 @@ var i18n = {
     metrics_alert_rate_limit: 'alert: high rate-limit in recent window',
     metrics_alert_error_rate: 'alert: high error rate in recent window',
     metrics_alert_recent_errors: 'alert: there are recent API errors',
-    metrics_alert_stable: 'alert: stable operation',
+    metrics_alert_stable: '🟢 Stable',
     metrics_alert_api_offline: 'alert: API offline',
     metrics_btn: 'refresh metrics',
     run_btn: 'repolaunch generate',
@@ -732,8 +732,8 @@ var i18n = {
     tmpl_ai: 'LLM-powered pipeline',
     examples: 'examples:',
     empty_h: 'Ready to build.',
-    empty_tagline: 'Turn ideas into production-ready projects',
-    empty_p: 'Paste your ideas above and click <code style="font-family:var(--mono);font-size:11px;background:var(--c-code-bg);padding:1px 5px;border-radius:3px">repolaunch generate</code> to create professional documentation.',
+    empty_tagline: 'From idea to production-ready project',
+    empty_p: 'Paste your idea and generate your project.',
     meta_docs: 'docs generated', meta_time: 'avg time', meta_tmpl: 'templates',
     inp_label: 'Paste your notes or project idea',
     inp_placeholder: 'Paste your notes, project ideas, course content or learnings here...\n\nExample: I learned about RAG with LangChain and want to build a CLI that indexes GitHub repos and generates docs using Claude API...',
@@ -1590,7 +1590,7 @@ async function refreshMetrics() {
         alertInfo.textContent = tr('metrics_alert_recent_errors');
         alertInfo.style.color = 'var(--c-muted)';
       } else {
-        alertInfo.innerHTML = '&#10003; ' + tr('metrics_alert_stable');
+        alertInfo.textContent = tr('metrics_alert_stable');
         alertInfo.style.color = 'var(--c-green)';
         alertInfo.style.fontWeight = '600';
       }
