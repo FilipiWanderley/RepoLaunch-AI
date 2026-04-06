@@ -64,12 +64,13 @@ border-right:1px solid var(--c-border);
 text-decoration:none;color:inherit;
 }
 .brand-wordmark{
-font-family:var(--mono);font-size:13px;font-weight:700;
+font-family:var(--mono);font-size:14px;font-weight:700;
 letter-spacing:-0.3px;color:var(--c-text);
 }
 .brand-wordmark em{font-style:normal;color:var(--c-orange)}
+.brand-ai{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--c-orange);letter-spacing:0.5px;margin-left:4px}
 .brand-sep{color:var(--c-border-strong);font-size:18px;line-height:1;padding:0 4px;font-weight:300}
-.brand-sub{font-size:12px;color:var(--c-muted);font-family:var(--mono)}
+.brand-by{font-size:10px;color:var(--c-hint);font-family:var(--mono);margin-left:2px}
 
 .topbar-tabs{display:flex;height:100%;margin-left:4px}
 .tab{
@@ -176,16 +177,17 @@ transition:all 0.12s;
 .quick-chip.on{background:var(--c-orange-bg);border-color:var(--c-orange-border);color:var(--c-orange)}
 
 .run-btn{
-width:100%;padding:10px 16px;
-font-family:var(--mono);font-size:12px;font-weight:700;
-letter-spacing:0.2px;
-background:var(--c-orange);color:#fff;border:none;border-radius:5px;cursor:pointer;
+width:100%;padding:15px 16px;
+font-family:var(--mono);font-size:13px;font-weight:700;
+letter-spacing:0.4px;
+background:var(--c-orange);color:#fff;border:none;border-radius:7px;cursor:pointer;
 display:flex;align-items:center;justify-content:center;gap:8px;
-transition:opacity 0.15s,transform 0.1s;margin-top:12px;
+transition:opacity 0.15s,transform 0.1s,box-shadow 0.2s;margin-top:14px;
+box-shadow:0 2px 12px rgba(212,89,10,0.35),0 0 0 0 rgba(212,89,10,0);
 }
-.run-btn:hover{opacity:0.9}
-.run-btn:active{transform:scale(0.99)}
-.run-btn:disabled{opacity:0.4;cursor:not-allowed;transform:none}
+.run-btn:hover{opacity:0.93;box-shadow:0 4px 20px rgba(212,89,10,0.55),0 0 0 3px rgba(212,89,10,0.18)}
+.run-btn:active{transform:scale(0.98)}
+.run-btn:disabled{opacity:0.4;cursor:not-allowed;transform:none;box-shadow:none}
 
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
 
@@ -221,12 +223,13 @@ flex:1;display:flex;flex-direction:column;align-items:center;justify-content:cen
 gap:12px;text-align:center;padding:40px;color:var(--c-muted);
 }
 .empty-icon{
-width:48px;height:48px;border:1px solid var(--c-border);
-border-radius:8px;display:flex;align-items:center;justify-content:center;
-background:var(--c-surface);margin-bottom:4px;
+width:68px;height:68px;border:1.5px solid var(--c-orange-border);
+border-radius:14px;display:flex;align-items:center;justify-content:center;
+background:var(--c-orange-bg);margin-bottom:10px;
+box-shadow:0 0 28px rgba(212,89,10,0.18);
 }
-.empty-h{font-size:15px;font-weight:500;color:var(--c-text)}
-.empty-p{font-size:12px;line-height:1.6;max-width:300px}
+.empty-h{font-size:24px;font-weight:700;color:var(--c-text);letter-spacing:-0.5px}
+.empty-p{font-size:12px;line-height:1.6;max-width:320px}
 .meta-row{display:flex;gap:20px;justify-content:center}
 .meta-item{text-align:center}
 .meta-val{font-family:var(--mono);font-size:20px;font-weight:700;color:var(--c-text)}
@@ -331,9 +334,9 @@ color:var(--c-muted);white-space:pre-wrap;max-height:380px;overflow-y:auto;
         <path d="M4 14L9 4L14 14" stroke="var(--c-orange)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
         <path d="M6 10.5H12" stroke="var(--c-orange)" stroke-width="1.8" stroke-linecap="round"/>
       </svg>
-      <span class="brand-wordmark">repo<em>launch</em></span>
+      <span class="brand-wordmark">Repo<em>Launch</em></span><span class="brand-ai">AI</span>
       <span class="brand-sep">/</span>
-      <span class="brand-sub">ai-mvp</span>
+      <span class="brand-by">by FilipiWanderley</span>
     </div>
     <div class="topbar-tabs">
       <button class="tab on" onclick="switchView(this,'gen')">
@@ -501,9 +504,9 @@ color:var(--c-muted);white-space:pre-wrap;max-height:380px;overflow-y:auto;
         <div class="output-zone" id="outZone">
           <div class="empty" id="emptyState">
             <div class="empty-icon">
-              <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-                <path d="M3 19L11 5L19 19" stroke="var(--c-orange)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M7 13H15" stroke="var(--c-orange)" stroke-width="1.5" stroke-linecap="round"/>
+              <svg width="30" height="30" viewBox="0 0 22 22" fill="none">
+                <path d="M3 19L11 5L19 19" stroke="var(--c-orange)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M7 13H15" stroke="var(--c-orange)" stroke-width="1.8" stroke-linecap="round"/>
               </svg>
             </div>
             <div class="empty-h" data-i18n="empty_h">ready to generate</div>
