@@ -48,8 +48,11 @@ export class AIEngine {
 
     this.aiLogger.warning("Nenhuma chave de API valida encontrada. Usando modo mock.");
     const preview = `${request.systemPrompt}\n\n${request.userInput}`.slice(0, 300);
+    const englishRequested = /^Write the entire response in English only\./.test(request.userInput);
     return {
-      content: `Mock response baseada no contexto: ${preview}`,
+      content: englishRequested
+        ? `Mock response based on context: ${preview}`
+        : `Resposta mock baseada no contexto: ${preview}`,
       provider: "mock"
     };
   }

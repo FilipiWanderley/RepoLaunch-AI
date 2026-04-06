@@ -149,8 +149,8 @@ export class InputAnalyzerService {
 
     const intent =
       lowered.includes("portfolio") || lowered.includes("linkedin")
-        ? "Construir projeto com foco em portfolio e visibilidade profissional"
-        : "Transformar aprendizado em projeto executavel";
+        ? "Construir projeto com foco em portfólio e visibilidade profissional"
+        : "Transformar aprendizado em projeto executável";
 
     const theme =
       lowered.includes("ia") || lowered.includes("ai")
@@ -167,7 +167,7 @@ export class InputAnalyzerService {
       intent,
       theme,
       context,
-      summary: hasPromptRisk ? `${summary} [alerta: possivel prompt injection detectado]` : summary
+      summary: hasPromptRisk ? `${summary} [alerta: possível prompt injection detectado]` : summary
     };
   }
 }
