@@ -467,16 +467,16 @@ color:var(--c-muted);white-space:pre-wrap;max-height:380px;overflow-y:auto;
           <option value="owner">owner</option>
         </select>
         <button class="file-btn" style="width:100%;margin-top:6px" onclick="addMemberToProject()" data-i18n="collab_add_member">adicionar membro</button>
-        <button class="file-btn" style="width:100%;margin-top:6px" onclick="createShareLink()" data-i18n="collab_share">gerar link publico</button>
-        <div class="key-note" id="projectInfo">colaboracao: sem projeto selecionado</div>
+        <button class="file-btn" style="width:100%;margin-top:6px" onclick="createShareLink()" data-i18n="collab_share">gerar link público</button>
+        <div class="key-note" id="projectInfo">colaboração: sem projeto selecionado</div>
         <div class="key-note" id="memberInfo">membros: sem dados</div>
-        <div class="key-note" id="shareInfo">share: ainda nao gerado</div>
+        <div class="key-note" id="shareInfo">share: ainda não gerado</div>
         <div class="key-note" id="auditInfo">auditoria: sem eventos</div>
         <input class="key-input" id="sharedFilter" type="text" placeholder="filtro share: modo/template/prompt" data-i18n-ph="ph_shared_filter" style="margin-top:6px" oninput="applySharedFilter(this.value)" />
         <div class="quick-filters" id="sharedQuickFilters"></div>
         <div class="key-note" id="sharedMetaInfo">share meta: -</div>
-        <button class="file-btn" style="width:100%;margin-top:8px" onclick="refreshMetrics()" data-i18n="metrics_btn">atualizar metricas</button>
-        <div class="key-note" id="metricsInfo">metricas: aguardando API</div>
+        <button class="file-btn" style="width:100%;margin-top:8px" onclick="refreshMetrics()" data-i18n="metrics_btn">atualizar métricas</button>
+        <div class="key-note" id="metricsInfo">métricas: aguardando API</div>
         <div class="key-note" id="metricsStatusInfo">status: -</div>
         <div class="key-note" id="metricsGraph">janela 15m: -</div>
         <div class="key-note" id="metricsAlert">alerta: aguardando dados</div>
@@ -496,7 +496,7 @@ color:var(--c-muted);white-space:pre-wrap;max-height:380px;overflow-y:auto;
           <div class="input-title" data-i18n="inp_label">Cole suas anotações ou ideia de projeto</div>
           <div class="input-header">
             <span class="input-label">$ repolaunch analyze --stdin</span>
-            <span class="char-ct" id="charCt">0 chars</span>
+            <span class="char-ct" id="charCt">0 caracteres</span>
           </div>
           <textarea class="inp" id="mainInp" oninput="onInput(this)"></textarea>
           <div class="examples">
@@ -602,61 +602,61 @@ var projectsCache = [];
 var promptVersion = 'v2';
 var i18n = {
   pt: {
-    template: 'Template', output_files: 'Output files', api_base: 'API Base',
+    template: 'Template', output_files: 'Arquivos de saída', api_base: 'API Base',
     api_token: 'API Token',
     api_note: 'Frontend usa a API local; chaves ficam somente no backend.',
     collab_ws: 'Workspace colaborativo',
     collab_add_member: 'adicionar membro',
     collab_create: 'criar projeto',
-    collab_share: 'gerar link publico',
+    collab_share: 'gerar link público',
     collab_auth_local: 'auth: modo local (header)',
     collab_auth_enter_password: 'auth: informe a senha colaborativa',
-    collab_auth_backend_disabled: 'auth: login nao habilitado no backend',
+    collab_auth_backend_disabled: 'auth: login não habilitado no backend',
     collab_auth_login_failed: 'auth: falha no login',
-    collab_auth_session_active: 'auth: sessao ativa para {user}',
+    collab_auth_session_active: 'auth: sessão ativa para {user}',
     collab_auth_api_offline: 'auth: API offline para login',
     collab_auth_required: 'auth: login colaborativo requerido',
-    collab_no_project: 'colaboracao: sem projeto selecionado',
-    collab_project_not_found: 'colaboracao: projeto nao encontrado',
-    collab_workspace_summary: 'colaboracao: {name} ({count} geracoes, papel {role})',
+    collab_no_project: 'colaboração: sem projeto selecionado',
+    collab_project_not_found: 'colaboração: projeto não encontrado',
+    collab_workspace_summary: 'colaboração: {name} ({count} gerações, papel {role})',
     members_no_data: 'membros: sem dados',
-    members_unavailable: 'membros: indisponivel',
+    members_unavailable: 'membros: indisponível',
     members_count: 'membros: {count}',
-    members_no_permission: 'membros: sem permissao para atualizar',
+    members_no_permission: 'membros: sem permissão para atualizar',
     members_updated: 'membros: atualizado',
     members_add_failed: 'membros: falha ao adicionar',
-    share_not_generated: 'share: ainda nao gerado',
-    share_unavailable: 'share: indisponivel',
+    share_not_generated: 'share: ainda não gerado',
+    share_unavailable: 'share: indisponível',
     share_link_copied: 'share: link copiado',
     share_generation_failed: 'share: falha ao gerar link',
-    share_public_read: 'share: leitura publica',
-    share_public_generation: 'share: leitura publica · geracao {id}',
+    share_public_read: 'share: leitura pública',
+    share_public_generation: 'share: leitura pública · geração {id}',
     audit_no_events: 'auditoria: sem eventos',
-    audit_unavailable: 'auditoria: indisponivel',
-    audit_no_permission: 'auditoria: sem permissao',
+    audit_unavailable: 'auditoria: indisponível',
+    audit_no_permission: 'auditoria: sem permissão',
     audit_load_failed: 'auditoria: falha ao carregar',
-    audit_no_shared_generations: 'auditoria: sem geracoes compartilhadas',
+    audit_no_shared_generations: 'auditoria: sem gerações compartilhadas',
     audit_summary: 'auditoria: {summary}',
     audit_event_project_created: 'projeto criado',
     audit_event_member_added: 'membro adicionado',
     audit_event_member_role_updated: 'papel atualizado',
-    audit_event_generation_attached: 'geracao vinculada',
-    audit_event_share_created: 'link publico criado',
+    audit_event_generation_attached: 'geração vinculada',
+    audit_event_share_created: 'link público criado',
     shared_meta_empty: 'share meta: -',
     shared_meta_no_results: 'share meta: nenhum resultado para o filtro',
-    shared_mode_title: 'colaboracao: modo compartilhado ({name})',
-    metrics_unavailable: 'metricas: indisponivel',
-    metrics_offline: 'metricas: offline',
-    metrics_summary: 'metricas: req {requests} | erros {errors} | rate-limit {limited}',
+    shared_mode_title: 'colaboração: modo compartilhado ({name})',
+    metrics_unavailable: 'métricas: indisponível',
+    metrics_offline: 'métricas: offline',
+    metrics_summary: 'métricas: req {requests} | erros {errors} | rate-limit {limited}',
     metrics_status: 'status: 2xx {s2} | 4xx {s4} | 5xx {s5}',
     metrics_window: 'janela {minutes}m: {bars}',
-    metrics_no_access: 'alerta: sem acesso a metricas',
+    metrics_no_access: 'alerta: sem acesso a métricas',
     metrics_alert_rate_limit: 'alerta: rate-limit alto na janela recente',
     metrics_alert_error_rate: 'alerta: taxa de erro elevada na janela recente',
     metrics_alert_recent_errors: 'alerta: existem erros recentes na API',
     metrics_alert_stable: '🟢 Operação estável',
     metrics_alert_api_offline: 'alerta: API offline',
-    metrics_btn: 'atualizar metricas',
+    metrics_btn: 'atualizar métricas',
     run_btn: 'repolaunch generate',
     tmpl_portfolio: 'Showcase para recrutadores',
     tmpl_saas: 'Produto com monetização',
@@ -669,21 +669,41 @@ var i18n = {
     meta_docs: 'docs gerados', meta_time: 'tempo médio', meta_tmpl: 'templates',
     inp_label: 'Cole suas anotações ou ideia de projeto',
     inp_placeholder: 'Cole aqui suas anotações, ideias de projeto, conteúdo de curso ou aprendizados...\n\nExemplo: aprendi sobre RAG com LangChain e quero criar uma CLI que indexa repositórios GitHub e gera documentação usando Claude API...',
-    tab_gen: 'generator', tab_arch: 'architecture', tab_docs: 'cookbook ref',
+    tab_gen: 'gerador', tab_arch: 'arquitetura', tab_docs: 'cookbook',
     collab_login_btn: 'login colaborativo',
     ph_api_token: 'opcional', ph_collab_pass: 'senha colaborativa',
     ph_new_project: 'novo projeto', ph_member_user: 'usuário-membro',
     ph_shared_filter: 'filtro share: modo/template/prompt',
     about_tagline: '// transforme aprendizado em projetos prontos para lançar',
     arch_title: 'arquitetura do sistema — 6 camadas',
-    tech_stack_title: 'tech stack', roadmap_title: 'roadmap',
+    tech_stack_title: 'stack técnica', roadmap_title: 'roteiro',
     folder_title: 'estrutura de pastas',
     cookbook_title: 'anthropic cookbook — referências usadas',
-    quickstart_title: 'quick start',
+    quickstart_title: 'início rápido',
     metrics_init: 'métricas: aguardando API',
     metrics_status_init: 'status: -',
     metrics_graph_init: 'janela 15m: -',
     metrics_alert_init: 'alerta: aguardando dados',
+    chars_label: '{count} caracteres',
+    running_label: 'executando...',
+    step_parse: 'Analisando entrada...',
+    step_extract: 'Gerando arquitetura...',
+    step_llm: 'Criando documentação com IA...',
+    step_tmpl: 'Aplicando template: {template}...',
+    step_write: 'Escrevendo arquivos de saída...',
+    step_progress: '{done}/{total} etapas',
+    preview_offline: 'prévia (API offline)',
+    copy_btn: 'copiar',
+    export_btn: 'exportar',
+    zip_btn: 'zip',
+    stat_files: 'arquivos',
+    stat_lines: 'linhas',
+    stat_template: 'template',
+    status_empty: 'status: -',
+    window_empty: 'janela 15m: -',
+    share_short: 'share: {id}',
+    gen_label: 'geração',
+    na_label: 'n/d',
     arch_layer_descs: ['repolaunch init / analyze / generate / export','Orquestração de fluxo + validação de input','Lógica de negócio + decisão de pipeline','Claude API + prompt control + response parsing','Estrutura de saída + padronização por tipo','Geração dos arquivos finais no filesystem'],
     roadmap_i18n: [['v1','MVP — CLI + análise + docs'],['v2','GitHub integration + issues'],['v3','UI web + colaboração']],
     cookbook_ref_descs: ['Orquestração multi-agente — base do Controller layer','Tool use com Claude API — AI Engine layer','Slash commands — inspiração da CLI design','Extração de intenção do input do usuário','Prompt caching para otimizar o AI Engine','Convenções: commits, env vars, modelo claude-sonnet-4-6'],
@@ -773,6 +793,26 @@ var i18n = {
     metrics_status_init: 'status: -',
     metrics_graph_init: '15m window: -',
     metrics_alert_init: 'alert: waiting for data',
+    chars_label: '{count} chars',
+    running_label: 'running...',
+    step_parse: 'Analyzing input...',
+    step_extract: 'Generating architecture...',
+    step_llm: 'Creating documentation with AI...',
+    step_tmpl: 'Applying template: {template}...',
+    step_write: 'Writing output files...',
+    step_progress: '{done}/{total} steps',
+    preview_offline: 'preview (api offline)',
+    copy_btn: 'copy',
+    export_btn: 'export',
+    zip_btn: 'zip',
+    stat_files: 'files',
+    stat_lines: 'lines',
+    stat_template: 'template',
+    status_empty: 'status: -',
+    window_empty: 'window 15m: -',
+    share_short: 'share: {id}',
+    gen_label: 'gen',
+    na_label: 'n/a',
     arch_layer_descs: ['repolaunch init / analyze / generate / export','Flow orchestration + input validation','Business logic + pipeline decisions','Claude API + prompt control + response parsing','Output structure + type standardization','Final file generation to filesystem'],
     roadmap_i18n: [['v1','MVP — CLI + analysis + docs'],['v2','GitHub integration + issues'],['v3','Web UI + collaboration']],
     cookbook_ref_descs: ['Multi-agent orchestration — Controller layer base','Tool use with Claude API — AI Engine layer','Slash commands — CLI design inspiration','Extracting user input intent','Prompt caching to optimize AI Engine','Conventions: commits, env vars, claude-sonnet-4-6 model'],
@@ -811,6 +851,9 @@ function applyLang() {
     if (el) { el.textContent = tr(statusMap[id]); el.style.color = ''; el.style.fontWeight = ''; }
   });
   document.getElementById('langBtn').textContent = lang === 'pt' ? 'EN' : 'PT';
+  var charCt = document.getElementById('charCt');
+  var mainInp = document.getElementById('mainInp');
+  if (charCt && mainInp) charCt.textContent = tr('chars_label', { count: mainInp.value.length });
   // rebuild dynamic views in the new language
   buildStaticViews();
 }
@@ -916,7 +959,7 @@ function buildStaticViews() {
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-function onInput(el) { document.getElementById('charCt').textContent = el.value.length + ' chars'; }
+function onInput(el) { document.getElementById('charCt').textContent = tr('chars_label', { count: el.value.length }); }
 function loadEx(k) { var i = document.getElementById('mainInp'); i.value = examples[k]; onInput(i); }
 function pickTmpl(btn, t) { document.querySelectorAll('.tmpl').forEach(function(b){b.classList.remove('sel')}); btn.classList.add('sel'); tmpl = t; }
 function toggleOut(row) { row.classList.toggle('on'); }
@@ -947,19 +990,19 @@ async function runGenerate() {
   generating = true; files = {};
   var btn = document.getElementById('runBtn');
   btn.disabled = true;
-  btn.innerHTML = '<div class="spin" style="width:10px;height:10px;border-width:1.5px"></div><span>running...</span>';
+  btn.innerHTML = '<div class="spin" style="width:10px;height:10px;border-width:1.5px"></div><span>' + tr('running_label') + '</span>';
 
   var zone = document.getElementById('outZone');
   var steps = [
-    {k:'parse', l:'Analyzing input...'},
-    {k:'extract', l:'Generating architecture...'},
-    {k:'llm', l:'Creating documentation with AI...'},
-    {k:'tmpl', l:'Applying template: ' + tmpl + '...'},
-    {k:'write', l:'Writing output files...'},
+    {k:'parse', l: tr('step_parse')},
+    {k:'extract', l: tr('step_extract')},
+    {k:'llm', l: tr('step_llm')},
+    {k:'tmpl', l: tr('step_tmpl', { template: tmpl })},
+    {k:'write', l: tr('step_write')},
   ];
 
   zone.innerHTML = '<div class="progress-wrap">'
-    + '<div class="progress-head"><span class="progress-title">$ repolaunch generate --template ' + tmpl + '</span><span class="progress-sub" id="progSub">0/' + steps.length + ' steps</span></div>'
+    + '<div class="progress-head"><span class="progress-title">$ repolaunch generate --template ' + tmpl + '</span><span class="progress-sub" id="progSub">' + tr('step_progress', { done: 0, total: steps.length }) + '</span></div>'
     + '<div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>'
     + '<div class="progress-body">'
     + steps.map(function(s){
@@ -977,7 +1020,7 @@ async function runGenerate() {
     var si=document.getElementById('si-'+k), st=document.getElementById('st-'+k), ps=document.getElementById('progSub');
     if(si){si.className='step-ic done';si.innerHTML='<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5 4-4" stroke="var(--c-green)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';}
     if(st) st.className='step-text done';
-    if(ps) ps.textContent=(i+1)+'/'+steps.length+' steps';
+    if(ps) ps.textContent=tr('step_progress', { done: (i+1), total: steps.length });
   }
 
   setActive('parse'); await delay(250); setDone('parse',0); pct(20);
@@ -1082,7 +1125,7 @@ function renderProjects() {
   var select = document.getElementById('projectSelect');
   if (!select) return;
 
-  var options = ['<option value="">' + tr('collab_no_project').replace('colaboracao: ', '').replace('collab: ', '') + '</option>'].concat(projectsCache.map(function(project) {
+  var options = ['<option value="">' + tr('collab_no_project').replace('colaboração: ', '').replace('colaboracao: ', '').replace('collab: ', '') + '</option>'].concat(projectsCache.map(function(project) {
     var selected = project.projectId === currentProjectId ? ' selected' : '';
     return '<option value="' + project.projectId + '"' + selected + '>' + project.name + '</option>';
   }));
@@ -1121,7 +1164,7 @@ function renderProjects() {
   if (memberInfo) memberInfo.textContent = tr('members_count', { count: selectedProject.memberCount || 0 });
   if (shareInfo) {
     if (selectedProject.shareId) {
-      shareInfo.textContent = 'share: ' + selectedProject.shareId.slice(0, 8) + '...';
+      shareInfo.textContent = tr('share_short', { id: selectedProject.shareId.slice(0, 8) + '...' });
       currentShareId = selectedProject.shareId;
     } else {
       shareInfo.textContent = tr('share_not_generated');
@@ -1613,8 +1656,8 @@ async function refreshMetrics() {
 
     if (!response.ok) {
       info.textContent = tr('metrics_unavailable');
-      if (statusInfo) statusInfo.textContent = 'status: -';
-      if (graphInfo) graphInfo.textContent = 'janela 15m: -';
+      if (statusInfo) statusInfo.textContent = tr('status_empty');
+      if (graphInfo) graphInfo.textContent = tr('window_empty');
       if (alertInfo) {
         alertInfo.textContent = tr('metrics_no_access');
         alertInfo.style.color = 'var(--c-hint)';
@@ -1672,8 +1715,8 @@ async function refreshMetrics() {
     }
   } catch (e) {
     info.textContent = tr('metrics_offline');
-    if (statusInfo) statusInfo.textContent = 'status: -';
-    if (graphInfo) graphInfo.textContent = 'janela 15m: -';
+    if (statusInfo) statusInfo.textContent = tr('status_empty');
+    if (graphInfo) graphInfo.textContent = tr('window_empty');
     if (alertInfo) {
       alertInfo.textContent = tr('metrics_alert_api_offline');
       alertInfo.style.color = 'var(--c-hint)';
@@ -1706,9 +1749,9 @@ function renderFiles(mock) {
   if (!fnames.length) return;
   activeFile = fnames[0];
   var lines = Object.values(files).join('\n').split('\n').length;
-  var mockNote = mock ? '<span style="font-family:var(--mono);font-size:10px;color:var(--c-hint);padding:0 8px">preview (api offline)</span>' : '';
+  var mockNote = mock ? '<span style="font-family:var(--mono);font-size:10px;color:var(--c-hint);padding:0 8px">' + tr('preview_offline') + '</span>' : '';
   var zipButton = lastGenerationId
-    ? '<button class="file-btn" onclick="exportGenerationZip()">zip</button>'
+    ? '<button class="file-btn" onclick="exportGenerationZip()">' + tr('zip_btn') + '</button>'
     : '';
   var generationSelector = '';
 
@@ -1718,9 +1761,9 @@ function renderFiles(mock) {
       var generationId = (item && item.generationId) ? item.generationId : ('g' + index);
       var selected = generationId === lastGenerationId ? ' selected' : '';
       var metadata = (item && item.metadata) ? item.metadata : {};
-      var label = 'gen ' + (index + 1) + ' · ' + generationId.slice(0, 8)
-        + ' · ' + (metadata.mode || 'na')
-        + ' · ' + (metadata.template || 'na');
+      var label = tr('gen_label') + ' ' + (index + 1) + ' · ' + generationId.slice(0, 8)
+        + ' · ' + (metadata.mode || tr('na_label'))
+        + ' · ' + (metadata.template || tr('na_label'));
       return '<option value="' + generationId + '"' + selected + '>' + label + '</option>';
     }).join('') + '</select>';
   }
@@ -1730,14 +1773,14 @@ function renderFiles(mock) {
     + '<div class="file-tabs" id="fileTabs">'
     + fnames.map(function(f){return '<button class="file-tab'+(f===activeFile?' on':'')+'" onclick="switchFile(\''+f+'\')">'+f+'</button>'}).join('')
     + '</div>'
-    + '<div class="file-actions">'+mockNote+generationSelector+zipButton+'<button class="file-btn" onclick="copyFile()">copy</button><button class="file-btn" onclick="exportFile()">export</button></div>'
+    + '<div class="file-actions">'+mockNote+generationSelector+zipButton+'<button class="file-btn" onclick="copyFile()">'+tr('copy_btn')+'</button><button class="file-btn" onclick="exportFile()">'+tr('export_btn')+'</button></div>'
     + '</div>'
     + '<div class="file-body" id="fileBody">'+renderMd(files[activeFile]||'')+'</div>'
     + '</div>'
     + '<div class="stats-row">'
-    + '<div class="stat-card"><div class="stat-v">'+fnames.length+'</div><div class="stat-l">files</div></div>'
-    + '<div class="stat-card"><div class="stat-v">'+lines+'</div><div class="stat-l">lines</div></div>'
-    + '<div class="stat-card"><div class="stat-v">'+tmpl+'</div><div class="stat-l">template</div></div>'
+    + '<div class="stat-card"><div class="stat-v">'+fnames.length+'</div><div class="stat-l">'+tr('stat_files')+'</div></div>'
+    + '<div class="stat-card"><div class="stat-v">'+lines+'</div><div class="stat-l">'+tr('stat_lines')+'</div></div>'
+    + '<div class="stat-card"><div class="stat-v">'+tmpl+'</div><div class="stat-l">'+tr('stat_template')+'</div></div>'
     + '</div>';
 }
 
