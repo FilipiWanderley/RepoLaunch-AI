@@ -142,8 +142,19 @@ export function buildSystemPrompt(promptPack: PromptPack): string {
   return promptPack.systemPrompt;
 }
 
-export function buildUserPrompt(analysis: AnalysisResult, promptPack: PromptPack): string {
+export function buildUserPrompt(
+  analysis: AnalysisResult,
+  promptPack: PromptPack,
+  language: "pt" | "en" = "pt"
+): string {
+  const languageInstruction =
+    language === "en"
+      ? "Write the entire response in English only. Do not mix with Portuguese."
+      : "Escreva toda a resposta em portugues do Brasil. Nao misture com ingles.";
+
   return [
+    languageInstruction,
+    "",
     "Project context summary:",
     analysis.summary,
     "",

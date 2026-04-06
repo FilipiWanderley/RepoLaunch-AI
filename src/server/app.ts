@@ -17,6 +17,7 @@ import { createCollabAuth } from "./collab-auth";
 const GenerateRequestSchema = z.object({
   text: z.string().min(1, "Texto de entrada e obrigatorio."),
   mode: z.string().optional(),
+  language: z.enum(["pt", "en"]).optional(),
   template: z.string().optional(),
   promptVersion: z.string().optional(),
   outputFiles: z.array(z.string().min(1)).optional()
@@ -204,6 +205,7 @@ export function createServerApp(): express.Express {
       const result = await controller.generateForWeb({
         text: payload.text,
         mode: normalizeMode(payload.mode),
+        language: payload.language,
         template: normalizeTemplateType(payload.template),
         promptVersion: payload.promptVersion,
         outputFiles: payload.outputFiles

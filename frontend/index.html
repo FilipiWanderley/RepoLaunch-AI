@@ -1040,6 +1040,7 @@ async function runGenerate() {
         text: input,
         template: tmpl,
         mode: 'technical',
+        language: lang,
         promptVersion: promptVersion,
         outputFiles: outputs
       })
@@ -1052,8 +1053,8 @@ async function runGenerate() {
       files = data.files || {};
       lastGenerationId = data.metadata && data.metadata.generationId ? data.metadata.generationId : null;
       await attachLatestGenerationToProject();
-    } else { usedMock = true; files = mockFiles(input, outputs, tmpl); }
-  } catch(e) { usedMock = true; files = mockFiles(input, outputs, tmpl); lastGenerationId = null; }
+    } else { usedMock = true; files = mockFiles(input, outputs, tmpl, lang); }
+  } catch(e) { usedMock = true; files = mockFiles(input, outputs, tmpl, lang); lastGenerationId = null; }
 
   await delay(300); setDone('tmpl',3); pct(85);
   setActive('write'); await delay(250); setDone('write',4); pct(100);
@@ -1725,11 +1726,14 @@ async function refreshMetrics() {
 }
 
 // ─── Mock files ───────────────────────────────────────────────────────────────
-function mockFiles(input, outList, t) {
+function mockFiles(input, outList, t, language) {
+  var isEn = language === 'en';
   var name = input.split(/\s+/).slice(0,5).join(' ').replace(/[^a-zA-Z0-9 ]/g,'').trim() || 'My Project';
   var r = {};
 
-  if (outList.includes('README.md')) r['README.md'] = '# ' + name + '\n\n> Transforme suas ideias em projetos prontos para produção.\n\n## Installation\n\n```bash\nnpm install -g repolaunch-ai\nrepolaunch init\n```\n\n## Usage\n\n```bash\n# Analyze your notes\nrepolaunch analyze ./notes.md\n\n# Generate all docs\nrepolaunch generate --template ' + t + '\n\n# Export to folder\nrepolaunch export --out ./docs\n```\n\n## Features\n\n- **Input Analyzer** — aceita .md, .txt ou texto direto\n- **AI Engine** — Claude API com prompts estruturados\n- **Template Engine** — templates por tipo de projeto\n- **Output Generator** — arquivos profissionais em segundos\n\n## License\n\nMIT';
+  if (outList.includes('README.md')) r['README.md'] = isEn
+    ? '# ' + name + '\n\n> Turn your ideas into production-ready projects.\n\n## Installation\n\n```bash\nnpm install -g repolaunch-ai\nrepolaunch init\n```\n\n## Usage\n\n```bash\n# Analyze your notes\nrepolaunch analyze ./notes.md\n\n# Generate all docs\nrepolaunch generate --template ' + t + '\n\n# Export to folder\nrepolaunch export --out ./docs\n```\n\n## Features\n\n- **Input Analyzer** — accepts .md, .txt or direct text\n- **AI Engine** — Claude API with structured prompts\n- **Template Engine** — templates by project type\n- **Output Generator** — professional files in seconds\n\n## License\n\nMIT'
+    : '# ' + name + '\n\n> Transforme suas ideias em projetos prontos para produção.\n\n## Instalação\n\n```bash\nnpm install -g repolaunch-ai\nrepolaunch init\n```\n\n## Uso\n\n```bash\n# Analise suas notas\nrepolaunch analyze ./notes.md\n\n# Gere toda a documentação\nrepolaunch generate --template ' + t + '\n\n# Exporte para a pasta\nrepolaunch export --out ./docs\n```\n\n## Recursos\n\n- **Input Analyzer** — aceita .md, .txt ou texto direto\n- **AI Engine** — Claude API com prompts estruturados\n- **Template Engine** — templates por tipo de projeto\n- **Output Generator** — arquivos profissionais em segundos\n\n## Licença\n\nMIT';
 
   if (outList.includes('ARCHITECTURE.md')) r['ARCHITECTURE.md'] = '# Architecture\n\n## Overview\n\n```\nInput\n  └─ CLI Layer         repolaunch commands\n       └─ Controller   Orchestration + validation\n            └─ Service Business logic + pipeline\n                 └─ AI Engine   Claude API\n                      └─ Template Engine\n                           └─ Output Generator\n```\n\n## Layer Responsibilities\n\n### CLI Layer\nInterface principal via commander.js. Parsing de comandos e flags.\n\n### Controller Layer\nOrquestração de fluxo. Validação de input. Roteamento para services.\n\n### Service Layer\nLógica de negócio. Decisão de qual pipeline executar baseado no template.\n\n### AI Engine\nComunicação com Claude API. Controle de prompts. Parsing de respostas JSON.\nFallback para OpenAI em caso de timeout ou erro.\n\n### Template Engine\nDefinição de estrutura de saída por tipo: portfolio-project, saas, cli-tool, ai-workflow.\n\n### Output Generator\nPersistência dos arquivos finais no filesystem.\n\n## Security\n\n- API keys via .env (nunca commitadas)\n- Input sanitization contra prompt injection\n- Rate limiting por execução\n- Error handling sem exposição de stack';
 

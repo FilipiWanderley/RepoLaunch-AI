@@ -126,6 +126,7 @@ export class RepoLaunchController {
   async generateForWeb(input: {
     text: string;
     mode?: OutputMode;
+    language?: "pt" | "en";
     template?: TemplateType;
     promptVersion?: string;
     outputFiles?: string[];
@@ -135,6 +136,7 @@ export class RepoLaunchController {
     const execution = await this.executeGeneration({
       text: input.text,
       mode: input.mode,
+      language: input.language,
       template: input.template,
       promptVersion: input.promptVersion,
       fallbackToLatest: false
@@ -220,12 +222,14 @@ export class RepoLaunchController {
     target?: string;
     text?: string;
     mode?: OutputMode;
+    language?: "pt" | "en";
     template?: TemplateType;
     promptVersion?: string;
     fallbackToLatest: boolean;
   }): Promise<GenerateBundle> {
     const env = readEnv();
     const mode = input.mode ?? "technical";
+    const language = input.language ?? "pt";
     const template = input.template ?? "portfolio-project";
     const promptResolution = resolvePromptPack(input.promptVersion, env.DEFAULT_PROMPT_VERSION);
 
@@ -237,7 +241,7 @@ export class RepoLaunchController {
 
     const aiResponse = await this.aiEngine.generate({
       systemPrompt: buildSystemPrompt(promptResolution.selected),
-      userInput: buildUserPrompt(analysis, promptResolution.selected),
+      userInput: buildUserPrompt(analysis, promptResolution.selected, language),
       maxTokens: 650
     });
 
@@ -245,6 +249,7 @@ export class RepoLaunchController {
       aiBrief: aiResponse.content,
       aiProvider: aiResponse.provider,
       mode,
+      language,
       template,
       promptVersion: promptResolution.selected.version
     });

@@ -18,6 +18,7 @@ type GenerateOptions = {
   aiBrief?: string;
   aiProvider?: string;
   mode?: OutputMode;
+  language?: "pt" | "en";
   template?: TemplateType;
   promptVersion?: string;
 };
@@ -25,6 +26,7 @@ type GenerateOptions = {
 export class ProjectGeneratorService {
   generateFromAnalysis(analysis: AnalysisResult, options: GenerateOptions = {}): GeneratedFile[] {
     const mode = options.mode ?? "technical";
+    const language = options.language ?? "pt";
     const template = options.template ?? "portfolio-project";
 
     return [
@@ -33,6 +35,7 @@ export class ProjectGeneratorService {
         content: buildReadmeTemplate(
           analysis,
           mode,
+          language,
           template,
           options.aiBrief,
           options.aiProvider,
@@ -41,23 +44,23 @@ export class ProjectGeneratorService {
       },
       {
         fileName: "ARCHITECTURE.md",
-        content: buildArchitectureTemplate(analysis, mode, template, options.aiBrief, options.promptVersion)
+        content: buildArchitectureTemplate(analysis, mode, language, template, options.aiBrief, options.promptVersion)
       },
       {
         fileName: "ROADMAP.md",
-        content: buildRoadmapTemplate(analysis, mode, template, options.aiBrief, options.promptVersion)
+        content: buildRoadmapTemplate(analysis, mode, language, template, options.aiBrief, options.promptVersion)
       },
       {
         fileName: "PROJECT_PLAN.md",
-        content: buildProjectPlanTemplate(analysis, mode, template, options.aiBrief, options.promptVersion)
+        content: buildProjectPlanTemplate(analysis, mode, language, template, options.aiBrief, options.promptVersion)
       },
       {
         fileName: "PORTFOLIO_PITCH.md",
-        content: buildPortfolioPitchTemplate(analysis, mode, template, options.aiBrief)
+        content: buildPortfolioPitchTemplate(analysis, mode, language, template, options.aiBrief)
       },
       {
         fileName: "ISSUES_SUGGESTIONS.md",
-        content: buildIssuesSuggestionsTemplate(analysis, mode, template)
+        content: buildIssuesSuggestionsTemplate(analysis, mode, language, template)
       }
     ];
   }
