@@ -344,13 +344,13 @@ color:var(--c-muted);white-space:pre-wrap;max-height:380px;overflow-y:auto;
     </div>
     <div class="topbar-tabs">
       <button class="tab on" onclick="switchView(this,'gen')">
-        <div class="tab-dot"></div>generator
+        <div class="tab-dot"></div><span data-i18n="tab_gen">generator</span>
       </button>
       <button class="tab" onclick="switchView(this,'arch')">
-        <div class="tab-dot"></div>architecture
+        <div class="tab-dot"></div><span data-i18n="tab_arch">architecture</span>
       </button>
       <button class="tab" onclick="switchView(this,'docs')">
-        <div class="tab-dot"></div>cookbook ref
+        <div class="tab-dot"></div><span data-i18n="tab_docs">cookbook ref</span>
       </button>
     </div>
     <div class="topbar-right">
@@ -449,17 +449,17 @@ color:var(--c-muted);white-space:pre-wrap;max-height:380px;overflow-y:auto;
         <div class="key-label" data-i18n="api_base">API Base</div>
         <input class="key-input" id="apiBase" type="text" placeholder="http://localhost:8787" autocomplete="off"/>
         <div class="key-label" data-i18n="api_token" style="margin-top:10px">API Token</div>
-        <input class="key-input" id="apiToken" type="password" placeholder="opcional" autocomplete="off"/>
+        <input class="key-input" id="apiToken" type="password" placeholder="opcional" data-i18n-ph="ph_api_token" autocomplete="off"/>
         <div class="key-note" data-i18n="api_note">Frontend usa a API local; chaves ficam somente no backend.</div>
         <div class="key-label" data-i18n="collab_ws" style="margin-top:10px">Workspace colaborativo</div>
         <input class="key-input" id="collabUser" type="text" placeholder="local-user" autocomplete="off"/>
-        <input class="key-input" id="collabPassword" type="password" placeholder="senha colaborativa" style="margin-top:6px" autocomplete="off"/>
-        <button class="file-btn" style="width:100%;margin-top:6px" onclick="collabLogin()">login colaborativo</button>
+        <input class="key-input" id="collabPassword" type="password" placeholder="senha colaborativa" data-i18n-ph="ph_collab_pass" style="margin-top:6px" autocomplete="off"/>
+        <button class="file-btn" style="width:100%;margin-top:6px" onclick="collabLogin()" data-i18n="collab_login_btn">login colaborativo</button>
         <div class="key-note" id="collabAuthInfo">auth: modo local (header)</div>
         <select class="key-input" id="projectSelect" onchange="onProjectSelect(this.value)"></select>
-        <input class="key-input" id="projectName" type="text" placeholder="novo projeto" style="margin-top:6px" />
+        <input class="key-input" id="projectName" type="text" placeholder="novo projeto" data-i18n-ph="ph_new_project" style="margin-top:6px" />
         <button class="file-btn" style="width:100%;margin-top:6px" onclick="createProject()" data-i18n="collab_create">criar projeto</button>
-        <input class="key-input" id="memberUser" type="text" placeholder="membro-user" style="margin-top:6px" />
+        <input class="key-input" id="memberUser" type="text" placeholder="membro-user" data-i18n-ph="ph_member_user" style="margin-top:6px" />
         <select class="key-input" id="memberRole" style="margin-top:6px">
           <option value="viewer">viewer</option>
           <option value="editor">editor</option>
@@ -471,7 +471,7 @@ color:var(--c-muted);white-space:pre-wrap;max-height:380px;overflow-y:auto;
         <div class="key-note" id="memberInfo">membros: sem dados</div>
         <div class="key-note" id="shareInfo">share: ainda nao gerado</div>
         <div class="key-note" id="auditInfo">auditoria: sem eventos</div>
-        <input class="key-input" id="sharedFilter" type="text" placeholder="filtro share: modo/template/prompt" style="margin-top:6px" oninput="applySharedFilter(this.value)" />
+        <input class="key-input" id="sharedFilter" type="text" placeholder="filtro share: modo/template/prompt" data-i18n-ph="ph_shared_filter" style="margin-top:6px" oninput="applySharedFilter(this.value)" />
         <div class="quick-filters" id="sharedQuickFilters"></div>
         <div class="key-note" id="sharedMetaInfo">share meta: -</div>
         <button class="file-btn" style="width:100%;margin-top:8px" onclick="refreshMetrics()" data-i18n="metrics_btn">atualizar metricas</button>
@@ -543,27 +543,27 @@ color:var(--c-muted);white-space:pre-wrap;max-height:380px;overflow-y:auto;
             </div>
             <div>
               <div class="about-title">RepoLaunch AI</div>
-              <div class="about-tagline">// transforme aprendizado em projetos prontos para lançar</div>
+              <div class="about-tagline" data-i18n="about_tagline">// transforme aprendizado em projetos prontos para lançar</div>
             </div>
           </div>
           <div class="about-section">
             <div class="about-section-head">
-              <span class="about-section-title">system architecture — 6 layers</span>
+              <span class="about-section-title" data-i18n="arch_title">system architecture — 6 layers</span>
             </div>
             <div class="about-section-body" id="archLayers"></div>
           </div>
           <div class="about-grid">
             <div class="mini-sect">
-              <div class="mini-head"><span class="mini-title">tech stack</span></div>
+              <div class="mini-head"><span class="mini-title" data-i18n="tech_stack_title">tech stack</span></div>
               <div class="mini-body" id="stackList"></div>
             </div>
             <div class="mini-sect">
-              <div class="mini-head"><span class="mini-title">roadmap</span></div>
+              <div class="mini-head"><span class="mini-title" data-i18n="roadmap_title">roadmap</span></div>
               <div class="mini-body" id="roadmapList"></div>
             </div>
           </div>
           <div class="mini-sect">
-            <div class="mini-head"><span class="mini-title">folder structure</span></div>
+            <div class="mini-head"><span class="mini-title" data-i18n="folder_title">folder structure</span></div>
             <div style="padding:12px 14px;font-family:var(--mono);font-size:11px;line-height:1.8;color:var(--c-muted)" id="folderTree"></div>
           </div>
         </div>
@@ -574,12 +574,12 @@ color:var(--c-muted);white-space:pre-wrap;max-height:380px;overflow-y:auto;
         <div class="about-wrap">
           <div class="about-section">
             <div class="about-section-head">
-              <span class="about-section-title">anthropic cookbook — referências usadas</span>
+              <span class="about-section-title" data-i18n="cookbook_title">anthropic cookbook — referências usadas</span>
             </div>
             <div class="about-section-body" id="cookbookRefs"></div>
           </div>
           <div class="mini-sect">
-            <div class="mini-head"><span class="mini-title">quick start</span></div>
+            <div class="mini-head"><span class="mini-title" data-i18n="quickstart_title">quick start</span></div>
             <div style="padding:12px 14px;font-family:var(--mono);font-size:11px;line-height:2;color:var(--c-muted)" id="quickStart"></div>
           </div>
         </div>
@@ -668,6 +668,26 @@ var i18n = {
     meta_docs: 'docs gerados', meta_time: 'tempo médio', meta_tmpl: 'templates',
     inp_label: 'Cole suas anotações ou ideia de projeto',
     inp_placeholder: 'Cole aqui suas anotações, ideias de projeto, conteúdo de curso ou aprendizados...\n\nExemplo: aprendi sobre RAG com LangChain e quero criar uma CLI que indexa repositórios GitHub e gera documentação usando Claude API...',
+    tab_gen: 'generator', tab_arch: 'architecture', tab_docs: 'cookbook ref',
+    collab_login_btn: 'login colaborativo',
+    ph_api_token: 'opcional', ph_collab_pass: 'senha colaborativa',
+    ph_new_project: 'novo projeto', ph_member_user: 'usuário-membro',
+    ph_shared_filter: 'filtro share: modo/template/prompt',
+    about_tagline: '// transforme aprendizado em projetos prontos para lançar',
+    arch_title: 'arquitetura do sistema — 6 camadas',
+    tech_stack_title: 'tech stack', roadmap_title: 'roadmap',
+    folder_title: 'estrutura de pastas',
+    cookbook_title: 'anthropic cookbook — referências usadas',
+    quickstart_title: 'quick start',
+    metrics_init: 'métricas: aguardando API',
+    metrics_status_init: 'status: -',
+    metrics_graph_init: 'janela 15m: -',
+    metrics_alert_init: 'alerta: aguardando dados',
+    arch_layer_descs: ['repolaunch init / analyze / generate / export','Orquestração de fluxo + validação de input','Lógica de negócio + decisão de pipeline','Claude API + prompt control + response parsing','Estrutura de saída + padronização por tipo','Geração dos arquivos finais no filesystem'],
+    roadmap_i18n: [['v1','MVP — CLI + análise + docs'],['v2','GitHub integration + issues'],['v3','UI web + colaboração']],
+    cookbook_ref_descs: ['Orquestração multi-agente — base do Controller layer','Tool use com Claude API — AI Engine layer','Slash commands — inspiração da CLI design','Extração de intenção do input do usuário','Prompt caching para otimizar o AI Engine','Convenções: commits, env vars, modelo claude-sonnet-4-6'],
+    folder_labels: ['— interface principal','— orquestração','— lógica de negócio','— Claude API engine','— template engine','— helpers'],
+    qs_html: '<span style="color:var(--c-hint)"># clone e instale</span><br>git clone github.com/you/repolaunch-ai<br>npm install<br><br><span style="color:var(--c-hint)"># backend api</span><br>npm run dev:api<br><br><span style="color:var(--c-hint)"># frontend estático (outro terminal)</span><br>cd frontend && python3 -m http.server 8080<br><br><span style="color:var(--c-hint)"># use</span><br>abra http://localhost:8080 e gere arquivos',
   },
   en: {
     template: 'Template', output_files: 'Output files', api_base: 'API Base',
@@ -737,17 +757,61 @@ var i18n = {
     meta_docs: 'docs generated', meta_time: 'avg time', meta_tmpl: 'templates',
     inp_label: 'Paste your notes or project idea',
     inp_placeholder: 'Paste your notes, project ideas, course content or learnings here...\n\nExample: I learned about RAG with LangChain and want to build a CLI that indexes GitHub repos and generates docs using Claude API...',
+    tab_gen: 'generator', tab_arch: 'architecture', tab_docs: 'cookbook ref',
+    collab_login_btn: 'collaborative login',
+    ph_api_token: 'optional', ph_collab_pass: 'collaborative password',
+    ph_new_project: 'new project', ph_member_user: 'member-user',
+    ph_shared_filter: 'share filter: mode/template/prompt',
+    about_tagline: '// turn learning into production-ready projects',
+    arch_title: 'system architecture — 6 layers',
+    tech_stack_title: 'tech stack', roadmap_title: 'roadmap',
+    folder_title: 'folder structure',
+    cookbook_title: 'anthropic cookbook — references used',
+    quickstart_title: 'quick start',
+    metrics_init: 'metrics: waiting for API',
+    metrics_status_init: 'status: -',
+    metrics_graph_init: '15m window: -',
+    metrics_alert_init: 'alert: waiting for data',
+    arch_layer_descs: ['repolaunch init / analyze / generate / export','Flow orchestration + input validation','Business logic + pipeline decisions','Claude API + prompt control + response parsing','Output structure + type standardization','Final file generation to filesystem'],
+    roadmap_i18n: [['v1','MVP — CLI + analysis + docs'],['v2','GitHub integration + issues'],['v3','Web UI + collaboration']],
+    cookbook_ref_descs: ['Multi-agent orchestration — Controller layer base','Tool use with Claude API — AI Engine layer','Slash commands — CLI design inspiration','Extracting user input intent','Prompt caching to optimize AI Engine','Conventions: commits, env vars, claude-sonnet-4-6 model'],
+    folder_labels: ['— main interface','— orchestration','— business logic','— Claude API engine','— template engine','— helpers'],
+    qs_html: '<span style="color:var(--c-hint)"># clone and install</span><br>git clone github.com/you/repolaunch-ai<br>npm install<br><br><span style="color:var(--c-hint)"># start backend api</span><br>npm run dev:api<br><br><span style="color:var(--c-hint)"># start frontend (another terminal)</span><br>cd frontend && python3 -m http.server 8080<br><br><span style="color:var(--c-hint)"># open</span><br>open http://localhost:8080 and generate files',
   }
 };
 
 function applyLang() {
+  // static data-i18n elements
   document.querySelectorAll('[data-i18n]').forEach(function(el) {
     var k = el.getAttribute('data-i18n');
     if (i18n[lang][k] !== undefined) el.innerHTML = i18n[lang][k];
   });
+  // input placeholders
+  document.querySelectorAll('[data-i18n-ph]').forEach(function(el) {
+    var k = el.getAttribute('data-i18n-ph');
+    if (i18n[lang][k] !== undefined) el.placeholder = i18n[lang][k];
+  });
+  // main textarea placeholder
   var inp = document.getElementById('mainInp');
   if (inp && !inp.value) inp.placeholder = i18n[lang].inp_placeholder;
+  // reset dynamic status divs to initial translated text
+  var statusMap = {
+    metricsInfo: 'metrics_init',
+    metricsStatusInfo: 'metrics_status_init',
+    metricsGraph: 'metrics_graph_init',
+    metricsAlert: 'metrics_alert_init',
+    projectInfo: 'collab_no_project',
+    memberInfo: 'members_no_data',
+    shareInfo: 'share_not_generated',
+    auditInfo: 'audit_no_events',
+  };
+  Object.keys(statusMap).forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) { el.textContent = tr(statusMap[id]); el.style.color = ''; el.style.fontWeight = ''; }
+  });
   document.getElementById('langBtn').textContent = lang === 'pt' ? 'EN' : 'PT';
+  // rebuild dynamic views in the new language
+  buildStaticViews();
 }
 
 function tr(key, vars) {
@@ -807,37 +871,47 @@ var cookbookRefs = [
 ];
 
 function buildStaticViews() {
-  // arch layers
+  var t = i18n[lang] || i18n.pt;
+
+  // arch layers — descriptions from i18n
   var al = document.getElementById('archLayers');
-  if (al) al.innerHTML = archLayers.map(function(l) {
-    return '<div class="layer-row"><div class="layer-dot" style="background:'+l[0]+'"></div><span class="layer-name">'+l[1]+'</span><span class="layer-desc">'+l[2]+'</span></div>';
+  if (al) al.innerHTML = archLayers.map(function(l, i) {
+    var desc = (t.arch_layer_descs && t.arch_layer_descs[i]) || l[2];
+    return '<div class="layer-row"><div class="layer-dot" style="background:'+l[0]+'"></div><span class="layer-name">'+l[1]+'</span><span class="layer-desc">'+desc+'</span></div>';
   }).join('');
 
-  // stack
+  // stack (technical names, same in both languages)
   var sl = document.getElementById('stackList');
   if (sl) sl.innerHTML = stackItems.map(function(s) {
     return '<div class="mini-row"><div class="mini-dot"></div>'+s+'</div>';
   }).join('');
 
-  // roadmap
+  // roadmap — items from i18n
   var rl = document.getElementById('roadmapList');
-  if (rl) rl.innerHTML = roadmapItems.map(function(r) {
-    return '<div class="mini-row"><span style="font-weight:700;color:var(--c-orange)">'+r[0]+'</span>'+r[1]+'</div>';
-  }).join('');
+  if (rl) {
+    var rItems = (t.roadmap_i18n) || roadmapItems;
+    rl.innerHTML = rItems.map(function(r) {
+      return '<div class="mini-row"><span style="font-weight:700;color:var(--c-orange)">'+r[0]+'</span> '+r[1]+'</div>';
+    }).join('');
+  }
 
-  // folder tree
+  // folder tree — labels from i18n
   var ft = document.getElementById('folderTree');
-  if (ft) ft.innerHTML = 'repolaunch-ai/<br>├── src/<br>│   ├── <span style="color:var(--c-orange)">cli/</span>          <span style="color:var(--c-hint)">— interface principal</span><br>│   ├── <span style="color:var(--c-orange)">controllers/</span>  <span style="color:var(--c-hint)">— orquestração</span><br>│   ├── <span style="color:var(--c-orange)">services/</span>     <span style="color:var(--c-hint)">— lógica de negócio</span><br>│   ├── <span style="color:var(--c-orange)">ai/</span>           <span style="color:var(--c-hint)">— Claude API engine</span><br>│   ├── <span style="color:var(--c-orange)">templates/</span>    <span style="color:var(--c-hint)">— template engine</span><br>│   └── <span style="color:var(--c-orange)">utils/</span>        <span style="color:var(--c-hint)">— helpers</span><br>├── outputs/<br>├── prompts/<br>├── tests/<br>└── <span style="color:var(--c-hint)">.env.example</span>';
+  if (ft) {
+    var fl = t.folder_labels || ['— interface principal','— orquestração','— lógica de negócio','— Claude API engine','— template engine','— helpers'];
+    ft.innerHTML = 'repolaunch-ai/<br>├── src/<br>│   ├── <span style="color:var(--c-orange)">cli/</span>          <span style="color:var(--c-hint)">'+fl[0]+'</span><br>│   ├── <span style="color:var(--c-orange)">controllers/</span>  <span style="color:var(--c-hint)">'+fl[1]+'</span><br>│   ├── <span style="color:var(--c-orange)">services/</span>     <span style="color:var(--c-hint)">'+fl[2]+'</span><br>│   ├── <span style="color:var(--c-orange)">ai/</span>           <span style="color:var(--c-hint)">'+fl[3]+'</span><br>│   ├── <span style="color:var(--c-orange)">templates/</span>    <span style="color:var(--c-hint)">'+fl[4]+'</span><br>│   └── <span style="color:var(--c-orange)">utils/</span>        <span style="color:var(--c-hint)">'+fl[5]+'</span><br>├── outputs/<br>├── prompts/<br>├── tests/<br>└── <span style="color:var(--c-hint)">.env.example</span>';
+  }
 
-  // cookbook refs
+  // cookbook refs — descriptions from i18n
   var cr = document.getElementById('cookbookRefs');
-  if (cr) cr.innerHTML = cookbookRefs.map(function(r) {
-    return '<div class="layer-row"><div class="layer-dot" style="background:var(--c-orange)"></div><span class="layer-name" style="font-size:10px">'+r[0]+'</span><span class="layer-desc">'+r[1]+'</span></div>';
+  if (cr) cr.innerHTML = cookbookRefs.map(function(r, i) {
+    var desc = (t.cookbook_ref_descs && t.cookbook_ref_descs[i]) || r[1];
+    return '<div class="layer-row"><div class="layer-dot" style="background:var(--c-orange)"></div><span class="layer-name" style="font-size:10px">'+r[0]+'</span><span class="layer-desc">'+desc+'</span></div>';
   }).join('');
 
-  // quick start
+  // quick start — html from i18n
   var qs = document.getElementById('quickStart');
-  if (qs) qs.innerHTML = '<span style="color:var(--c-hint)"># clone e instale</span><br>git clone github.com/you/repolaunch-ai<br>npm install<br><br><span style="color:var(--c-hint)"># backend api</span><br>npm run dev:api<br><br><span style="color:var(--c-hint)"># frontend estatico (outro terminal)</span><br>cd frontend && python3 -m http.server 8080<br><br><span style="color:var(--c-hint)"># use</span><br>abra http://localhost:8080 e gere arquivos';
+  if (qs) qs.innerHTML = t.qs_html || '';
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
